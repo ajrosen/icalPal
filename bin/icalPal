@@ -1,0 +1,204 @@
+#!/usr/bin/env ruby
+# *-*- mode: enh-ruby -*-*
+
+require 'logger'
+
+require 'csv'
+require 'json'
+require 'rdoc'
+require 'sqlite3'
+require 'yaml'
+
+require_relative '../lib/icalPal'
+require_relative '../lib/options'
+
+
+##################################################
+# Load options
+
+# All kids love log!
+$log = Logger.new(STDERR, { datetime_format: '%H:%M:%S.%L', level: $defaults[:common][:debug] })
+$log.formatter = proc do |s, t, p, m| # Severity, time, progname, msg
+  ($log.level.positive?)? "#{s}: #{m}\n" :
+    "[%-5s] %s [%s] - %s\n" %
+    [ s, t.strftime($log.datetime_format), caller(4, 1)[0].split('/')[-1], m ]
+end
+
+$opts = ICalPal::Options.new.parse_options
+
+$rows = []                      # Rows from the database
+$items = []                     # Items to be printed
+
+
+##################################################
+# All kids love log!
+
+$log.info("Options: #{$opts}")
+
+
+##################################################
+# Add an item to the list
+#
+# @param item[Object]
+def add(item)
+  $log.debug("Adding #{item['UUID']} (#{item['title']})") if item['UUID']
+  item['sday'] = ICalPal::RDT.new(*item['sdate'].to_a[0..2]) if item['sdate']
+  $items.push(item)
+end
+
+
+##################################################
+# Load the data
+
+# What are we getting?
+klass = ICalPal::($opts[:cmd])
+q = klass::QUERY
+
+$log.debug(q.gsub(/\n/, ' '))
+
+# Get it
+stmt = $db.prepare(q)
+abort(stmt.columns.sort.join(' ')) if $opts[:props].any? 'list'
+$opts[:props] = stmt.columns - $opts[:eep] if $opts[:props].any? 'all'
+
+# Iterate the SQLite3::ResultSet once
+stmt.execute.each_with_index { |i, j| $rows[j] = i }
+stmt.close
+
+$log.info("Loaded #{$rows.count} rows from #{$db.filename}")
+$db.close
+
+
+##################################################
+# Process the data
+
+# Add rows
+$rows.each do |row|
+  # --es/--is
+  next if $opts[:es].any? row['account']
+  next unless $opts[:is].empty? or $opts[:is].any? row['account']
+
+  # --ec/--ic
+  next if $opts[:ec].any? row['calendar']
+  next unless $opts[:ic].empty? or $opts[:ic].any? row['calendar']
+
+  item = klass.new(row)
+
+  # --et/--it
+  next if $opts[:et].any? item['type']
+  next unless $opts[:it].empty? or $opts[:it].any? item['type']
+
+  unless ICalPal::Event === item
+    # Always add non-event items
+    add(item)
+  else
+    # Check for all-day and cancelled events
+    next if $opts[:ea] && item['all_day'].positive?
+    next if $opts[:ia] && !item['all_day'].positive?
+    next if item['status'] == :canceled
+
+    (item['has_recurrences'].positive?)?
+      item.recurring.each { |i| add(i) } :
+      item.non_recurring.each { |i| add(i) }
+  end
+end
+
+# Add placeholders for empty days
+if $opts[:sed] && $opts[:sd] && klass == ICalPal::Event
+  days = $items.collect { |i| i['sday'] }.uniq.sort
+
+  $opts[:days].times do |n|
+    day = $opts[:from] + n
+    $items.push(klass.new(day)) unless days.any? { |i| i == day }
+  end
+end
+
+# Sort the rows
+begin
+  $items.sort_by! { |i| [ i[$opts[:sep]], i[$opts[:sort]], i['sdate'] ] }
+  $items.reverse! if $opts[:reverse]
+rescue ArgumentError => e
+  $log.warn("Sorting failed, results may be unexpected\n")
+end
+
+# Configure formatting
+mu = case $opts[:output]
+     when 'ansi' then RDoc::Markup::ToAnsi.new
+     when 'csv' then proc { |f| f.respond_to?(:gsub)? f.gsub(/\n/, '\n') : f }
+     when 'default' then RDoc::Markup::ToICalPal.new($opts)
+     when 'html' then
+       rdoc = RDoc::Options.new
+       rdoc.pipe = true
+       rdoc.output_decoration = false
+       RDoc::Markup::ToHtml.new(rdoc)
+     when 'md' then RDoc::Markup::ToMarkdown.new
+     when 'rdoc' then RDoc::Markup::ToRdoc.new
+     when 'toc' then RDoc::Markup::ToTableOfContents.new
+     end
+
+
+##################################################
+# Print the data
+
+section = nil if $opts[:sep]
+
+$items.each_with_index do |i, j|
+  # --li
+  break if $opts[:li].positive? && j >= $opts[:li]
+
+  case $opts[:output]
+  when 'csv' then
+    values = i.values.map { |v| v.to_s }
+    puts CSV.generate(write_converters: mu) { |k| k << i.keys } unless j.positive?
+    puts CSV.generate(write_converters: mu) { |k| k << values }
+  when 'hash' then p i.self
+  when 'json' then puts i.self.to_json
+  when 'yaml' then puts i.self.to_yaml
+  else
+    doc = RDoc::Markup::Document.new
+
+    # Sections
+    if $opts[:sep] && section != i[$opts[:sep]]
+      $log.debug("Section: #{i[$opts[:sep]]}")
+
+      v = RDoc::Markup::Verbatim.new
+      v.format = { item: i, prop: $opts[:sep] }
+      doc << v
+
+      doc << RDoc::Markup::BlankLine.new if j.positive?
+      doc << RDoc::Markup::Heading.new(1, i[$opts[:sep]].to_s)
+      doc << RDoc::Markup::Rule.new(0)
+
+      section = i[$opts[:sep]]
+    end
+
+    # Item
+    props = RDoc::Markup::List.new(:BULLET)
+
+    # Properties
+    $opts[:props].each_with_index do |prop, k|
+      next unless i[prop]
+      next if Array === i[prop] && !i[prop][0]
+
+      $log.debug("#{prop}: #{i[prop]}")
+
+      v = RDoc::Markup::Verbatim.new
+      v.format = { item: i, prop: prop }
+      props << v
+
+      unless k.positive?
+        # First property, value only
+        props << RDoc::Markup::Heading.new(2, i[prop].to_s)
+      else
+        props << RDoc::Markup::BlankLine.new unless (i['placeholder'] || $opts[:ps])
+        props << RDoc::Markup::ListItem.new(prop, RDoc::Markup::Paragraph.new(i[prop]))
+      end
+    end
+
+    # Print it
+    unless props.empty?
+      doc << props
+      puts doc.accept(mu)
+    end
+  end
+end
