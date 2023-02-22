@@ -1,3 +1,5 @@
+[![Gem Version](https://badge.fury.io/rb/icalPal.svg)](https://badge.fury.io/rb/icalPal)
+
 # icalPal
 
 ## Description
