@@ -11,12 +11,49 @@ file.
 
 ## Installation
 
-<code>gem install icalPal</code>
+```
+gem install icalPal
+icalPal events
+```
 
+A [Homebrew](https://brew.sh) formula is in the works.
+
+## Features
+
+### Compatability with [icalBuddy](https://github.com/ali-rantakari/icalBuddy)
+
+icalPal tries to be compatible with icalBuddy for command-line options
+and for output.  There are a few differences to be aware of.
+
+* Options require two hyphens, except for single-letter options that require one hyphen
+* *eventsFrom* is not supported.  Instead there is *--from*, *--to*, and *--days*
+* icalPal does not support the *tasks* commands yet
+* The command can go anywhere; it doesn't have to be the last argument
+* Property separators are comma-delimited
+
+### Additional commands
+
+```icalPal accounts```
+
+Shows a list of enabled Calendar accounts.  Internally they are known as *Stores*; you can run ```icalPal stores``` instead.
+
+### Additional options
+
+* Options can be abbreviated, so long as they are unique.  Eg., ```icalPal -c ev --da 3``` is the same as ```icalPal -c events --days 3```.
+* The ```-c``` part is optional, but you cannot abbreviate the command if you leave it off.
+* Use ```-o``` to print the output in different formats.  CSV or JSON are intertesting choices.
+* Copy your Calendar database file and use ```--db``` on it.
+* ```--it``` and ```--et``` will filter by Calendar *type*.  Types are **Local**, **Exchange**, **CalDAV**, **MobileMe**, **Subscribed**, and **Birthdays**
+* ```--ia``` includes *only* all-day events (opposite of ```--ea```)
+* ```--aep``` is like ```--iep```, but *adds* to the default property list instead of replacing it.
+* ```--sep``` to separate by any property, not just calendar (```--sc```) or date (```--sd```)
+* ```--color``` uses a wider color palette.  Calendar colors are what you have chosen in the Calendar app.  Not supported in all terminals, but looks great in [iTerm2](https://iterm2.com/).
+
+Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with version of Ruby (2.6.10) included with macOS, and does not require any external dependencies.
 
 ## Usage
 
-ical: Usage: ical [options] [-c] COMMAND
+icalPal: Usage: icalPal [options] [-c] COMMAND
 
 COMMAND must be one of the following:
 
@@ -119,10 +156,6 @@ Environment variables:
 
 ## History
 
-If you've found this page it's likely you've heard of [icalBuddy](https://github.com/ali-rantakari/icalBuddy):
-
-> Command-line utility for printing events and tasks from the OS X calendar database.
-
 I have used icalBuddy for many years.  It's great for scripting,
 automation, and as a desktop widget for apps like
 [GeekTool](https://www.tynsoe.org/geektool/) and
@@ -134,15 +167,9 @@ years ago.  It's only thanks to the efforts of [Jim
 Lawton](https://github.com/jimlawton) that it even compiles anymore.
 
 Instead of trying to understand and extend the existing code, I chose
-to start anew using my language of choice.
-
-- Output in CSV, JSON, HTML, Markdown, and [more](#label-Output+formats)
-- Enhanced color option[#label-Usage]
-- Show and filter by Account
-- Show and filter by Calendar type
-- Select a different Calendar database
-- Multi-platform
-- Much less code (1200 lines vs. 7000)
+to start anew using my language of choice.  Using Ruby means icalPal
+is multi-platform.  It also meant *much* less code; about 1,200 lines
+vs. 7,000.
 
 I won't pretend to understand **why** you would want this on Linux or
 Windows.  But since icalPal is written in Ruby and gets its data
@@ -150,7 +177,7 @@ directly from the Calendar database file instead of an API, you *can*.
 
 ## Output formats
 
-icalPal supports several output formats.  The +default+ format tries
+icalPal supports several output formats.  The **default** format tries
 to mimic icalBuddy as much as possible.
 
 CSV, Hash, JSON, and YAML print all fields for all items in their
