@@ -23,7 +23,7 @@ module ICalPal
       @op = OptionParser.new
       @op.summary_width = 23
       @op.banner += " [-c] COMMAND"
-      @op.version = '1.0'
+      @op.version = '1.0.2'
 
       @op.accept(ICalPal::RDT) { |s| ICalPal::RDT.conv(s) }
 
@@ -171,7 +171,7 @@ module ICalPal
         @op.parse!(into: cli)
         @op.parse!(ENV['ICALPAL'].split, into: env) rescue nil
         cli[:cf] ||= ENV['ICALPAL_CONFIG'] || $defaults[:common][:cf]
-        @op.parse!(IO.read(File.expand_path(cli[:cf])).split, into: cf) rescue nil
+        @op.parse!(File.read(File.expand_path(cli[:cf])).split, into: cf) rescue nil
 
         cli[:cmd] ||= @op.default_argv[0]
         cli[:cmd] = 'stores' if cli[:cmd] == 'accounts'
