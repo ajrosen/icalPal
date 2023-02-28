@@ -124,7 +124,6 @@ end
 # Configure formatting
 mu = case $opts[:output]
      when 'ansi' then RDoc::Markup::ToAnsi.new
-     when 'csv' then proc { |f| f.respond_to?(:gsub)? f.gsub(/\n/, '\n') : f }
      when 'default' then RDoc::Markup::ToICalPal.new($opts)
      when 'html' then
        rdoc = RDoc::Options.new
@@ -140,65 +139,76 @@ mu = case $opts[:output]
 ##################################################
 # Print the data
 
+unless mu
+  items = $items[0..$opts[:li] - 1]
+
+  puts case $opts[:output]
+  when 'csv' then
+    o = {
+      headers: items[0].keys,
+      write_converters: proc { |f| f.respond_to?(:gsub)? f.gsub(/\n/, '\n') : f },
+      write_headers: true,
+    }
+
+    CSV.generate(o) { |k| items.each { |i| k << i.values.map { |v| v.to_s } } }
+  when 'hash' then items.map { |i| i.self }
+  when 'json' then items.map { |i| i.self }.to_json
+  when 'yaml' then items.map { |i| i.self }.to_yaml
+  else abort "No formatter for #{$opts[:output]}"
+  end
+
+  exit
+end
+
 section = nil if $opts[:sep]
 
 $items.each_with_index do |i, j|
   # --li
   break if $opts[:li].positive? && j >= $opts[:li]
 
-  case $opts[:output]
-  when 'csv' then
-    values = i.values.map { |v| v.to_s }
-    puts CSV.generate(write_converters: mu) { |k| k << i.keys } unless j.positive?
-    puts CSV.generate(write_converters: mu) { |k| k << values }
-  when 'hash' then p i.self
-  when 'json' then puts i.self.to_json
-  when 'yaml' then puts i.self.to_yaml
-  else
-    doc = RDoc::Markup::Document.new
+  doc = RDoc::Markup::Document.new
 
-    # Sections
-    if $opts[:sep] && section != i[$opts[:sep]]
-      $log.debug("Section: #{i[$opts[:sep]]}")
+  # Sections
+  if $opts[:sep] && section != i[$opts[:sep]]
+    $log.debug("Section: #{i[$opts[:sep]]}")
 
-      v = RDoc::Markup::Verbatim.new
-      v.format = { item: i, prop: $opts[:sep] }
-      doc << v
+    v = RDoc::Markup::Verbatim.new
+    v.format = { item: i, prop: $opts[:sep] }
+    doc << v
 
-      doc << RDoc::Markup::BlankLine.new if j.positive?
-      doc << RDoc::Markup::Heading.new(1, i[$opts[:sep]].to_s)
-      doc << RDoc::Markup::Rule.new(0)
+    doc << RDoc::Markup::BlankLine.new if j.positive?
+    doc << RDoc::Markup::Heading.new(1, i[$opts[:sep]].to_s)
+    doc << RDoc::Markup::Rule.new(0)
 
-      section = i[$opts[:sep]]
+    section = i[$opts[:sep]]
+  end
+
+  # Item
+  props = RDoc::Markup::List.new(:BULLET)
+
+  # Properties
+  $opts[:props].each_with_index do |prop, k|
+    next unless i[prop]
+    next if Array === i[prop] && !i[prop][0]
+
+    $log.debug("#{prop}: #{i[prop]}")
+
+    v = RDoc::Markup::Verbatim.new
+    v.format = { item: i, prop: prop }
+    props << v
+
+    unless k.positive?
+      # First property, value only
+      props << RDoc::Markup::Heading.new(2, i[prop].to_s)
+    else
+      props << RDoc::Markup::BlankLine.new unless (i['placeholder'] || $opts[:ps])
+      props << RDoc::Markup::ListItem.new(prop, RDoc::Markup::Paragraph.new(i[prop]))
     end
+  end
 
-    # Item
-    props = RDoc::Markup::List.new(:BULLET)
-
-    # Properties
-    $opts[:props].each_with_index do |prop, k|
-      next unless i[prop]
-      next if Array === i[prop] && !i[prop][0]
-
-      $log.debug("#{prop}: #{i[prop]}")
-
-      v = RDoc::Markup::Verbatim.new
-      v.format = { item: i, prop: prop }
-      props << v
-
-      unless k.positive?
-        # First property, value only
-        props << RDoc::Markup::Heading.new(2, i[prop].to_s)
-      else
-        props << RDoc::Markup::BlankLine.new unless (i['placeholder'] || $opts[:ps])
-        props << RDoc::Markup::ListItem.new(prop, RDoc::Markup::Paragraph.new(i[prop]))
-      end
-    end
-
-    # Print it
-    unless props.empty?
-      doc << props
-      puts doc.accept(mu)
-    end
+  # Print it
+  unless props.empty?
+    doc << props
+    puts doc.accept(mu)
   end
 end
