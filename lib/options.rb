@@ -174,6 +174,8 @@ module ICalPal
         @op.parse!(File.read(File.expand_path(cli[:cf])).split, into: cf) rescue nil
 
         cli[:cmd] ||= @op.default_argv[0]
+        cli[:cmd] ||= env[:cmd] if env[:cmd]
+        cli[:cmd] ||= cf[:cmd] if cf[:cmd]
         cli[:cmd] = 'stores' if cli[:cmd] == 'accounts'
 
         # Parse eventsNow and eventsToday commands
