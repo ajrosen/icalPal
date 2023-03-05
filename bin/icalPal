@@ -139,9 +139,9 @@ mu = case $opts[:output]
 ##################################################
 # Print the data
 
-unless mu
-  items = $items[0..$opts[:li] - 1]
+items = $items[0..$opts[:li] - 1]
 
+unless mu
   puts case $opts[:output]
   when 'csv' then
     o = {
@@ -162,7 +162,7 @@ end
 
 section = nil if $opts[:sep]
 
-$items.each_with_index do |i, j|
+items.each_with_index do |i, j|
   # --li
   break if $opts[:li].positive? && j >= $opts[:li]
 

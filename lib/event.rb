@@ -95,8 +95,10 @@ module ICalPal
 
       # Repeat for multi-day events
       ((self['duration'] / 86400).to_i + 1).times do |i|
-        retval.push(Marshal.load(Marshal.dump(self))) if in_window?(self['sdate'])
+        self['daynum'] = i + 1
+        retval.push(clone) if in_window?(self['sdate'])
         self['sdate'] += 1
+        self['edate'] += 1
       end
 
       retval
@@ -135,6 +137,13 @@ module ICalPal
     private
 
     # @!visibility public
+
+    # @return a deep clone of self
+    def clone()
+      self['stime'] = self['sdate'].to_i
+      self['etime'] = self['edate'].to_i
+      Marshal.load(Marshal.dump(self))
+    end
 
     # Get next occurences of a recurring event
     #
@@ -177,14 +186,14 @@ module ICalPal
           proc {
             self['sdate'] = RDT.new(*ndate.to_a[0..2], *self['sdate'].to_a[3..])
             self['edate'] = RDT.new(*ndate.to_a[0..2], *self['edate'].to_a[3..])
-            retval.push(Marshal.load(Marshal.dump(self)))
+            retval.push(clone)
           }) { |i| @self['sdate'].to_i == i['orig_date'] + ITIME }
       end
 
       # Check for changes
       changes.detect(
         proc {
-          retval.push(Marshal.load(Marshal.dump(self)))
+          retval.push(clone)
         }) { |i| @self['sdate'].to_i == i['orig_date'] + ITIME } unless retval.count.positive?
 
       retval
@@ -238,6 +247,7 @@ CalendarItem.availability,
 CalendarItem.conference_url_detected,
 CalendarItem.description AS notes,
 CalendarItem.has_recurrences,
+CalendarItem.invitation_status,
 CalendarItem.orig_item_id,
 CalendarItem.rowid,
 CalendarItem.start_tz,
@@ -258,7 +268,9 @@ Recurrence.count,
 CAST(Recurrence.end_date AS INT) AS rend_date,
 Recurrence.frequency,
 Recurrence.interval,
-Recurrence.specifier
+Recurrence.specifier,
+
+min(Alarm.trigger_interval) AS trigger_interval
 
 FROM Store
 
@@ -268,7 +280,7 @@ JOIN CalendarItem ON CalendarItem.calendar_id = Calendar.rowid
 LEFT OUTER JOIN Location ON Location.rowid = CalendarItem.location_id
 LEFT OUTER JOIN Recurrence ON Recurrence.owner_id = CalendarItem.rowid
 LEFT OUTER JOIN ExceptionDate ON ExceptionDate.owner_id = CalendarItem.rowid
-
+LEFT OUTER JOIN Alarm ON Alarm.calendaritem_owner_id = CalendarItem.rowid
 LEFT OUTER JOIN Participant ON Participant.owner_id = CalendarItem.rowid
 LEFT OUTER JOIN Identity ON Identity.rowid = Participant.identity_id
 

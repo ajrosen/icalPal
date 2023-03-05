@@ -16,8 +16,6 @@ gem install icalPal
 icalPal events
 ```
 
-A [Homebrew](https://brew.sh) formula is in the works.
-
 ## Features
 
 ### Compatability with [icalBuddy](https://github.com/ali-rantakari/icalBuddy)
