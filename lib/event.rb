@@ -120,12 +120,13 @@ module ICalPal
 
       i = 1
       while self['sdate'] <= stop
+        return(retval) if self['count'].positive? && i > self['count']
+        i += 1
+
         unless @self['xdate'].any?(@self['sdate']) # Exceptions?
           o = get_occurrences(changes)
           o.each { |r| retval.push(r) if in_window?(r['sdate'], r['edate']) }
 
-          i += 1
-          return(retval) if self['count'].positive? && i > self['count']
         end
 
         apply_frequency!
