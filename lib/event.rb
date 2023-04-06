@@ -80,7 +80,11 @@ module ICalPal
       obj['type'] = EventKit::EKSourceType.find_index { |i| i[:name] == 'Subscribed' } if obj['subcal_url']
       type = EventKit::EKSourceType[obj['type']]
 
-      @self['sdate'] = @self['sdate'].new_offset(0) if @self['start_tz'] == '_float'
+      if @self['start_tz'] == '_float'
+        @self['sdate'] = RDT.new(*(@self['sdate'].to_time - Time.zone_offset($now.zone())).to_a.reverse[4..], $now.zone)
+        @self['edate'] = RDT.new(*(@self['edate'].to_time - Time.zone_offset($now.zone())).to_a.reverse[4..], $now.zone)
+      end
+
       @self['symbolic_color_name'] ||= @self['color']
       @self['type'] = type[:name]
     end
@@ -141,8 +145,6 @@ module ICalPal
 
     # @return a deep clone of self
     def clone()
-      self['stime'] = self['sdate'].to_i
-      self['etime'] = self['edate'].to_i
       Marshal.load(Marshal.dump(self))
     end
 
