@@ -255,7 +255,7 @@ module ICalPal
     COMMANDS = %w{events eventsToday eventsNow calendars accounts stores}
 
     # Supported output formats
-    OUTFORMATS = %w{ansi csv default hash html json md rdoc toc yaml}
+    OUTFORMATS = %w{ansi csv default hash html json md rdoc toc yaml remind}
 
     private
 
