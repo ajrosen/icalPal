@@ -155,7 +155,7 @@ unless mu
   when 'json' then items.map { |i| i.self }.to_json
   when 'yaml' then items.map { |i| i.self }.to_yaml
   when 'remind' then items.map { |i|
-    "REM #{i['sdate'].strftime('%F@%T')} MSG #{i['title']}\n"
+    "REM #{i['sdate'].strftime('%F AT %R')} MSG #{i['title']}\n"
   }.join
   else abort "No formatter for #{$opts[:output]}"
   end
