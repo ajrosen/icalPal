@@ -23,7 +23,7 @@ module ICalPal
       @op = OptionParser.new
       @op.summary_width = 23
       @op.banner += " [-c] COMMAND"
-      @op.version = '1.1.3'
+      @op.version = '1.1.4'
 
       @op.accept(ICalPal::RDT) { |s| ICalPal::RDT.conv(s) }
 
@@ -133,7 +133,8 @@ module ICalPal
             'See https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-i-strftime for details')
 
       @op.separator('')
-      @op.on('-b', '--ab=STRING', String, 'Use STRING for bullets')
+      @op.on('-b', '--bullet=STRING', String, 'Use STRING for bullets')
+      @op.on('--nb', 'Do not use bullets')
       @op.on('--nnr=SEPARATOR', String, 'Set replacement for newlines within notes')
 
       @op.separator('')
