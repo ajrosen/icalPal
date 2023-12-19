@@ -181,7 +181,9 @@ to mimic icalBuddy as much as possible.
 CSV, Hash, JSON, and YAML print all fields for all items in their
 respective formats.  From that you can analyze the results any way you like.
 
-All other formats, ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
+Remind format uses a minimal implementation built in icalPal.
+
+Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
 [RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html)
 framework to build and render the items.
 
