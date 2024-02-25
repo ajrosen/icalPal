@@ -209,5 +209,5 @@ objects, one for each of the item's properties:
 
 The document will also include a number of
 [RDoc::Markup::Verbatim](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Verbatim.html)
-items.  The are not included in the output, but are used to pass
+items.  They are not included in the output, but are used to pass
 information about the item and property to the default formatter.
