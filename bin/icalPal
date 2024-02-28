@@ -40,8 +40,10 @@ $log.info("Options: #{$opts}")
 # Add an item to the list
 #
 # @param item[Object]
+
 def add(item)
-  $log.debug("Adding #{item['UUID']} (#{item['title']})") if item['UUID']
+  $log.info("Adding #{item.inspect} #{item['UUID']} (#{item['title']})") if item['UUID']
+
   item['sday'] = ICalPal::RDT.new(*item['sdate'].to_a[0..2]) if item['sdate']
   $items.push(item)
 end
@@ -117,6 +119,7 @@ end
 begin
   $items.sort_by! { |i| [ i[$opts[:sep]], i[$opts[:sort]], i['sdate'] ] }
   $items.reverse! if $opts[:reverse]
+  $items.uniq!
 rescue ArgumentError => e
   $log.warn("Sorting failed, results may be unexpected\n")
 end
@@ -143,24 +146,24 @@ items = $items[0..$opts[:li] - 1]
 
 unless mu
   puts case $opts[:output]
-  when 'csv' then
-    o = {
-      headers: items[0].keys,
-      write_converters: proc { |f| f.respond_to?(:gsub)? f.gsub(/\n/, '\n') : f },
-      write_headers: true,
-    }
+       when 'csv' then
+         o = {
+           headers: items[0].keys,
+           write_converters: proc { |f| f.respond_to?(:gsub)? f.gsub(/\n/, '\n') : f },
+           write_headers: true,
+         }
 
-    CSV.generate(o) { |k| items.each { |i| k << i.values.map { |v| v.to_s } } }
-  when 'hash' then items.map { |i| i.self }
-  when 'json' then items.map { |i| i.self }.to_json
-  when 'yaml' then items.map { |i| i.self }.to_yaml
-  when 'remind' then items.map { |i|
-    "REM #{i['sdate'].strftime('%F AT %R')} " +
-    "DURATION #{((i['edate'] - i['sdate']).to_f * 1440).to_i } " +
-    "MSG #{i['title']}"
-  }.join("\n")
-  else abort "No formatter for #{$opts[:output]}"
-  end
+         CSV.generate(o) { |k| items.each { |i| k << i.values.map { |v| v.to_s } } }
+       when 'hash' then items.map { |i| i.self }
+       when 'json' then items.map { |i| i.self }.to_json
+       when 'yaml' then items.map { |i| i.self }.to_yaml
+       when 'remind' then items.map { |i|
+                            "REM #{i['sdate'].strftime('%F AT %R')} " +
+                              "DURATION #{((i['edate'] - i['sdate']).to_f * 1440).to_i } " +
+                              "MSG #{i['title']}"
+                          }.join("\n")
+       else abort "No formatter for #{$opts[:output]}"
+       end
 
   exit
 end
