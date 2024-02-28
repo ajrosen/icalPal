@@ -132,7 +132,7 @@ Formatting the output:
         --tf=FORMAT         Set time format
                             See https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-i-strftime for details
 
-    -b, --ab=STRING         Use STRING for bullets
+    -b, --bullet=STRING     Use STRING for bullets
         --nnr=SEPARATOR     Set replacement for newlines within notes
 
     -f                      Format output using standard ANSI colors
