@@ -3,6 +3,11 @@ module ICalPal
   class Event
     include ICalPal
 
+    def []=(k, v)
+      @self[k] = v
+      @self['sday'] = ICalPal::RDT.new(*self['sdate'].to_a[0..2]) if k == 'sdate'
+    end
+
     # Standard accessor with special handling for +age+,
     # +availability+, +datetime+, +location+, +notes+, +status+,
     # +title+, and +uid+
@@ -34,6 +39,9 @@ module ICalPal
 
       when 'notes' then         # \n -> :nnr
         @self['notes']? @self['notes'].strip.gsub(/\n/, $opts[:nnr]) : nil
+
+      when 'sday' then        # pseudo-property
+        ICalPal::RDT.new(*@self['sdate'].to_a[0..2])
 
       when 'status' then        # Integer -> String
         EventKit::EKEventStatus.select { |k, v| v == @self['status'] }.keys[0]
@@ -77,13 +85,14 @@ module ICalPal
         @self["#{k[0]}date"] = RDT.new(*t.to_a.reverse[4..], t.zone) if t
       end
 
-      obj['type'] = EventKit::EKSourceType.find_index { |i| i[:name] == 'Subscribed' } if obj['subcal_url']
-      type = EventKit::EKSourceType[obj['type']]
-
       if @self['start_tz'] == '_float'
         @self['sdate'] = RDT.new(*(@self['sdate'].to_time - Time.zone_offset($now.zone())).to_a.reverse[4..], $now.zone)
         @self['edate'] = RDT.new(*(@self['edate'].to_time - Time.zone_offset($now.zone())).to_a.reverse[4..], $now.zone)
       end
+
+      # Type of calendar event is from
+      obj['type'] = EventKit::EKSourceType.find_index { |i| i[:name] == 'Subscribed' } if obj['subcal_url']
+      type = EventKit::EKSourceType[obj['type']]
 
       @self['symbolic_color_name'] ||= @self['color']
       @self['type'] = type[:name]
@@ -130,7 +139,6 @@ module ICalPal
         unless @self['xdate'].any?(@self['sdate']) # Exceptions?
           o = get_occurrences(changes)
           o.each { |r| retval.push(r) if in_window?(r['sdate'], r['edate']) }
-
         end
 
         apply_frequency!
@@ -145,6 +153,9 @@ module ICalPal
 
     # @return a deep clone of self
     def clone()
+      self['stime'] = @self['sdate'].to_i
+      self['etime'] = @self['edate'].to_i
+
       Marshal.load(Marshal.dump(self))
     end
 
@@ -190,14 +201,14 @@ module ICalPal
             self['sdate'] = RDT.new(*ndate.to_a[0..2], *self['sdate'].to_a[3..])
             self['edate'] = RDT.new(*ndate.to_a[0..2], *self['edate'].to_a[3..])
             retval.push(clone)
-          }) { |i| @self['sdate'].to_i == i['orig_date'] + ITIME }
+          }) { |i| @self['sday'] == i['sday'] }
       end
 
       # Check for changes
       changes.detect(
         proc {
           retval.push(clone)
-        }) { |i| @self['sdate'].to_i == i['orig_date'] + ITIME } unless retval.count.positive?
+        }) { |i| @self['sday'] == i['sday'] } unless retval.count.positive?
 
       retval
     end
