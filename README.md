@@ -69,7 +69,7 @@ Global options:
         --db=DB             Use DB file instead of Calendar
         --cf=FILE           Set config file path (default: $HOME/.icalPal)
     -o, --output=FORMAT     Print as FORMAT (default: default)
-                            [ansi, csv, default, hash, html, json, md, rdoc, toc, yaml]
+                            [ansi, csv, default, hash, html, json, md, rdoc, toc, yaml, remind]
 
 Including/excluding calendars:
 
@@ -181,7 +181,7 @@ to mimic icalBuddy as much as possible.
 CSV, Hash, JSON, and YAML print all fields for all items in their
 respective formats.  From that you can analyze the results any way you like.
 
-Remind format uses a minimal implementation built in icalPal.
+[Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built in icalPal.
 
 Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
 [RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html)

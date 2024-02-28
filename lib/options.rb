@@ -134,6 +134,7 @@ module ICalPal
 
       @op.separator('')
       @op.on('-b', '--bullet=STRING', String, 'Use STRING for bullets')
+      @op.on('--nb', 'Do not use bullets')
       @op.on('--nnr=SEPARATOR', String, 'Set replacement for newlines within notes')
 
       @op.separator('')
