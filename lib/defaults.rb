@@ -1,6 +1,6 @@
 # Does anybody really know what time it is?
 $now = ICalPal::RDT.now
-$today = ICalPal::RDT.new(*$now.to_a[0..2])
+$today = ICalPal::RDT.new(*$now.to_a[0..2] + [0, 0, 0, $now.zone])
 
 # Defaults
 $defaults = {
