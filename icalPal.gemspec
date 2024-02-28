@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name	= "icalPal"
-  s.version	= "1.1.3"
+  s.version	= "1.1.4"
   s.summary	= "Command-line tool to query the macOS Calendar"
   s.description	= <<-EOF
 Inspired by icalBuddy and maintains close compatability.  Includes
@@ -15,6 +15,8 @@ EOF
   s.files	= Dir[ "#{s.name}.gemspec", "bin/*", "lib/*.rb" ]
   s.executables	= [ "#{s.name}" ]
   s.extra_rdoc_files = [ "README.md" ]
+
+  s.add_runtime_dependency "sqlite3", "~> 1"
 
   s.bindir = 'bin'
   s.required_ruby_version = '>= 2.6.0'

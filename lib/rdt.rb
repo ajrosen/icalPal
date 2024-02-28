@@ -29,9 +29,7 @@ module ICalPal
     def to_s
       return strftime($opts[:df]) if $opts[:nrd] && $opts[:df]
 
-      d1 = RDT.new(year, month, day)
-
-      case Integer(d1 - $today)
+      case Integer(RDT.new(year, month, day) - $today)
       when -2 then 'day before yesterday'
       when -1 then 'yesterday'
       when 0 then 'today'
@@ -42,7 +40,7 @@ module ICalPal
     end
 
     alias inspect to_s
-
+ 
     # @see Time.to_a
     #
     # @return [Array] Self as an array

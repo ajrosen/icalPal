@@ -67,7 +67,7 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
     rescue
     end
 
-    @res << "#{@opts[:bullet]} "
+    @res << "#{@opts[:bullet]} " unless @opts[:nb]
   end
 
   # Add a property name
