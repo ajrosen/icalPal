@@ -17,11 +17,11 @@ require_relative '../lib/options'
 # Load options
 
 # All kids love log!
-$log = Logger.new(STDERR, { datetime_format: '%H:%M:%S.%L', level: $defaults[:common][:debug] })
+$log = Logger.new(STDERR, { level: $defaults[:common][:debug] })
 $log.formatter = proc do |s, t, p, m| # Severity, time, progname, msg
   ($log.level.positive?)? "#{s}: #{m}\n" :
     "[%-5s] %s [%s] - %s\n" %
-    [ s, t.strftime($log.datetime_format), caller(4, 1)[0].split('/')[-1], m ]
+    [ s, t.strftime('%H:%M:%S.%L'), caller(4, 1)[0].split('/')[-1], m ]
 end
 
 $opts = ICalPal::Options.new.parse_options
