@@ -160,8 +160,8 @@ automation, and as a desktop widget for apps like
 [Übersicht](https://tracesof.net/uebersicht/).
 
 As with many applications, I started to run into some limitations in
-icalBuddy.  The biggest being that active development ended over 8
-years ago.  It's only thanks to the efforts of [Jim
+icalBuddy.  The biggest being that active development ended in 2014.
+It's only thanks to the efforts of [Jim
 Lawton](https://github.com/jimlawton) that it even compiles anymore.
 
 Instead of trying to understand and extend the existing code, I chose
