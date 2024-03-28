@@ -153,7 +153,7 @@ unless mu
            write_headers: true,
          }
 
-         CSV.generate(o) { |k| items.each { |i| k << i.values.map { |v| v.to_s } } }
+         CSV.generate(**o) { |k| items.each { |i| k << i.values.map { |v| v.to_s } } }
        when 'hash' then items.map { |i| i.self }
        when 'json' then items.map { |i| i.self }.to_json
        when 'yaml' then items.map { |i| i.self }.to_yaml
