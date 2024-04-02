@@ -1,5 +1,5 @@
 APP=icalPal
-VERSION=1.1.6
+VERSION=1.1.17.issue9
 
 GEM=$(APP)-$(VERSION).gem
 

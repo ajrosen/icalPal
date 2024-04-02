@@ -64,11 +64,13 @@ module ICalPal
     #  @param obj [DateTime]
     def initialize(obj)
       # Placeholder for days with no events
-      return @self = {
-        $opts[:sep] => obj,
-        'placeholder' => true,
-        'title' => 'Nothing.',
-      } if DateTime === obj
+      if DateTime === obj then
+        return @self = {
+                 'sdate' => obj,
+                 'placeholder' => true,
+                 'title' => 'Nothing.'
+               }
+      end
 
       @self = {}
       obj.keys.each { |k| @self[k] = obj[k] }
@@ -108,6 +110,7 @@ module ICalPal
 
       # Repeat for multi-day events
       ((self['duration'] / 86400).to_i + 1).times do |i|
+        $log.debug("multi-day event #{i + 1}") if (i > 0)
         self['daynum'] = i + 1
         retval.push(clone) if in_window?(self['sdate'])
         self['sdate'] += 1
@@ -126,14 +129,20 @@ module ICalPal
 
       # See if event ends before we start
       stop = [ $opts[:to], (self['rdate'] || $opts[:to]) ].min
-      return(retval) if stop < $opts[:from]
+      if stop < $opts[:from] then
+        $log.debug("#{stop} < #{$opts[:from]}")
+        return(retval)
+      end
 
       # Get changes to series
       changes = $rows.select { |r| r['orig_item_id'] == self['ROWID'] }
 
       i = 1
       while self['sdate'] <= stop
-        return(retval) if self['count'].positive? && i > self['count']
+        if self['count'].positive? && i > self['count'] then
+          $log.debug("count exceeded: #{i} > #{self['count']}")
+          return(retval)
+        end
         i += 1
 
         unless @self['xdate'].any?(@self['sdate']) # Exceptions?
@@ -236,9 +245,27 @@ module ICalPal
     # @param e [RDT] Event end
     # @return [Boolean]
     def in_window?(s, e = s)
-      $opts[:n]?
-        ($now >= s && $now < e) :
-        ([ s, e ].max >= $opts[:from] && s < $opts[:to])
+      if $opts[:n] then
+        if ($now >= s && $now < e) then
+          $log.debug("now: #{s} to #{e} vs. #{$now}")
+          return(true)
+        else
+          $log.debug("not now: #{s} to #{e} vs. #{$now}")
+          return(false)
+        end
+      else
+        if ([ s, e ].max >= $opts[:from] && s < $opts[:to]) then
+          $log.debug("in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
+          return(true)
+        else
+          $log.debug("not in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
+          return(false)
+        end
+      end
+
+      # $opts[:n]?
+      #   ($now >= s && $now < e) :
+      #   ([ s, e ].max >= $opts[:from] && s < $opts[:to])
     end
 
     QUERY = <<~SQL
