@@ -3,6 +3,11 @@ module ICalPal
   class Event
     include ICalPal
 
+    # Standard accessor with special handling for +sdate+.  Setting
+    # +sdate+ will also set +sday+.
+    #
+    # @param k [String] Key/property name
+    # @param v [Object] Key/property value
     def []=(k, v)
       @self[k] = v
       @self['sday'] = ICalPal::RDT.new(*self['sdate'].to_a[0..2]) if k == 'sdate'
@@ -27,7 +32,7 @@ module ICalPal
           t += ' at ' unless @self['all_day'].positive?
         end
 
-        unless @self['all_day'] && @self['all_day'].positive?
+        unless @self['all_day'] && @self['all_day'].positive? || @self['placeholder']
           t ||= ''
           t += "#{@self['sdate'].strftime($opts[:tf])}" if @self['sdate']
           t += " - #{@self['edate'].strftime($opts[:tf])}" unless $opts[:eed] || !@self['edate']
@@ -65,10 +70,11 @@ module ICalPal
     def initialize(obj)
       # Placeholder for days with no events
       return @self = {
-        $opts[:sep] => obj,
-        'placeholder' => true,
-        'title' => 'Nothing.',
-      } if DateTime === obj
+               $opts[:sep] => obj,
+               'sdate' => obj,
+               'placeholder' => true,
+               'title' => 'Nothing.',
+             } if DateTime === obj
 
       @self = {}
       obj.keys.each { |k| @self[k] = obj[k] }
