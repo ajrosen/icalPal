@@ -111,7 +111,7 @@ if $opts[:sed] && $opts[:sd] && klass == ICalPal::Event
 
   $opts[:days].times do |n|
     day = $opts[:from] + n
-    $items.push(klass.new(day)) unless days.any? { |i| i == day }
+    $items.push(klass.new(day)) unless days.any? { |i| i.to_s == day.to_s }
   end
 end
 
@@ -147,13 +147,16 @@ items = $items[0..$opts[:li] - 1]
 unless mu
   puts case $opts[:output]
        when 'csv' then
-         o = {
-           headers: items[0].keys,
-           write_converters: proc { |f| f.respond_to?(:gsub)? f.gsub(/\n/, '\n') : f },
-           write_headers: true,
-         }
+         # Get all headers
+         headers = []
+         items.each { |i| headers += i.keys }
+         headers.uniq!
 
-         CSV.generate(**o) { |k| items.each { |i| k << i.values.map { |v| v.to_s } } }
+         # Populate a CSV::Table
+         table = CSV::Table.new([], headers: headers)
+         items.each { |i| table << i.to_csv(headers) }
+
+         table
        when 'hash' then items.map { |i| i.self }
        when 'json' then items.map { |i| i.self }.to_json
        when 'yaml' then items.map { |i| i.self }.to_yaml

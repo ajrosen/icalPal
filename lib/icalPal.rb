@@ -43,6 +43,18 @@ module ICalPal
     @self = obj
   end
 
+  # Create a new CSV::Row with values from +self+.  Newlines are
+  # replaced with '\n' to ensure each Row is a single line of text.
+  #
+  # @param headers [Array] Key names used as the header row in a CSV::Table
+  # @return [CSV::Row] The +Store+, +Calendar+, or +CalendarItem+ as a CSV::Row
+  def to_csv(headers)
+    values = []
+    headers.each { |h| values.push(@self[h].respond_to?(:gsub)? @self[h].gsub(/\n/, '\n') : @self[h]) }
+
+    CSV::Row::new(headers, values)
+  end
+
   # Get the +n+'th +dow+ in month +m+
   #
   # @param n [Integer] Integer between -4 and +4
