@@ -188,6 +188,9 @@ module ICalPal
           when 'O' then ndate = RDT.new(ndate.year, j[1].to_i, ndate.day)
           when 'S' then @self['specifier'].sub!(/D=0/, "D=+#{j[1].to_i}")
           end
+
+          # No time travel!
+          ndate = self['sdate'] if ndate <= self['sdate']
         end
 
         # D=Day of the week
@@ -262,10 +265,6 @@ module ICalPal
           return(false)
         end
       end
-
-      # $opts[:n]?
-      #   ($now >= s && $now < e) :
-      #   ([ s, e ].max >= $opts[:from] && s < $opts[:to])
     end
 
     QUERY = <<~SQL
