@@ -23,7 +23,7 @@ module ICalPal
       @op = OptionParser.new
       @op.summary_width = 23
       @op.banner += " [-c] COMMAND"
-      @op.version = '1.1.17.issue9'
+      @op.version = '1.2.1'
 
       @op.accept(ICalPal::RDT) { |s| ICalPal::RDT.conv(s) }
 
