@@ -52,5 +52,12 @@ module ICalPal
     def to_i
       to_time.to_i
     end
+
+    # @see ICalPal::RDT.to_s
+    #
+    # @return [Boolean]
+    def ==(obj)
+      self.to_s == obj.to_s
+    end
   end
 end
