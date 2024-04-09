@@ -205,6 +205,10 @@ module ICalPal
         # All kids love log!
         $log.level = opts[:debug]
 
+        # For posterity
+        opts[:ruby] = RUBY_VERSION
+        opts[:version] = @op.version
+
         # From the Department of Redundancy Department
         opts[:props] = (opts[:iep] + opts[:aep] - opts[:eep]).uniq
 
@@ -256,7 +260,7 @@ module ICalPal
     COMMANDS = %w{events eventsToday eventsNow calendars accounts stores}
 
     # Supported output formats
-    OUTFORMATS = %w{ansi csv default hash html json md rdoc toc yaml remind}
+    OUTFORMATS = %w{ansi csv default hash html json md rdoc remind toc xml yaml}
 
     private
 

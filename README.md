@@ -47,7 +47,7 @@ Shows a list of enabled Calendar accounts.  Internally they are known as *Stores
 * ```--sep``` to separate by any property, not just calendar (```--sc```) or date (```--sd```)
 * ```--color``` uses a wider color palette.  Calendar colors are what you have chosen in the Calendar app.  Not supported in all terminals, but looks great in [iTerm2](https://iterm2.com/).
 
-Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with version of Ruby (2.6.10) included with macOS, and does not require any external dependencies.
+Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the version of Ruby (2.6.10) included with macOS, and does not require any external dependencies.
 
 ## Usage
 
@@ -69,7 +69,7 @@ Global options:
         --db=DB             Use DB file instead of Calendar
         --cf=FILE           Set config file path (default: $HOME/.icalPal)
     -o, --output=FORMAT     Print as FORMAT (default: default)
-                            [ansi, csv, default, hash, html, json, md, rdoc, toc, yaml, remind]
+                            [ansi, csv, default, hash, html, json, md, rdoc, remind, toc, xml, yaml]
 
 Including/excluding calendars:
 
@@ -178,8 +178,9 @@ directly from the Calendar database file instead of an API, you *can*.
 icalPal supports several output formats.  The **default** format tries
 to mimic icalBuddy as much as possible.
 
-CSV, Hash, JSON, and YAML print all fields for all items in their
-respective formats.  From that you can analyze the results any way you like.
+CSV, Hash, JSON, XML, and YAML print all fields for all items in their
+respective formats.  From that you can analyze the results any way you
+like.
 
 [Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built in icalPal.
 

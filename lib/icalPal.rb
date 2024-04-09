@@ -55,6 +55,28 @@ module ICalPal
     CSV::Row::new(headers, values)
   end
 
+  # @return [String] All fields in a simple XML format: <field>value</field>.
+  # Fields with empty values return <field/>.
+  def to_xml
+    retval = ""
+
+    @self.keys.each do |k|
+      v = @self[k]
+
+      if v.respond_to?(:length) then
+        if v.length == 0 or v[0] == nil then
+          retval += "<#{k}/>"
+        else
+          # Keep non-blank and whitespace, except form feeds and vertical whitespace
+          v = v.gsub(/[^[[:print:]][[:space:]]]/, '.').gsub(/[\f\v]/, '.')
+          retval += "<#{k}>#{v}</#{k}>"
+        end
+      end
+    end
+
+    retval
+  end
+
   # Get the +n+'th +dow+ in month +m+
   #
   # @param n [Integer] Integer between -4 and +4

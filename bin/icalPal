@@ -211,6 +211,9 @@ unless mu
          table
        when 'hash' then items.map { |i| i.self }
        when 'json' then items.map { |i| i.self }.to_json
+       when 'xml' then
+         xml = items.map { |i| "<#{$opts[:cmd].chomp("s")}>#{i.to_xml}</#{$opts[:cmd].chomp("s")}>" }
+         "<#{$opts[:cmd]}>\n#{xml.join("")}</#{$opts[:cmd]}>"
        when 'yaml' then items.map { |i| i.self }.to_yaml
        when 'remind' then items.map { |i|
                             "REM #{i['sdate'].strftime('%F AT %R')} " +
