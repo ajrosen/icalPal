@@ -7,15 +7,25 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # ANSI[https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.416-199303-I!!PDF-E&type=items]
   # colors
   ANSI = {
-    'black': 30,        '#000000': '38;5;0',
-    'red': 31,          '#ff0000': '38;5;1',
-    'green': 32,        '#00ff00': '38;5;2',
-    'yellow': 33,       '#ffff00': '38;5;3',
-    'blue': 34,         '#0000ff': '38;5;4',
-    'magenta': 35,      '#ff00ff': '38;5;5',
-    'cyan': 36,         '#00ffff': '38;5;6',
-    'white': 37,        '#ffffff': '38;5;255',
-    'default': 39,       'custom': nil,
+    'black':   30,  '#000000': '38;5;0',
+    'red':     31,  '#ff0000': '38;5;1',
+    'green':   32,  '#00ff00': '38;5;2',
+    'yellow':  33,  '#ffff00': '38;5;3',
+    'blue':    34,  '#0000ff': '38;5;4',
+    'magenta': 35,  '#ff00ff': '38;5;5',
+    'cyan':    36,  '#00ffff': '38;5;6',
+    'white':   37,  '#ffffff': '38;5;255',
+    'default': 39,  'custom': nil,
+
+    # Reminders custom colors
+    'brown':     '38;2;162;132;94',
+    'gray':      '38;2;91;98;106',
+    'indigo':    '38;2;88;86;214',
+    'lightblue': '38;2;90;200;250',
+    'orange':    '38;2;255;149;0',
+    'pink':      '38;2;255;45;85',
+    'purple':    '38;2;204;115;225',
+    'rose':      '38;2;217;166;159',
   }
 
   # Increased intensity

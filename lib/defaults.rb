@@ -11,6 +11,7 @@ $defaults = {
     color: false,
     db: "#{ENV['HOME']}/Library/Calendars/Calendar.sqlitedb",
     debug: Logger::WARN,
+    df: '%b %-d, %Y',
     ec: [],
     eep: [],
     es: [],
@@ -27,11 +28,19 @@ $defaults = {
     sep: false,
     sort: nil,
     sp: false,
+    tf: '%-I:%M %p',
   },
   tasks: {
-    bullet: '!',
-    iep: [ 'notes', 'due', 'priority' ],
-    sort: 'priority',
+    db: ICalPal::Reminder::DB_PATH,
+    iep: [ 'title', 'notes', 'due', 'priority' ],
+    sort: 'prio',
+    undated: false,
+  },
+  undatedTasks: {
+    db: ICalPal::Reminder::DB_PATH,
+    iep: [ 'title', 'notes', 'due', 'priority' ],
+    sort: 'prio',
+    undated: true,
   },
   stores: {
     iep: [ 'account', 'type' ],
@@ -43,7 +52,6 @@ $defaults = {
   },
   events: {
     days: nil,
-    df: '%b %-d, %Y',
     ea: false,
     eed: false,
     eep: [],
@@ -57,7 +65,6 @@ $defaults = {
     sed: false,
     sort: 'sdate',
     ss: "\n------------------------",
-    tf: '%-I:%M %p',
     to: nil,
     uid: false,
   }

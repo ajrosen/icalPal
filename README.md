@@ -56,12 +56,14 @@ icalPal: Usage: icalPal [options] [-c] COMMAND
 COMMAND must be one of the following:
 
     events                  Print events
+    tasks                   Print tasks
     calendars               Print calendars
     accounts                Print accounts
 
     eventsToday             Print events occurring today
     eventsToday+NUM         Print events occurring between today and NUM days into the future
     eventsNow               Print events occurring at present time
+    undatedTasks            Print tasks with no due date
 
 Global options:
 
