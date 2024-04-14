@@ -24,6 +24,4 @@ rubygems: $(GEM)
 gemfury: $(GEM)
 	fury push $(GEM)
 
-publish:
-	rubygems
-	gemfury
+publish: rubygems gemfury
