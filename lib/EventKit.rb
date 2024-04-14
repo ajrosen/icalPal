@@ -27,6 +27,13 @@ class EventKit
     'yearly',
   ]
 
+  EKReminderProperty = [
+    'none',                     # 0
+    'high', nil, nil, nil,      # 1
+    'medium', nil, nil, nil,    # 5
+    'low',                      # 9
+  ]
+
   # EKSourceType (with color)
   EKSourceType = [
     { name: 'Local',      color: '#FFFFFF' }, # White

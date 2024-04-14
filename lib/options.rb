@@ -1,6 +1,7 @@
 require 'optparse'
 
 require_relative 'defaults'
+require_relative 'version'
 
 module ICalPal
   # Handle program options from all sources:
@@ -23,7 +24,7 @@ module ICalPal
       @op = OptionParser.new
       @op.summary_width = 23
       @op.banner += " [-c] COMMAND"
-      @op.version = '1.2.1'
+      @op.version = ICalPal::VERSION
 
       @op.accept(ICalPal::RDT) { |s| ICalPal::RDT.conv(s) }
 
@@ -31,6 +32,7 @@ module ICalPal
       @op.on("\nCOMMAND must be one of the following:\n\n")
 
       @op.on("%s%s %sPrint events" % pad('events'))
+      @op.on("%s%s %sPrint tasks" % pad('tasks'))
       @op.on("%s%s %sPrint calendars" % pad('calendars'))
       @op.on("%s%s %sPrint accounts" % pad('accounts'))
 
@@ -38,16 +40,20 @@ module ICalPal
       @op.on("%s%s %sPrint events occurring today" % pad('eventsToday'))
       @op.on("%s%s %sPrint events occurring between today and NUM days into the future" % pad('eventsToday+NUM'))
       @op.on("%s%s %sPrint events occurring at present time" % pad('eventsNow'))
+      @op.on("%s%s %sPrint tasks with a due date" % pad('datedTasks'))
+      @op.on("%s%s %sPrint tasks with no due date" % pad('undatedTasks'))
 
       # global
       @op.separator("\nGlobal options:\n\n")
 
       @op.on('-c=COMMAND', '--cmd=COMMAND', COMMANDS, 'Command to run')
-      @op.on('--db=DB', 'Use DB file instead of Calendar')
+      @op.on('--db=DB', "Use DB file instead of Calendar (default: #{$defaults[:common][:db]})",
+             'For the tasks commands this should be a directory containing .sqlite files',
+             "(default: #{$defaults[:tasks][:db]})")
       @op.on('--cf=FILE', "Set config file path (default: #{$defaults[:common][:cf]})")
       @op.on('-o', '--output=FORMAT', OUTFORMATS,
             "Print as FORMAT (default: #{$defaults[:common][:output]})", "[#{OUTFORMATS.join(', ')}]")
-
+      
       # include/exclude
       @op.separator("\nIncluding/excluding calendars:\n\n")
 
@@ -62,6 +68,10 @@ module ICalPal
       @op.separator('')
       @op.on('--ic=CALENDARS', Array, 'List of calendars to include')
       @op.on('--ec=CALENDARS', Array, 'List of calendars to exclude')
+
+      @op.separator('')
+      @op.on('--il=LISTS', Array, 'List of reminder lists to include')
+      @op.on('--el=LISTS', Array, 'List of reminder lists to exclude')
 
       # dates
       @op.separator("\nChoosing dates:\n\n")
@@ -85,10 +95,11 @@ module ICalPal
       @op.on('--eep=PROPERTIES', Array, 'List of properties to exclude')
       @op.on('--aep=PROPERTIES', Array, 'List of properties to include in addition to the default list')
       @op.separator('')
-      # @op.on('--itp=PROPERTIES', Array, 'List of task properties to include')
-      # @op.on('--etp=PROPERTIES', Array, 'List of task properties to exclude')
-      # @op.on('--atp=PROPERTIES', Array, 'List of task properties to include in addition to the default list')
-      # @op.separator('')
+      @op.on('--itp=PROPERTIES', Array, 'List of task properties to include')
+      @op.on('--etp=PROPERTIES', Array, 'List of task properties to exclude')
+      @op.on('--atp=PROPERTIES', Array, 'List of task properties to include in addition to the default list',
+            'Included for backwards compatability, these are aliases for --iep, --eep, and --aep')
+      @op.separator('')
 
       @op.on('--uid', 'Show event UIDs')
       @op.on('--eed', 'Exclude end datetimes')
@@ -114,13 +125,12 @@ module ICalPal
       @op.separator('')
       @op.on('--sc', 'Separate by calendar')
       @op.on('--sd', 'Separate by date')
-      # @op.on('--sp', 'Separate by priority')
-      # @op.on('--sta', 'Sort tasks by due date (ascending)')
-      # @op.on('--std', 'Sort tasks by due date (descending)')
-      # @op.separator('')
+      @op.on('--sp', 'Separate by priority')
       @op.on('--sep=PROPERTY', 'Separate by PROPERTY')
       @op.separator('')
       @op.on('--sort=PROPERTY', 'Sort by PROPERTY')
+      @op.on('--std', 'Sort tasks by due date (same as --sort=due_date)')
+      @op.on('--stda', 'Sort tasks by due date (ascending) (same as --sort=due_date -r)')
       @op.on('-r', '--reverse', 'Sort in reverse')
 
       @op.separator('')
@@ -134,6 +144,7 @@ module ICalPal
 
       @op.separator('')
       @op.on('-b', '--bullet=STRING', String, 'Use STRING for bullets')
+      @op.on('--ab=STRING', String, 'Use STRING for alert bullets')
       @op.on('--nb', 'Do not use bullets')
       @op.on('--nnr=SEPARATOR', String, 'Set replacement for newlines within notes')
 
@@ -202,10 +213,21 @@ module ICalPal
           .merge(env)
           .merge(cli)
 
+        # datedTasks and undatedTasks
+        opts[:cmd] = "tasks" if opts[:cmd] == "datedTasks"
+        opts[:cmd] = "tasks" if opts[:cmd] == "undatedTasks"
+
         # All kids love log!
         $log.level = opts[:debug]
 
+        # For posterity
+        opts[:ruby] = RUBY_VERSION
+        opts[:version] = @op.version
+
         # From the Department of Redundancy Department
+        opts[:iep] += opts[:itp] if opts[:itp]
+        opts[:eep] += opts[:etp] if opts[:etp]
+        opts[:aep] += opts[:atp] if opts[:atp]
         opts[:props] = (opts[:iep] + opts[:aep] - opts[:eep]).uniq
 
         # From, to, days
@@ -217,6 +239,10 @@ module ICalPal
           opts[:from] = $now if opts[:n]
         end
 
+        # Sorting
+        opts[:sort] = 'due_date' if opts[:std] or opts[:stda]
+        opts[:reverse] = true if opts[:std]
+
         # Colors
         opts[:palette] = 8 if opts[:f]
         opts[:palette] = 24 if opts[:color]
@@ -225,7 +251,7 @@ module ICalPal
         unless opts[:sep]
           opts[:sep] = 'calendar' if opts[:sc]
           opts[:sep] = 'sday' if opts[:sd]
-          opts[:sep] = 'priority' if opts[:sp]
+          opts[:sep] = 'long_priority' if opts[:sp]
         end
         opts[:nc] = true if opts[:sc]
 
@@ -233,17 +259,6 @@ module ICalPal
         raise(OptionParser::InvalidArgument, '--li cannot be negative') if opts[:li].negative?
         raise(OptionParser::InvalidOption, 'Start date must be before end date') if opts[:from] && opts[:from] > opts[:to]
         raise(OptionParser::MissingArgument, 'No properties to display') if opts[:props].empty?
-
-        # Open the database here so we can catch errors and print the help message
-        $log.debug("Opening database: #{opts[:db]}")
-        $db = SQLite3::Database.new(opts[:db], { readonly: true, results_as_hash: true })
-        $db.prepare('SELECT 1 FROM Calendar LIMIT 1').close
-
-      rescue SQLite3::SQLException => e
-        @op.abort("#{opts[:db]} is not a Calendar database")
-
-      rescue SQLite3::Exception => e
-        @op.abort("#{opts[:db]}: #{e}")
 
       rescue StandardError => e
         @op.abort("#{e}\n\n#{@op.help}\n#{e}")
@@ -253,10 +268,10 @@ module ICalPal
     end
 
     # Commands that can be run
-    COMMANDS = %w{events eventsToday eventsNow calendars accounts stores}
+    COMMANDS = %w{events eventsToday eventsNow tasks datedTasks undatedTasks calendars accounts stores}
 
     # Supported output formats
-    OUTFORMATS = %w{ansi csv default hash html json md rdoc toc yaml remind}
+    OUTFORMATS = %w{ansi csv default hash html json md rdoc remind toc xml yaml}
 
     private
 
