@@ -44,7 +44,7 @@ $log.info("Options: #{$opts}")
 def add(item)
   $log.info("Adding #{item.inspect} #{item['UUID']} (#{item['title']})") if item['UUID']
 
-  item['sday'] = ICalPal::RDT.new(*item['sdate'].to_a[0..2]) if item['sdate']
+  item['sday'] = ICalPal::RDT.new(*item['sdate'].to_a[0..2]) if item === ICalPal::Event && item['sdate']
   $items.push(item)
 end
 
@@ -54,32 +54,17 @@ end
 
 # What are we getting?
 klass = ICalPal::($opts[:cmd])
-q = klass::QUERY
-
-$log.debug(q.gsub(/\n/, ' '))
 
 # Get it
-begin
-  stmt = $db.prepare(q)
-  abort(stmt.columns.sort.join(' ')) if $opts[:props].any? 'list'
-  $opts[:props] = stmt.columns - $opts[:eep] if $opts[:props].any? 'all'
-
-  # Iterate the SQLite3::ResultSet once
-  stmt.execute.each_with_index { |i, j| $rows[j] = i }
-  stmt.close
-
-  # Close the database
-  $db.close
-  $log.debug("Closed #{$opts[:db]}")
-
-rescue SQLite3::BusyException => e
-  $log.error("Non-fatal error closing database #{$db.filename}")
-
-rescue SQLite3::SQLException => e
-  abort(e.message)
+if klass == ICalPal::Reminder then
+  # Load all .sqlite files
+  Dir.glob("#{$opts[:db]}/*.sqlite").each { |db| $rows += ICalPal.load_data(db, klass::QUERY) }
+else
+  # Load database
+  $rows += ICalPal.load_data($opts[:db], klass::QUERY)
 end
 
-$log.info("Loaded #{$rows.count} rows from #{$opts[:db]}")
+$log.info("Loaded #{$rows.count} #{klass} rows")
 
 
 ##################################################
@@ -111,6 +96,7 @@ $rows.each_with_index do |row, i|
     next
   end
 
+  # Instantiate an item
   item = klass.new(row)
 
   # --et/--it
@@ -124,11 +110,18 @@ $rows.each_with_index do |row, i|
     next
   end
 
-  unless ICalPal::Event === item
-    # Always add non-event items
-    $log.debug("Adding non-event #{item}")
-    add(item)
-  else
+  # --el/--il
+  if $opts[:el].any? item['list_name'] then
+    $log.debug(":el")
+    next
+  end
+
+  unless $opts[:il].empty? or $opts[:il].any? item['list_name']
+    $log.debug(":il")
+    next
+  end
+
+  if ICalPal::Event === item
     # Check for all-day and cancelled events
     if $opts[:ea] && item['all_day'].positive? then
       $log.debug(":ea")
@@ -148,6 +141,21 @@ $rows.each_with_index do |row, i|
     (item['has_recurrences'].positive?)?
       item.recurring.each { |i| add(i) } :
       item.non_recurring.each { |i| add(i) }
+  else
+    # Check for dated reminders
+    if ICalPal::Reminder === item then
+      if $opts[:dated] == 1 and item['due_date'] > 0 then
+        $log.debug(":undated")
+        next
+      end
+
+      if $opts[:dated] == 2 and item['due_date'] == 0 then
+        $log.debug(":dated")
+        next
+      end
+    end
+
+    add(item)
   end
 end
 
@@ -163,13 +171,13 @@ end
 
 # Sort the rows
 begin
-  $log.debug("Sorting/uniqing #{$items.count} items by #{[ $opts[:sep], $opts[:sort], 'sdate' ]}, reverse #{$opts[:reverse].inspect}")
+  $log.info("Sorting/uniqing #{$items.count} items by #{[ $opts[:sep], $opts[:sort], 'sdate' ]}, reverse #{$opts[:reverse].inspect}")
 
   $items.sort_by! { |i| [ i[$opts[:sep]], i[$opts[:sort]], i['sdate'] ] }
   $items.reverse! if $opts[:reverse]
   $items.uniq!
-rescue ArgumentError => e
-  $log.warn("Sorting failed, results may be unexpected\n")
+rescue Exception => e
+  $log.info("Sorting failed: #{e}\n")
 end
 
 $log.debug("#{$items.count} items remain")
@@ -211,6 +219,9 @@ unless mu
          table
        when 'hash' then items.map { |i| i.self }
        when 'json' then items.map { |i| i.self }.to_json
+       when 'xml' then
+         xml = items.map { |i| "<#{$opts[:cmd].chomp("s")}>#{i.to_xml}</#{$opts[:cmd].chomp("s")}>" }
+         "<#{$opts[:cmd]}>\n#{xml.join("")}</#{$opts[:cmd]}>"
        when 'yaml' then items.map { |i| i.self }.to_yaml
        when 'remind' then items.map { |i|
                             "REM #{i['sdate'].strftime('%F AT %R')} " +
@@ -225,7 +236,8 @@ end
 
 $log.debug("Formatting with #{mu.inspect}")
 
-section = nil if $opts[:sep]
+doc = RDoc::Markup::Document.new
+section = nil
 
 items.each_with_index do |i, j|
   $log.debug("Print #{j}: #{i.inspect}")
@@ -233,15 +245,16 @@ items.each_with_index do |i, j|
   # --li
   break if $opts[:li].positive? && j >= $opts[:li]
 
-  doc = RDoc::Markup::Document.new
+  # Use RDoc::Markup::Verbatim to save the item
+  v = RDoc::Markup::Verbatim.new
+  v.format = i
+  doc << v
 
   # Sections
   if $opts[:sep] && section != i[$opts[:sep]]
     $log.debug("New section '#{$opts[:sep]}': #{i[$opts[:sep]]}")
 
-    v = RDoc::Markup::Verbatim.new
-    v.format = { item: i, prop: $opts[:sep] }
-    doc << v
+    doc << RDoc::Markup::Raw.new($opts[:sep])
 
     doc << RDoc::Markup::BlankLine.new if j.positive?
     doc << RDoc::Markup::Heading.new(1, i[$opts[:sep]].to_s)
@@ -255,27 +268,30 @@ items.each_with_index do |i, j|
 
   # Properties
   $opts[:props].each_with_index do |prop, k|
-    next unless i[prop]
-    next if Array === i[prop] && !i[prop][0]
+    value = i[prop]
 
-    $log.debug("#{prop}: #{i[prop]}")
+    next unless value
+    next if Array === value && !value[0]
+    next if String === value && value.length == 0
 
-    v = RDoc::Markup::Verbatim.new
-    v.format = { item: i, prop: prop }
-    props << v
+    $log.debug("#{prop}: #{value}")
+
+    # Use Raw to save the property
+    props << RDoc::Markup::Raw.new(prop)
 
     unless k.positive?
       # First property, value only
-      props << RDoc::Markup::Heading.new(2, i[prop].to_s)
+      props << RDoc::Markup::Heading.new(2, value.to_s)
     else
       props << RDoc::Markup::BlankLine.new unless (i['placeholder'] || $opts[:ps])
-      props << RDoc::Markup::ListItem.new(prop, RDoc::Markup::Paragraph.new(i[prop])) unless(i['placeholder'])
+      props << RDoc::Markup::ListItem.new(prop, RDoc::Markup::Paragraph.new(value)) unless(i['placeholder'])
     end
   end
 
   # Print it
-  unless props.empty?
-    doc << props
-    puts doc.accept(mu)
-  end
+  props << RDoc::Markup::BlankLine.new unless props.empty?
+
+  doc << props
 end
+
+print doc.accept(mu)

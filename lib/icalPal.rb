@@ -3,10 +3,12 @@ require_relative 'ToICalPal'
 require_relative 'calendar'
 require_relative 'event'
 require_relative 'rdt'
+require_relative 'reminder'
 require_relative 'store'
 
 # Encapsulate the _Store_ (accounts), _Calendar_ and _CalendarItem_
-# tables of a Calendar database
+# tables of a Calendar database, and the _Reminder_ table of a
+# Reminders database
 
 module ICalPal
   attr_reader :self
@@ -14,7 +16,7 @@ module ICalPal
   # Dynamic instantiation of our classes based on the command being
   # run
   #
-  # @param klass [String] One of +accounts+, +stores+, +calendars+, or +events+
+  # @param klass [String] One of +accounts+, +stores+, +calendars+, +events+, or +tasks+
   # @return [Class] The subclass of ICalPal
   def self.call(klass)
     case klass
@@ -22,11 +24,46 @@ module ICalPal
     when 'stores' then Store
     when 'calendars' then Calendar
     when 'events' then Event
-    when 'tasks' then Task
+    when 'tasks' then Reminder
     else
       $log.fatal("Unknown class: #{klass}")
       exit
     end
+  end
+
+  # Load data
+  def self.load_data(db_file, q)
+    $log.debug(q.gsub(/\n/, ' '))
+
+    rows = []
+
+    begin
+      # Open the database
+      $log.debug("Opening database: #{db_file}")
+      db = SQLite3::Database.new(db_file, { readonly: true, results_as_hash: true })
+
+      # Prepare the query
+      stmt = db.prepare(q)
+      abort(stmt.columns.sort.join(' ')) if $opts[:props].any? 'list'
+      $opts[:props] = stmt.columns - $opts[:eep] if $opts[:props].any? 'all'
+
+      # Iterate the SQLite3::ResultSet once
+      stmt.execute.each_with_index { |i, j| rows[j] = i }
+      stmt.close
+
+      # Close the database
+      db.close
+      $log.debug("Closed #{db_file}")
+
+    rescue SQLite3::BusyException => e
+      $log.error("Non-fatal error closing database #{db.filename}")
+
+    rescue SQLite3::Exception => e
+      abort("#{db_file}: #{e}")
+
+    end
+
+    return(rows)
   end
 
   # @param obj [ICalPal] A +Store+ or +Calendar+
@@ -53,6 +90,28 @@ module ICalPal
     headers.each { |h| values.push(@self[h].respond_to?(:gsub)? @self[h].gsub(/\n/, '\n') : @self[h]) }
 
     CSV::Row::new(headers, values)
+  end
+
+  # @return [String] All fields in a simple XML format: <field>value</field>.
+  # Fields with empty values return <field/>.
+  def to_xml
+    retval = ""
+
+    @self.keys.each do |k|
+      v = @self[k]
+
+      if v.respond_to?(:length) then
+        if v.length == 0 or v[0] == nil then
+          retval += "<#{k}/>"
+        else
+          # Keep non-blank and whitespace, except form feeds and vertical whitespace
+          v = v.gsub(/[^[[:print:]][[:space:]]]/, '.').gsub(/[\f\v]/, '.')
+          retval += "<#{k}>#{v}</#{k}>"
+        end
+      end
+    end
+
+    retval
   end
 
   # Get the +n+'th +dow+ in month +m+

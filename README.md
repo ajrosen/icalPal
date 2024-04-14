@@ -7,7 +7,7 @@
 icalPal is a command-line tool to query a macOS Calendar database for
 accounts, calendars, and events.  It can be run on any system with
 [Ruby](https://www.ruby-lang.org/) and access to a Calendar database
-file.
+file, or a Reminders database.
 
 ## Installation
 
@@ -25,7 +25,9 @@ and for output.  There are a few differences to be aware of.
 
 * Options require two hyphens, except for single-letter options that require one hyphen
 * *eventsFrom* is not supported.  Instead there is *--from*, *--to*, and *--days*
-* icalPal does not support the *tasks* commands yet
+* *uncompletedTasks* is simply *tasks*
+* *undatedUncompletedTasks* is simply *undatedTasks*
+* *tasksDueBefore:DATE* is not yet supported
 * The command can go anywhere; it doesn't have to be the last argument
 * Property separators are comma-delimited
 
@@ -35,6 +37,10 @@ and for output.  There are a few differences to be aware of.
 
 Shows a list of enabled Calendar accounts.  Internally they are known as *Stores*; you can run ```icalPal stores``` instead.
 
+```icalPal datedTasks```
+
+Shows only reminders that have a due date.
+
 ### Additional options
 
 * Options can be abbreviated, so long as they are unique.  Eg., ```icalPal -c ev --da 3``` is the same as ```icalPal -c events --days 3```.
@@ -42,37 +48,45 @@ Shows a list of enabled Calendar accounts.  Internally they are known as *Stores
 * Use ```-o``` to print the output in different formats.  CSV or JSON are intertesting choices.
 * Copy your Calendar database file and use ```--db``` on it.
 * ```--it``` and ```--et``` will filter by Calendar *type*.  Types are **Local**, **Exchange**, **CalDAV**, **MobileMe**, **Subscribed**, and **Birthdays**
+* ```--il``` and ```-el``` will filter by Reminder list
 * ```--ia``` includes *only* all-day events (opposite of ```--ea```)
 * ```--aep``` is like ```--iep```, but *adds* to the default property list instead of replacing it.
 * ```--sep``` to separate by any property, not just calendar (```--sc```) or date (```--sd```)
 * ```--color``` uses a wider color palette.  Calendar colors are what you have chosen in the Calendar app.  Not supported in all terminals, but looks great in [iTerm2](https://iterm2.com/).
 
-Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with version of Ruby (2.6.10) included with macOS, and does not require any external dependencies.
+Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the version of Ruby (2.6.10) included with macOS.
 
 ## Usage
 
 icalPal: Usage: icalPal [options] [-c] COMMAND
 
 COMMAND must be one of the following:
-
+```
     events                  Print events
+    tasks                   Print tasks
     calendars               Print calendars
     accounts                Print accounts
 
     eventsToday             Print events occurring today
     eventsToday+NUM         Print events occurring between today and NUM days into the future
     eventsNow               Print events occurring at present time
+    datedTasks              Print tasks with a due date
+    undatedTasks            Print tasks with no due date
+```
 
 Global options:
-
+```
     -c, --cmd=COMMAND       Command to run
-        --db=DB             Use DB file instead of Calendar
-        --cf=FILE           Set config file path (default: $HOME/.icalPal)
+        --db=DB             Use DB file instead of Calendar (default: /Users/ajr/Library/Calendars/Calendar.sqlitedb)
+                            For the tasks commands this should be a directory containing .sqlite files
+                            (default: /Users/ajr/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores)
+        --cf=FILE           Set config file path (default: /Users/ajr/.icalPal)
     -o, --output=FORMAT     Print as FORMAT (default: default)
-                            [ansi, csv, default, hash, html, json, md, rdoc, toc, yaml, remind]
+                            [ansi, csv, default, hash, html, json, md, rdoc, remind, toc, xml, yaml]
+```
 
-Including/excluding calendars:
-
+Including/excluding calendars and reminders:
+```
         --is=ACCOUNTS       List of accounts to include
         --es=ACCOUNTS       List of accounts to exclude
 
@@ -83,8 +97,12 @@ Including/excluding calendars:
         --ic=CALENDARS      List of calendars to include
         --ec=CALENDARS      List of calendars to exclude
 
-Choosing dates:
+        --il=LISTS          List of reminder lists to include
+        --el=LISTS          List of reminder lists to exclude
+```
 
+Choosing dates:
+```
         --from=DATE         List events starting on or after DATE
         --to=DATE           List events starting on or before DATE
                             DATE can be yesterday, today, tomorrow, +N, -N, or anything accepted by DateTime.parse()
@@ -95,12 +113,18 @@ Choosing dates:
         --sed               Show empty dates with --sd
         --ia                Include only all-day events
         --ea                Exclude all-day events
+```
 
 Choose properties to include in the output:
-
+```
         --iep=PROPERTIES    List of properties to include
         --eep=PROPERTIES    List of properties to exclude
         --aep=PROPERTIES    List of properties to include in addition to the default list
+
+        --itp=PROPERTIES    List of task properties to include
+        --etp=PROPERTIES    List of task properties to exclude
+        --atp=PROPERTIES    List of task properties to include in addition to the default list
+                            Included for backwards compatability, these are aliases for --iep, --eep, and --aep
 
         --uid               Show event UIDs
         --eed               Exclude end datetimes
@@ -113,16 +137,20 @@ Choose properties to include in the output:
 
     Use 'all' for PROPERTIES to include all available properties (except any listed in --eep)
     Use 'list' for PROPERTIES to list all available properties and exit
+```
 
 Formatting the output:
-
+```
         --li=N              Show at most N items (default: 0 for no limit)
 
         --sc                Separate by calendar
         --sd                Separate by date
+        --sp                Separate by priority
         --sep=PROPERTY      Separate by PROPERTY
 
         --sort=PROPERTY     Sort by PROPERTY
+        --std               Sort tasks by due date (same as --sort=due_date)
+        --stda              Sort tasks by due date (ascending) (same as --sort=due_date -r)
     -r, --reverse           Sort in reverse
 
         --ps=SEPARATORS     List of property separators
@@ -133,24 +161,28 @@ Formatting the output:
                             See https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-i-strftime for details
 
     -b, --bullet=STRING     Use STRING for bullets
+        --ab=STRING         Use STRING for alert bullets
+        --nb                Do not use bullets
         --nnr=SEPARATOR     Set replacement for newlines within notes
 
     -f                      Format output using standard ANSI colors
         --color             Format output using a larger color palette
+```
 
 Help:
-
+```
     -h, --help              Show this message
-    -V, -v, --version       Show version and exit (1.0)
+    -V, -v, --version       Show version and exit (2.0.0)
     -d, --debug=LEVEL       Set the logging level (default: warn)
                             [debug, info, warn, error, fatal]
+```
 
 Environment variables:
-
+```
     ICALPAL                 Additional arguments
     ICALPAL_CONFIG          Additional arguments from a file
-                            (default: $HOME/.icalPal)
-
+                            (default: /Users/ajr/.icalPal)
+```
 
 ## History
 
@@ -178,8 +210,9 @@ directly from the Calendar database file instead of an API, you *can*.
 icalPal supports several output formats.  The **default** format tries
 to mimic icalBuddy as much as possible.
 
-CSV, Hash, JSON, and YAML print all fields for all items in their
-respective formats.  From that you can analyze the results any way you like.
+CSV, Hash, JSON, XML, and YAML print all fields for all items in their
+respective formats.  From that you can analyze the results any way you
+like.
 
 [Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built in icalPal.
 

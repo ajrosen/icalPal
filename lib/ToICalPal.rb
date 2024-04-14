@@ -7,15 +7,25 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # ANSI[https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.416-199303-I!!PDF-E&type=items]
   # colors
   ANSI = {
-    'black': 30,        '#000000': '38;5;0',
-    'red': 31,          '#ff0000': '38;5;1',
-    'green': 32,        '#00ff00': '38;5;2',
-    'yellow': 33,       '#ffff00': '38;5;3',
-    'blue': 34,         '#0000ff': '38;5;4',
-    'magenta': 35,      '#ff00ff': '38;5;5',
-    'cyan': 36,         '#00ffff': '38;5;6',
-    'white': 37,        '#ffffff': '38;5;255',
-    'default': 39,       'custom': nil,
+    'black':   30,  '#000000': '38;5;0',
+    'red':     31,  '#ff0000': '38;5;1',
+    'green':   32,  '#00ff00': '38;5;2',
+    'yellow':  33,  '#ffff00': '38;5;3',
+    'blue':    34,  '#0000ff': '38;5;4',
+    'magenta': 35,  '#ff00ff': '38;5;5',
+    'cyan':    36,  '#00ffff': '38;5;6',
+    'white':   37,  '#ffffff': '38;5;255',
+    'default': 39,  'custom': nil,
+
+    # Reminders custom colors
+    'brown':     '38;2;162;132;94',
+    'gray':      '38;2;91;98;106',
+    'indigo':    '38;2;88;86;214',
+    'lightblue': '38;2;90;200;250',
+    'orange':    '38;2;255;149;0',
+    'pink':      '38;2;255;45;85',
+    'purple':    '38;2;204;115;225',
+    'rose':      '38;2;217;166;159',
   }
 
   # Increased intensity
@@ -38,6 +48,8 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
 
   # @param opts [Hash] Used for conditional formatting
   # @option opts [String] :bullet Bullet
+  # @option opts [String] :ab Alert bullet
+  # @option opts [Boolean] :nb No bullet
   # @option opts [Boolean] :nc No calendar names
   # @option opts [Boolean] :npn No property names
   # @option opts [Integer] :palette (nil) 8 for \-f, 24 for \--color
@@ -64,6 +76,14 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   def accept_list_start(arg)
     begin
       return if @item['placeholder']
+    rescue
+    end
+
+    begin
+      if (@item['due_date'] + ICalPal::ITIME).between?(ICalPal::ITIME + 1, $now.to_i) then
+        @res << "#{@opts[:ab]} " unless @opts[:nb]
+        return
+      end
     rescue
     end
 
@@ -126,15 +146,21 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
     accept_blank_line
   end
 
-  # Don't add anything to the document, just save the item and
-  # property name for later
+  # Don't add anything to the document, just save the item for later
   #
-  # @param h [RDoc::Markup::Verbatim]
-  # @option h [String] :parts Ignored
-  # @option h [{item, prop => ICalPal::Event, String}] :format
-  def accept_verbatim(h)
-    @item = h.format[:item]
-    @prop = h.format[:prop]
+  # @param arg [RDoc::Markup::Verbatim]
+  # @option arg [Object] :format The item
+  def accept_verbatim(arg)
+    @item = arg.format
+  end
+
+  # Don't add anything to the document, just save the property name
+  # for later
+  #
+  # @param arg [RDoc::Markup::Raw]
+  # @option arg [Object] :parts The property
+  def accept_raw(arg)
+    @prop = arg.parts[0]
   end
 
   # @param str [String]

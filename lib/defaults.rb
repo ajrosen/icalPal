@@ -5,17 +5,21 @@ $today = ICalPal::RDT.new(*$now.to_a[0..2] + [0, 0, 0, $now.zone])
 # Defaults
 $defaults = {
   common: {
+    ab: '!',
     aep: [],
     bullet: '•',
     cf: "#{ENV['HOME']}/.icalPal",
     color: false,
     db: "#{ENV['HOME']}/Library/Calendars/Calendar.sqlitedb",
     debug: Logger::WARN,
+    df: '%b %-d, %Y',
     ec: [],
     eep: [],
+    el: [],
     es: [],
     et: [],
     ic: [],
+    il: [],
     is: [],
     it: [],
     li: 0,
@@ -27,11 +31,25 @@ $defaults = {
     sep: false,
     sort: nil,
     sp: false,
+    tf: '%-I:%M %p',
   },
   tasks: {
-    bullet: '!',
-    iep: [ 'notes', 'due', 'priority' ],
-    sort: 'priority',
+    dated: 0,
+    db: ICalPal::Reminder::DB_PATH,
+    iep: [ 'title', 'notes', 'due', 'priority' ],
+    sort: 'prio',
+  },
+  undatedTasks: {
+    dated: 1,
+    db: ICalPal::Reminder::DB_PATH,
+    iep: [ 'title', 'notes', 'due', 'priority' ],
+    sort: 'prio',
+  },
+  datedTasks: {
+    dated: 2,
+    db: ICalPal::Reminder::DB_PATH,
+    iep: [ 'title', 'notes', 'due', 'priority' ],
+    sort: 'prio',
   },
   stores: {
     iep: [ 'account', 'type' ],
@@ -43,7 +61,6 @@ $defaults = {
   },
   events: {
     days: nil,
-    df: '%b %-d, %Y',
     ea: false,
     eed: false,
     eep: [],
@@ -57,7 +74,6 @@ $defaults = {
     sed: false,
     sort: 'sdate',
     ss: "\n------------------------",
-    tf: '%-I:%M %p',
     to: nil,
     uid: false,
   }

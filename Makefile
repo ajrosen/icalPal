@@ -1,13 +1,13 @@
-APP=icalPal
-VERSION=1.2.1
+APP=$(shell ruby -e 'puts Gem::Specification::load("icalPal.gemspec").name')
+VERSION=$(shell ruby -e 'require "./lib/version" and puts ICalPal::VERSION')
 
 GEM=$(APP)-$(VERSION).gem
 
 $(GEM):
 	gem build $(APP).gemspec -q
 
-clean: uninstall
-	rm -f $(GEM)
+clean:
+	rm -fv *.gem
 
 install: $(GEM)
 	gem install $(GEM)
@@ -18,8 +18,12 @@ user-install: $(GEM)
 uninstall:
 	-gem uninstall $(APP) -ax
 
-push: $(GEM)
+rubygems: $(GEM)
 	gem push $(GEM)
 
-fury: $(GEM)
+gemfury: $(GEM)
 	fury push $(GEM)
+
+publish:
+	rubygems
+	gemfury
