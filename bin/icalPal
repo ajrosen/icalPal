@@ -110,6 +110,17 @@ $rows.each_with_index do |row, i|
     next
   end
 
+  # --el/--il
+  if $opts[:el].any? item['list_name'] then
+    $log.debug(":el")
+    next
+  end
+
+  unless $opts[:il].empty? or $opts[:il].any? item['list_name']
+    $log.debug(":il")
+    next
+  end
+
   if ICalPal::Event === item
     # Check for all-day and cancelled events
     if $opts[:ea] && item['all_day'].positive? then
@@ -132,9 +143,16 @@ $rows.each_with_index do |row, i|
       item.non_recurring.each { |i| add(i) }
   else
     # Check for dated reminders
-    if ICalPal::Reminder === item and $opts[:undated] and item['due_date'] > 0 then
-      $log.debug(":undated")
-      next
+    if ICalPal::Reminder === item then
+      if $opts[:dated] == 1 and item['due_date'] > 0 then
+        $log.debug(":undated")
+        next
+      end
+
+      if $opts[:dated] == 2 and item['due_date'] == 0 then
+        $log.debug(":dated")
+        next
+      end
     end
 
     add(item)
@@ -218,7 +236,8 @@ end
 
 $log.debug("Formatting with #{mu.inspect}")
 
-section = nil if $opts[:sep]
+doc = RDoc::Markup::Document.new
+section = nil
 
 items.each_with_index do |i, j|
   $log.debug("Print #{j}: #{i.inspect}")
@@ -226,15 +245,16 @@ items.each_with_index do |i, j|
   # --li
   break if $opts[:li].positive? && j >= $opts[:li]
 
-  doc = RDoc::Markup::Document.new
+  # Use RDoc::Markup::Verbatim to save the item
+  v = RDoc::Markup::Verbatim.new
+  v.format = i
+  doc << v
 
   # Sections
   if $opts[:sep] && section != i[$opts[:sep]]
     $log.debug("New section '#{$opts[:sep]}': #{i[$opts[:sep]]}")
 
-    v = RDoc::Markup::Verbatim.new
-    v.format = { item: i, prop: $opts[:sep] }
-    doc << v
+    doc << RDoc::Markup::Raw.new($opts[:sep])
 
     doc << RDoc::Markup::BlankLine.new if j.positive?
     doc << RDoc::Markup::Heading.new(1, i[$opts[:sep]].to_s)
@@ -256,9 +276,8 @@ items.each_with_index do |i, j|
 
     $log.debug("#{prop}: #{value}")
 
-    v = RDoc::Markup::Verbatim.new
-    v.format = { item: i, prop: prop }
-    props << v
+    # Use Raw to save the property
+    props << RDoc::Markup::Raw.new(prop)
 
     unless k.positive?
       # First property, value only
@@ -270,8 +289,9 @@ items.each_with_index do |i, j|
   end
 
   # Print it
-  unless props.empty?
-    doc << props
-    puts doc.accept(mu)
-  end
+  props << RDoc::Markup::BlankLine.new unless props.empty?
+
+  doc << props
 end
+
+print doc.accept(mu)

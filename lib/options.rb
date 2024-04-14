@@ -1,6 +1,7 @@
 require 'optparse'
 
 require_relative 'defaults'
+require_relative 'version'
 
 module ICalPal
   # Handle program options from all sources:
@@ -23,7 +24,7 @@ module ICalPal
       @op = OptionParser.new
       @op.summary_width = 23
       @op.banner += " [-c] COMMAND"
-      @op.version = '1.3.1'
+      @op.version = ICalPal::VERSION
 
       @op.accept(ICalPal::RDT) { |s| ICalPal::RDT.conv(s) }
 
@@ -39,13 +40,16 @@ module ICalPal
       @op.on("%s%s %sPrint events occurring today" % pad('eventsToday'))
       @op.on("%s%s %sPrint events occurring between today and NUM days into the future" % pad('eventsToday+NUM'))
       @op.on("%s%s %sPrint events occurring at present time" % pad('eventsNow'))
+      @op.on("%s%s %sPrint tasks with a due date" % pad('datedTasks'))
       @op.on("%s%s %sPrint tasks with no due date" % pad('undatedTasks'))
 
       # global
       @op.separator("\nGlobal options:\n\n")
 
       @op.on('-c=COMMAND', '--cmd=COMMAND', COMMANDS, 'Command to run')
-      @op.on('--db=DB', 'Use DB file instead of Calendar')
+      @op.on('--db=DB', "Use DB file instead of Calendar (default: #{$defaults[:common][:db]})",
+             'For the tasks commands this should be a directory containing .sqlite files',
+             "(default: #{$defaults[:tasks][:db]})")
       @op.on('--cf=FILE', "Set config file path (default: #{$defaults[:common][:cf]})")
       @op.on('-o', '--output=FORMAT', OUTFORMATS,
             "Print as FORMAT (default: #{$defaults[:common][:output]})", "[#{OUTFORMATS.join(', ')}]")
@@ -64,6 +68,10 @@ module ICalPal
       @op.separator('')
       @op.on('--ic=CALENDARS', Array, 'List of calendars to include')
       @op.on('--ec=CALENDARS', Array, 'List of calendars to exclude')
+
+      @op.separator('')
+      @op.on('--il=LISTS', Array, 'List of reminder lists to include')
+      @op.on('--el=LISTS', Array, 'List of reminder lists to exclude')
 
       # dates
       @op.separator("\nChoosing dates:\n\n")
@@ -89,7 +97,8 @@ module ICalPal
       @op.separator('')
       @op.on('--itp=PROPERTIES', Array, 'List of task properties to include')
       @op.on('--etp=PROPERTIES', Array, 'List of task properties to exclude')
-      @op.on('--atp=PROPERTIES', Array, 'List of task properties to include in addition to the default list')
+      @op.on('--atp=PROPERTIES', Array, 'List of task properties to include in addition to the default list',
+            'Included for backwards compatability, these are aliases for --iep, --eep, and --aep')
       @op.separator('')
 
       @op.on('--uid', 'Show event UIDs')
@@ -135,6 +144,7 @@ module ICalPal
 
       @op.separator('')
       @op.on('-b', '--bullet=STRING', String, 'Use STRING for bullets')
+      @op.on('--ab=STRING', String, 'Use STRING for alert bullets')
       @op.on('--nb', 'Do not use bullets')
       @op.on('--nnr=SEPARATOR', String, 'Set replacement for newlines within notes')
 
@@ -203,7 +213,8 @@ module ICalPal
           .merge(env)
           .merge(cli)
 
-        # undatedTasks
+        # datedTasks and undatedTasks
+        opts[:cmd] = "tasks" if opts[:cmd] == "datedTasks"
         opts[:cmd] = "tasks" if opts[:cmd] == "undatedTasks"
 
         # All kids love log!
@@ -257,7 +268,7 @@ module ICalPal
     end
 
     # Commands that can be run
-    COMMANDS = %w{events eventsToday eventsNow tasks undatedTasks calendars accounts stores}
+    COMMANDS = %w{events eventsToday eventsNow tasks datedTasks undatedTasks calendars accounts stores}
 
     # Supported output formats
     OUTFORMATS = %w{ansi csv default hash html json md rdoc remind toc xml yaml}

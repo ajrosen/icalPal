@@ -1,11 +1,5 @@
 require 'open3'
-require 'plist_lite'
-
-# ! zTitle (zName)
-#     notes: <zNotes>
-#     due: <zDuedate>
-#     priority: <zPriority>
-# • zTitle (zName)
+require 'nokogiri-plist'
 
 module ICalPal
   # Class representing items from the <tt>Reminders</tt> database
@@ -20,11 +14,8 @@ module ICalPal
       when 'priority' then      # Integer -> String
         EventKit::EKReminderProperty[@self['priority']] if @self['priority'] > 0
 
-      when 'sdate' then
+      when 'sdate' then         # For sorting
         @self['title']
-
-      when 'title' then
-        "#{@self['title']} (#{@self['name']})"
 
       else @self[k]
       end
@@ -64,7 +55,7 @@ module ICalPal
         stdin.close
 
         # Read output
-        plist = PlistLite.load(stdout.read)['$objects']
+        plist = Nokogiri::PList(stdout.read)['$objects']
 
         @self['color'] = plist[3]
         @self['symbolic_color_name'] = (plist[2] == 'custom')? plist[4] : plist[2]
@@ -102,7 +93,7 @@ zremcdReminder.zTitle as title,
 
 zremcdBaseList.zBadgeEmblem as badge,
 zremcdBaseList.zColor as color,
-zremcdBaseList.zName as name,
+zremcdBaseList.zName as list_name,
 zremcdBaseList.zParentList as parent,
 zremcdBaseList.zSharingStatus as shared
 

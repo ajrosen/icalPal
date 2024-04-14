@@ -48,6 +48,8 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
 
   # @param opts [Hash] Used for conditional formatting
   # @option opts [String] :bullet Bullet
+  # @option opts [String] :ab Alert bullet
+  # @option opts [Boolean] :nb No bullet
   # @option opts [Boolean] :nc No calendar names
   # @option opts [Boolean] :npn No property names
   # @option opts [Integer] :palette (nil) 8 for \-f, 24 for \--color
@@ -74,6 +76,14 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   def accept_list_start(arg)
     begin
       return if @item['placeholder']
+    rescue
+    end
+
+    begin
+      if (@item['due_date'] + ICalPal::ITIME).between?(ICalPal::ITIME + 1, $now.to_i) then
+        @res << "#{@opts[:ab]} " unless @opts[:nb]
+        return
+      end
     rescue
     end
 
@@ -136,15 +146,21 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
     accept_blank_line
   end
 
-  # Don't add anything to the document, just save the item and
-  # property name for later
+  # Don't add anything to the document, just save the item for later
   #
-  # @param h [RDoc::Markup::Verbatim]
-  # @option h [String] :parts Ignored
-  # @option h [{item, prop => ICalPal::Event, String}] :format
-  def accept_verbatim(h)
-    @item = h.format[:item]
-    @prop = h.format[:prop]
+  # @param arg [RDoc::Markup::Verbatim]
+  # @option arg [Object] :format The item
+  def accept_verbatim(arg)
+    @item = arg.format
+  end
+
+  # Don't add anything to the document, just save the property name
+  # for later
+  #
+  # @param arg [RDoc::Markup::Raw]
+  # @option arg [Object] :parts The property
+  def accept_raw(arg)
+    @prop = arg.parts[0]
   end
 
   # @param str [String]

@@ -5,6 +5,7 @@ $today = ICalPal::RDT.new(*$now.to_a[0..2] + [0, 0, 0, $now.zone])
 # Defaults
 $defaults = {
   common: {
+    ab: '!',
     aep: [],
     bullet: '•',
     cf: "#{ENV['HOME']}/.icalPal",
@@ -14,9 +15,11 @@ $defaults = {
     df: '%b %-d, %Y',
     ec: [],
     eep: [],
+    el: [],
     es: [],
     et: [],
     ic: [],
+    il: [],
     is: [],
     it: [],
     li: 0,
@@ -31,16 +34,22 @@ $defaults = {
     tf: '%-I:%M %p',
   },
   tasks: {
+    dated: 0,
     db: ICalPal::Reminder::DB_PATH,
     iep: [ 'title', 'notes', 'due', 'priority' ],
     sort: 'prio',
-    undated: false,
   },
   undatedTasks: {
+    dated: 1,
     db: ICalPal::Reminder::DB_PATH,
     iep: [ 'title', 'notes', 'due', 'priority' ],
     sort: 'prio',
-    undated: true,
+  },
+  datedTasks: {
+    dated: 2,
+    db: ICalPal::Reminder::DB_PATH,
+    iep: [ 'title', 'notes', 'due', 'priority' ],
+    sort: 'prio',
   },
   stores: {
     iep: [ 'account', 'type' ],
