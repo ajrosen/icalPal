@@ -1,5 +1,5 @@
 APP=$(shell ruby -e 'puts Gem::Specification::load("icalPal.gemspec").name')
-VERSION=$(shell ruby -e 'puts Gem::Specification::load("icalPal.gemspec").version')
+VERSION=$(shell ruby -e 'require "./lib/version" and puts ICalPal::VERSION')
 
 GEM=$(APP)-$(VERSION).gem
 
