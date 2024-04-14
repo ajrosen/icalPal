@@ -10,10 +10,10 @@ clean: uninstall
 	rm -f $(GEM)
 
 install: $(GEM)
-	gem install --local $(GEM)
+	gem install $(GEM)
 
 user-install: $(GEM)
-	gem install --local --user-install $(GEM)
+	gem install --user-install $(GEM)
 
 uninstall:
 	-gem uninstall $(APP) -ax
