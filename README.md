@@ -4,16 +4,15 @@
 
 ## Description
 
-icalPal is a command-line tool to query a macOS Calendar database for
-accounts, calendars, and events.  It can be run on any system with
-[Ruby](https://www.ruby-lang.org/) and access to a Calendar database
-file, or a Reminders database.
+icalPal is a command-line tool to query a macOS Calendar and Reminders
+databases for accounts, calendars, events, and tasks.  It can be run
+on any system with [Ruby](https://www.ruby-lang.org/) and access to a
+Calendar or Reminders database.
 
 ## Installation
 
 ```
 gem install icalPal
-icalPal events
 ```
 
 ## Features
@@ -21,7 +20,8 @@ icalPal events
 ### Compatability with [icalBuddy](https://github.com/ali-rantakari/icalBuddy)
 
 icalPal tries to be compatible with icalBuddy for command-line options
-and for output.  There are a few differences to be aware of.
+and for output.  There are a some important differences to be aware
+of.
 
 * Options require two hyphens, except for single-letter options that require one hyphen
 * *eventsFrom* is not supported.  Instead there is *--from*, *--to*, and *--days*
@@ -184,27 +184,6 @@ Environment variables:
                             (default: /Users/ajr/.icalPal)
 ```
 
-## History
-
-I have used icalBuddy for many years.  It's great for scripting,
-automation, and as a desktop widget for apps like
-[GeekTool](https://www.tynsoe.org/geektool/) and
-[Übersicht](https://tracesof.net/uebersicht/).
-
-As with many applications, I started to run into some limitations in
-icalBuddy.  The biggest being that active development ended in 2014.
-It's only thanks to the efforts of [Jim
-Lawton](https://github.com/jimlawton) that it even compiles anymore.
-
-Instead of trying to understand and extend the existing code, I chose
-to start anew using my language of choice.  Using Ruby means icalPal
-is multi-platform.  It also meant *much* less code; about 1,200 lines
-vs. 7,000.
-
-I won't pretend to understand **why** you would want this on Linux or
-Windows.  But since icalPal is written in Ruby and gets its data
-directly from the Calendar database file instead of an API, you *can*.
-
 ## Output formats
 
 icalPal supports several output formats.  The **default** format tries
@@ -242,5 +221,29 @@ objects, one for each of the item's properties:
 
 The document will also include a number of
 [RDoc::Markup::Verbatim](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Verbatim.html)
+and
+[RDoc::Markup::Raw](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Raw.html)
 items.  They are not included in the output, but are used to pass
 information about the item and property to the default formatter.
+
+## History
+
+I used icalBuddy for many years.  It's great for scripting,
+automation, and as a desktop widget for apps like
+[GeekTool](https://www.tynsoe.org/geektool/) and
+[Übersicht](https://tracesof.net/uebersicht/).
+
+As with many applications, I started to run into some limitations in
+icalBuddy.  The biggest being that active development ended in 2014.
+It's only thanks to the efforts of [Jim
+Lawton](https://github.com/jimlawton) that it even compiles anymore.
+
+Instead of trying to understand and extend the existing code, I chose
+to start anew using my language of choice: Ruby.  Using Ruby meant
+there is *much* less code; about 1,600 lines vs. 7,000.  It also means
+icalPal is multi-platform.
+
+I won't pretend to understand **why** you would want to run this on
+Linux or Windows.  But since icalPal is written in Ruby and gets its
+data directly from the Calendar and Reminders database files instead
+of an API, you *can*.
