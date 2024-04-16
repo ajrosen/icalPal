@@ -11,8 +11,17 @@ Calendar or Reminders database.
 
 ## Installation
 
+As a Ruby gem:
+
 ```
 gem install icalPal
+```
+
+As a Homebrew formula:
+
+```
+brew tap ajrosen/icalPal
+brew install icalPal
 ```
 
 ## Features
