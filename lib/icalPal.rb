@@ -100,14 +100,12 @@ module ICalPal
     @self.keys.each do |k|
       v = @self[k]
 
-      if v.respond_to?(:length) then
-        if v.length == 0 or v[0] == nil then
-          retval += "<#{k}/>"
-        else
-          # Keep non-blank and whitespace, except form feeds and vertical whitespace
-          v = v.gsub(/[^[[:print:]][[:space:]]]/, '.').gsub(/[\f\v]/, '.')
-          retval += "<#{k}>#{v}</#{k}>"
-        end
+      if !v.respond_to?(:length) or v.length == 0 or v[0] == nil then
+        retval += "<#{k}/>"
+      else
+        # Keep non-blank and whitespace, except form feeds and vertical whitespace
+        v = v.gsub(/[^[[:print:]][[:space:]]]/, '.').gsub(/[\f\v]/, '.')
+        retval += "<#{k}>#{v}</#{k}>"
       end
     end
 
