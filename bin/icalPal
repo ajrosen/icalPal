@@ -1,16 +1,25 @@
 #!/usr/bin/env ruby
-# *-*- mode: enh-ruby -*-*
 
-require 'logger'
+begin
+  require 'logger'
 
-require 'csv'
-require 'json'
-require 'rdoc'
-require 'sqlite3'
-require 'yaml'
+  require 'csv'
+  require 'json'
+  require 'rdoc'
+  require 'sqlite3'
+  require 'yaml'
 
-require_relative '../lib/icalPal'
-require_relative '../lib/options'
+  require_relative '../lib/icalPal'
+  require_relative '../lib/options'
+rescue LoadError => e
+  dep = e.message[/-- (.*)/, 1]
+
+  $stderr.puts "FATAL: icalPal is missing a dependency: #{dep}"
+  $stderr.puts
+  $stderr.puts "Install with 'gem install --user-install #{dep}'"
+
+  exit
+end
 
 
 ##################################################
