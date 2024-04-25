@@ -114,6 +114,8 @@ module ICalPal
 
       # Repeat for multi-day events
       ((self['duration'] / 86400).to_i + 1).times do |i|
+        break if self['sdate'] > $opts[:to]
+
         $log.debug("multi-day event #{i + 1}") if (i > 0)
         self['daynum'] = i + 1
         retval.push(clone) if in_window?(self['sdate'])
