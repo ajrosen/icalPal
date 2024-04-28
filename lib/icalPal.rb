@@ -95,24 +95,47 @@ module ICalPal
     CSV::Row::new(headers, values)
   end
 
+  # Convert +self+ to XML
+  #
   # @return [String] All fields in a simple XML format: <field>value</field>.
   # Fields with empty values return <field/>.
   def to_xml
     retval = ""
-
-    @self.keys.each do |k|
-      v = @self[k]
-
-      if !v.respond_to?(:length) or v.length == 0 or v[0] == nil then
-        retval += "<#{k}/>"
-      else
-        # Keep non-blank and whitespace, except form feeds and vertical whitespace
-        v = v.gsub(/[^[[:print:]][[:space:]]]/, '.').gsub(/[\f\v]/, '.')
-        retval += "<#{k}>#{v}</#{k}>"
-      end
-    end
+    @self.keys.each { |k| retval += xmlify(k, @self[k]) }
 
     retval
+  end
+
+  # Convert a key/value pair to XML.  The value should be +nil+, +String+,
+  # +Integer+, +Array+, or +ICalPal::RDT+
+  #
+  # @param key The key
+  # @param value The value
+  # @return [String] The key/value pair in a simple XML format
+  def xmlify(key, value)
+    case value
+    # Nil
+    when NilClass then return("<#{key}/>")
+
+    # String, Integer
+    when String then return("<#{key}>#{value}</#{key}>")
+    when Integer then return("<#{key}>#{value}</#{key}>")
+
+    # Array
+    when Array then
+      # Treat empty arrays as nil values
+      return(xmlify(key, nil)) if value[0] == nil 
+
+      retval = ""
+      value.each { |x| retval += xmlify("#{key}0", x) }
+      return("<#{key}>#{retval}</#{key}>")
+
+    # RDT
+    when ICalPal::RDT then return("<#{key}>#{value.to_s}</#{key}>")
+
+    # Unknown
+    else return("<#{key}>#{value.to_s}</#{key}>")
+    end
   end
 
   # Get the +n+'th +dow+ in month +m+
