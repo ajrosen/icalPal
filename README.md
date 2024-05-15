@@ -68,6 +68,7 @@ Shows only reminders that have a due date.
 * ```--aep``` is like ```--iep```, but *adds* to the default property list instead of replacing it.
 * ```--sep``` to separate by any property, not just calendar (```--sc```) or date (```--sd```)
 * ```--color``` uses a wider color palette.  Calendar colors are what you have chosen in the Calendar app.  Not supported in all terminals, but looks great in [iTerm2](https://iterm2.com/).
+* ```--match``` lets you filter the results of any command to items where a *FIELD* matches a regular expression.  Eg., ```--match notes=zoom.us``` to show only Zoom meeetings
 
 Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the version of Ruby (2.6.10) included with macOS.
 
@@ -114,6 +115,9 @@ Including/excluding calendars and reminders:
 
         --il=LISTS          List of reminder lists to include
         --el=LISTS          List of reminder lists to exclude
+
+        --match=FIELD=REGEXP
+                            Include only items whose FIELD matches REGEXP (ignoring case)
 ```
 
 Choosing dates:
