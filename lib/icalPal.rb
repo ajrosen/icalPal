@@ -141,7 +141,7 @@ module ICalPal
   # Get the +n+'th +dow+ in month +m+
   #
   # @param n [Integer] Integer between -4 and +4
-  # @param dow [String] Day of the week abbreviation from ICalPal::DOW
+  # @param dow [Array] Days of the week
   # @param m [RDT] The RDT with the year and month we're searching
   # @return [RDT] The resulting day
   def self.nth(n, dow, m)
@@ -155,7 +155,7 @@ module ICalPal
 
     j = 0
     a[0].step(a[1], step) do |i|
-      j += step if i.wday == DOW[dow.to_sym]
+      j += step if dow.any?(i.wday)
       return i if j == n
     end
   end

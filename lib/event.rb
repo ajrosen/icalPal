@@ -110,20 +110,22 @@ module ICalPal
     #   If an event spans multiple days, the return value will contain
     #   a unique {Event} for each day that falls within our window
     def non_recurring
-      retval = []
+      events = []
 
       # Repeat for multi-day events
       ((self['duration'] / 86400).to_i + 1).times do |i|
         break if self['sdate'] > $opts[:to]
 
         $log.debug("multi-day event #{i + 1}") if (i > 0)
+
         self['daynum'] = i + 1
-        retval.push(clone) if in_window?(self['sdate'])
+        events.push(clone) if in_window?(self['sdate'])
+
         self['sdate'] += 1
         self['edate'] += 1
       end
 
-      retval
+      events
     end
 
     # Check recurring events
@@ -131,35 +133,49 @@ module ICalPal
     # @return [Array<Event>]
     #   All occurrences of a recurring event that are within our window
     def recurring
-      retval = []
+      stop = [ $opts[:to], (self['rdate'] || $opts[:to]) ].min
 
       # See if event ends before we start
-      stop = [ $opts[:to], (self['rdate'] || $opts[:to]) ].min
       if stop < $opts[:from] then
         $log.debug("#{stop} < #{$opts[:from]}")
-        return(retval)
+        return(Array.new)
       end
 
       # Get changes to series
-      changes = $rows.select { |r| r['orig_item_id'] == self['ROWID'] }
+      changes = [ { 'orig_date' => -1 } ]
+      changes += $rows.select { |r| r['orig_item_id'] == self['ROWID'] }
 
-      i = 1
+      events = []
+      count = 1
+
       while self['sdate'] <= stop
-        if self['count'].positive? && i > self['count'] then
-          $log.debug("count exceeded: #{i} > #{self['count']}")
-          return(retval)
-        end
-        i += 1
+        # count
+        break if self['count'].positive? and count > self['count']
+        count += 1
 
-        unless @self['xdate'].any?(@self['sdate']) # Exceptions?
-          o = get_occurrences(changes)
-          o.each { |r| retval.push(r) if in_window?(r['sdate'], r['edate']) }
+        # Handle specifier or clone self
+        if self['specifier'] and self['specifier'].length.positive?
+          occurrences = get_occurrences(changes)
+        else
+          occurrences = [ clone ]
         end
 
+        # Check for changes
+        occurrences.each do |occurrence|
+          changes.each do |change|
+            next if change['orig_date'] == self['sdate'].to_i - ITIME
+            events.push(occurrence) if in_window?(occurrence['sdate'], occurrence['edate'])
+          end
+        end
+
+        break if self['specifier']
         apply_frequency!
       end
 
-      retval
+      # Remove exceptions
+      events.delete_if { |event| event['xdate'].any?(event['sdate']) }
+
+      return(events)
     end
 
     private
@@ -168,67 +184,72 @@ module ICalPal
 
     # @return a deep clone of self
     def clone()
-      self['stime'] = @self['sdate'].to_i
-      self['etime'] = @self['edate'].to_i
-
       Marshal.load(Marshal.dump(self))
     end
 
-    # Get next occurences of a recurring event
+    # Get next occurences of a recurring event from a specifier
     #
     # @param changes [Array] Recurrence changes for the event
     # @return [Array<IcalPal::Event>]
     def get_occurrences(changes)
-      ndate = self['sdate']
-      odays = []
-      retval = []
+      occurrences = []
 
-      # Deconstruct specifier(s)
-      if self['specifier']
-        self['specifier'].split(';').each do |k|
-          j = k.split('=')
+      dow = DOW.keys
+      dom = [ nil ]
+      moy = 1..12
+      nth = nil
 
-          # M=Day of the month, O=Month of the year, S=Nth
-          case j[0]
-          when 'M' then ndate = RDT.new(ndate.year, ndate.month, j[1].to_i)
-          when 'O' then ndate = RDT.new(ndate.year, j[1].to_i, ndate.day)
-          when 'S' then @self['specifier'].sub!(/D=0/, "D=+#{j[1].to_i}")
+      specifier = self['specifier']? self['specifier'] : []
+
+      # Deconstruct specifier
+      specifier.split(';').each do |k|
+        j = k.split('=')
+
+        # D=Day of the week, M=Day of the month, O=Month of the year, S=Nth
+        case j[0]
+        when 'D' then dow = j[1].split(',')
+        when 'M' then dom = j[1].split(',')
+        when 'O' then moy = j[1].split(',')
+        when 'S' then nth = j[1].to_i
+        else $log.warn("Unknown specifier: #{k}")
+        end
+      end
+
+      # Build array of DOWs
+      dows = [ nil ]
+      dow.each { |d| dows.push(DOW[d[-2..-1].to_sym]) }
+
+      # Months of the year (O)
+      moy.each do |m|
+        next unless m
+
+        nsdate = RDT.new(self['sdate'].year, m.to_i, 1)
+        nedate = RDT.new(self['edate'].year, m.to_i, 1)
+
+        # Days of the month (M)
+        dom.each do |x|
+          next unless x
+
+          self['sdate'] = RDT.new(nsdate.year, nsdate.month, x.to_i)
+          self['edate'] = RDT.new(nedate.year, nedate.month, x.to_i)
+          occurrences.push(clone)
+        end
+
+        # Days of the week (D)
+        if nth
+          self['sdate'] = ICalPal.nth(nth, dows, nsdate)
+          self['edate'] = ICalPal.nth(nth, dows, nedate)
+          occurrences.push(clone)
+        else
+          if dows[0]
+            self['sdate'] = RDT.new(nsdate.year, m.to_i, nsdate.wday)
+            self['edate'] = RDT.new(nedate.year, m.to_i, nedate.wday)
+            occurrences.push(clone)
           end
-
-          # No time travel!
-          ndate = self['sdate'] if ndate <= self['sdate']
-        end
-
-        # D=Day of the week
-        self['specifier'].split(';').each do |k|
-          j = k.split('=')
-
-          odays = j[1].split(',') if j[0] == 'D'
         end
       end
 
-      # Deconstruct occurence day(s)
-      odays.each do |n|
-        dow = DOW[n[-2..-1].to_sym]
-        ndate += 1 until ndate.wday == dow
-        ndate = ICalPal.nth(Integer(n[0..1]), n[-2..-1], ndate) unless (n[0] == '0')
-
-        # Check for changes
-        changes.detect(
-          proc {
-            self['sdate'] = RDT.new(*ndate.to_a[0..2], *self['sdate'].to_a[3..])
-            self['edate'] = RDT.new(*ndate.to_a[0..2], *self['edate'].to_a[3..])
-            retval.push(clone)
-          }) { |i| @self['sday'] == i['sday'] }
-      end
-
-      # Check for changes
-      changes.detect(
-        proc {
-          retval.push(clone)
-        }) { |i| @self['sday'] == i['sday'] } unless retval.count.positive?
-
-      retval
+      return(occurrences)
     end
 
     # Apply frequency and interval
@@ -243,6 +264,7 @@ module ICalPal
         when 'weekly'  then self[d] +=  self['interval'] * 7
         when 'monthly' then self[d] >>= self['interval']
         when 'yearly'  then self[d] >>= self['interval'] * 12
+        else $log.error("Unknown frequency: #{self['frequency']}")
         end
       end if self['frequency'] && self['interval']
     end
