@@ -26,6 +26,7 @@ $defaults = {
     output: 'default',
     ps: [ "\n  " ],
     r: false,
+    match: nil,
     sc: false,
     sd: false,
     sep: false,

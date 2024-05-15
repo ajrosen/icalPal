@@ -130,6 +130,18 @@ $rows.each_with_index do |row, i|
     next
   end
 
+  # --regexp
+  if $opts[:match]
+    r = $opts[:match].split('=')
+
+    if item[r[0]].to_s.respond_to?(:match)
+      unless item[r[0]].to_s.match(Regexp.new(r[1].to_s, Regexp::IGNORECASE)) then
+        $log.debug(":regex")
+        next
+      end
+    end
+  end
+
   if ICalPal::Event === item
     # Check for all-day and cancelled events
     if $opts[:ea] && item['all_day'].positive? then

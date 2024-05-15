@@ -55,7 +55,7 @@ module ICalPal
             "Print as FORMAT (default: #{$defaults[:common][:output]})", "[#{OUTFORMATS.join(', ')}]")
       
       # include/exclude
-      @op.separator("\nIncluding/excluding calendars:\n\n")
+      @op.separator("\nIncluding/excluding accounts, calendars, items:\n\n")
 
       @op.on('--is=ACCOUNTS', Array, 'List of accounts to include')
       @op.on('--es=ACCOUNTS', Array, 'List of accounts to exclude')
@@ -72,6 +72,9 @@ module ICalPal
       @op.separator('')
       @op.on('--il=LISTS', Array, 'List of reminder lists to include')
       @op.on('--el=LISTS', Array, 'List of reminder lists to exclude')
+
+      @op.separator('')
+      @op.on('--match=FIELD=REGEXP', String, 'Include only items whose FIELD matches REGEXP (ignoring case)')
 
       # dates
       @op.separator("\nChoosing dates:\n\n")
