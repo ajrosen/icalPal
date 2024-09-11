@@ -1,3 +1,5 @@
+require 'time'
+
 module ICalPal
   # Class representing items from the <tt>CalendarItem</tt> table
   class Event
@@ -92,8 +94,10 @@ module ICalPal
       end
 
       if @self['start_tz'] == '_float'
-        @self['sdate'] = RDT.new(*(@self['sdate'].to_time - Time.zone_offset($now.zone())).to_a.reverse[4..], $now.zone)
-        @self['edate'] = RDT.new(*(@self['edate'].to_time - Time.zone_offset($now.zone())).to_a.reverse[4..], $now.zone)
+        tzoffset = Time.zone_offset($now.zone())
+
+        @self['sdate'] = RDT.new(*(@self['sdate'].to_time - tzoffset).to_a.reverse[4..], $now.zone)
+        @self['edate'] = RDT.new(*(@self['edate'].to_time - tzoffset).to_a.reverse[4..], $now.zone)
       end
 
       # Type of calendar event is from
@@ -112,8 +116,13 @@ module ICalPal
     def non_recurring
       events = []
 
+      nDays = (self['duration'] / 86400).to_i
+
+      # Sanity checks
+      return events if nDays > 100000
+
       # Repeat for multi-day events
-      ((self['duration'] / 86400).to_i + 1).times do |i|
+      (nDays + 1).times do |i|
         break if self['sdate'] > $opts[:to]
 
         $log.debug("multi-day event #{i + 1}") if (i > 0)
