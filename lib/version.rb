@@ -1,4 +1,4 @@
 module ICalPal
-  NAME = 'icalpal'
+  NAME = 'icalPal'
   VERSION = '3.0.0'
 end

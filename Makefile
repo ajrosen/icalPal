@@ -3,6 +3,8 @@ VERSION=$(shell ruby -e 'require "./lib/version" and puts ICalPal::VERSION')
 
 GEM=$(APP)-$(VERSION).gem
 
+export GITHUB_REPO = icalPal
+
 $(GEM): bin/icalpal lib/*.rb
 	gem build $(APP).gemspec -q
 
