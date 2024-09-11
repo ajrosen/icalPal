@@ -42,6 +42,7 @@ class EventKit
     { name: 'MobileMe',   color: '#FFFF00' }, # Yellow
     { name: 'Subscribed', color: '#FF0000' }, # Red
     { name: 'Birthdays',  color: '#FF00FF' }, # Magenta
+    { name: 'Reminders',  color: '#066FF3' }, # Blue
   ]
 
   EKSpan = [
