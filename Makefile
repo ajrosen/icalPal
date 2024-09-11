@@ -1,9 +1,9 @@
-APP=$(shell ruby -e 'puts Gem::Specification::load("icalPal.gemspec").name')
+APP=$(shell ruby -e 'require "./lib/version" and puts ICalPal::NAME')
 VERSION=$(shell ruby -e 'require "./lib/version" and puts ICalPal::VERSION')
 
 GEM=$(APP)-$(VERSION).gem
 
-$(GEM):
+$(GEM): bin/icalpal lib/*.rb
 	gem build $(APP).gemspec -q
 
 clean:

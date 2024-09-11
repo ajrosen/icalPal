@@ -1,8 +1,9 @@
 require './lib/version'
 
 Gem::Specification.new do |s|
-  s.name	= "icalPal"
+  s.name	= ICalPal::NAME
   s.version	= ICalPal::VERSION
+
   s.summary	= "Command-line tool to query the macOS Calendar"
   s.description	= <<-EOF
 Inspired by icalBuddy and maintains close compatability.  Includes
