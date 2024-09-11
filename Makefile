@@ -25,3 +25,9 @@ gemfury: $(GEM)
 	fury push $(GEM)
 
 publish: rubygems gemfury
+
+release:
+	github-release release -t ${APP}-${VERSION} -n "${APP} ${VERSION}"
+
+upload:
+	github-release upload -t ${APP}-${VERSION} -n "${APP}-${VERSION}.gem" -R -f "${APP}-${VERSION}.gem"
