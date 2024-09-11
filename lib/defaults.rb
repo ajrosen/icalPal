@@ -8,7 +8,7 @@ $defaults = {
     ab: '!',
     aep: [],
     bullet: '•',
-    cf: "#{ENV['HOME']}/.icalPal",
+    cf: "#{ENV['HOME']}/.icalpal",
     color: false,
     db: "#{ENV['HOME']}/Library/Calendars/Calendar.sqlitedb",
     debug: Logger::WARN,

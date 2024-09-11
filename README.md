@@ -1,10 +1,10 @@
-[![Gem Version](https://badge.fury.io/rb/icalPal.svg)](https://badge.fury.io/rb/icalPal)
+[![Gem Version](https://badge.fury.io/rb/icalpal.svg)](https://badge.fury.io/rb/icalpal)
 
-# icalPal
+# icalpal
 
 ## Description
 
-icalPal is a command-line tool to query a macOS Calendar and Reminders
+icalpal is a command-line tool to query a macOS Calendar and Reminders
 databases for accounts, calendars, events, and tasks.  It can be run
 on any system with [Ruby](https://www.ruby-lang.org/) and access to a
 Calendar or Reminders database.
@@ -14,27 +14,27 @@ Calendar or Reminders database.
 As a system-wide Ruby gem:
 
 ```
-gem install icalPal
+gem install icalpal
 ```
 
 or in your home diretory:
 
 ```
-gem install --user-install icalPal
+gem install --user-install icalpal
 ```
 
 As a Homebrew formula:
 
 ```
-brew tap ajrosen/icalPal
-brew install icalPal
+brew tap ajrosen/icalpal
+brew install icalpal
 ```
 
 ## Features
 
 ### Compatability with [icalBuddy](https://github.com/ali-rantakari/icalBuddy)
 
-icalPal tries to be compatible with icalBuddy for command-line options
+icalpal tries to be compatible with icalBuddy for command-line options
 and for output.  There are a some important differences to be aware
 of.
 
@@ -48,17 +48,17 @@ of.
 
 ### Additional commands
 
-```icalPal accounts```
+```icalpal accounts```
 
-Shows a list of enabled Calendar accounts.  Internally they are known as *Stores*; you can run ```icalPal stores``` instead.
+Shows a list of enabled Calendar accounts.  Internally they are known as *Stores*; you can run ```icalpal stores``` instead.
 
-```icalPal datedTasks```
+```icalpal datedTasks```
 
 Shows only reminders that have a due date.
 
 ### Additional options
 
-* Options can be abbreviated, so long as they are unique.  Eg., ```icalPal -c ev --da 3``` is the same as ```icalPal -c events --days 3```.
+* Options can be abbreviated, so long as they are unique.  Eg., ```icalpal -c ev --da 3``` is the same as ```icalpal -c events --days 3```.
 * The ```-c``` part is optional, but you cannot abbreviate the command if you leave it off.
 * Use ```-o``` to print the output in different formats.  CSV or JSON are intertesting choices.
 * Copy your Calendar database file and use ```--db``` on it.
@@ -70,11 +70,11 @@ Shows only reminders that have a due date.
 * ```--color``` uses a wider color palette.  Calendar colors are what you have chosen in the Calendar app.  Not supported in all terminals, but looks great in [iTerm2](https://iterm2.com/).
 * ```--match``` lets you filter the results of any command to items where a *FIELD* matches a regular expression.  Eg., ```--match notes=zoom.us``` to show only Zoom meeetings
 
-Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the version of Ruby (2.6.10) included with macOS.
+Because icalpal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the version of Ruby (2.6.10) included with macOS.
 
 ## Usage
 
-icalPal: Usage: icalPal [options] [-c] COMMAND
+icalpal: Usage: icalpal [options] [-c] COMMAND
 
 COMMAND must be one of the following:
 ```
@@ -96,7 +96,7 @@ Global options:
         --db=DB             Use DB file instead of Calendar (default: /Users/ajr/Library/Calendars/Calendar.sqlitedb)
                             For the tasks commands this should be a directory containing .sqlite files
                             (default: /Users/ajr/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores)
-        --cf=FILE           Set config file path (default: /Users/ajr/.icalPal)
+        --cf=FILE           Set config file path (default: /Users/ajr/.icalpal)
     -o, --output=FORMAT     Print as FORMAT (default: default)
                             [ansi, csv, default, hash, html, json, md, rdoc, remind, toc, xml, yaml]
 ```
@@ -200,19 +200,19 @@ Environment variables:
 ```
     ICALPAL                 Additional arguments
     ICALPAL_CONFIG          Additional arguments from a file
-                            (default: /Users/ajr/.icalPal)
+                            (default: /Users/ajr/.icalpal)
 ```
 
 ## Output formats
 
-icalPal supports several output formats.  The **default** format tries
+icalpal supports several output formats.  The **default** format tries
 to mimic icalBuddy as much as possible.
 
 CSV, Hash, JSON, XML, and YAML print all fields for all items in their
 respective formats.  From that you can analyze the results any way you
 like.
 
-[Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built in icalPal.
+[Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built in icalpal.
 
 Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
 [RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html)
@@ -260,9 +260,9 @@ Lawton](https://github.com/jimlawton) that it even compiles anymore.
 Instead of trying to understand and extend the existing code, I chose
 to start anew using my language of choice: Ruby.  Using Ruby meant
 there is *much* less code; about 1,600 lines vs. 7,000.  It also means
-icalPal is multi-platform.
+icalpal is multi-platform.
 
 I won't pretend to understand **why** you would want to run this on
-Linux or Windows.  But since icalPal is written in Ruby and gets its
+Linux or Windows.  But since icalpal is written in Ruby and gets its
 data directly from the Calendar and Reminders database files instead
 of an API, you *can*.

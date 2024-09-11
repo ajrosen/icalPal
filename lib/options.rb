@@ -13,7 +13,7 @@ module ICalPal
   #
   # Many options are intentionally copied from
   # icalBuddy[https://github.com/ali-rantakari/icalBuddy].  Note that
-  # icalPal requires two hyphens for all options, except single-letter
+  # icalpal requires two hyphens for all options, except single-letter
   # options which require a single hyphen.
   #
   # Options can be abbreviated as long as they are unique.

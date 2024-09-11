@@ -9,12 +9,12 @@ begin
   require 'sqlite3'
   require 'yaml'
 
-  require_relative '../lib/icalPal'
+  require_relative '../lib/icalpal'
   require_relative '../lib/options'
 rescue LoadError => e
   dep = e.message[/-- (.*)/, 1]
 
-  $stderr.puts "FATAL: icalPal is missing a dependency: #{dep}"
+  $stderr.puts "FATAL: icalpal is missing a dependency: #{dep}"
   $stderr.puts
   $stderr.puts "Install with 'gem install --user-install #{dep}'"
 
@@ -95,14 +95,16 @@ $rows.each_with_index do |row, i|
   end
 
   # --ec/--ic
-  if $opts[:ec].any? row['calendar'] then
-    $log.debug(":ec")
-    next
-  end
+  unless klass == ICalPal::Store or !row['calendar']
+    if $opts[:ec].any? row['calendar'] then
+      $log.debug(":ec")
+      next
+    end
 
-  unless $opts[:ic].empty? or $opts[:ic].any? row['calendar']
-    $log.debug(":ic")
-    next
+    unless $opts[:ic].empty? or $opts[:ic].any? row['calendar']
+      $log.debug(":ic")
+      next
+    end
   end
 
   # Instantiate an item
@@ -130,13 +132,13 @@ $rows.each_with_index do |row, i|
     next
   end
 
-  # --regexp
+  # --match
   if $opts[:match]
     r = $opts[:match].split('=')
 
     if item[r[0]].to_s.respond_to?(:match)
       unless item[r[0]].to_s.match(Regexp.new(r[1].to_s, Regexp::IGNORECASE)) then
-        $log.debug(":regex")
+        $log.debug(":match")
         next
       end
     end
