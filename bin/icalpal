@@ -65,12 +65,19 @@ end
 klass = ICalPal::($opts[:cmd])
 
 # Get it
-if klass == ICalPal::Reminder then
-  # Load all .sqlite files
-  Dir.glob("#{$opts[:db]}/*.sqlite").each { |db| $rows += ICalPal.load_data(db, klass::QUERY) }
-else
-  # Load database
-  $rows += ICalPal.load_data($opts[:db], klass::QUERY)
+$opts[:db].each do |db|
+    $log.debug("Trying #{db}")
+
+    if klass == ICalPal::Reminder then
+      # Load all .sqlite files
+      $log.debug("Loading *.sqlite in #{db}")
+      Dir.glob("#{db}/*.sqlite").each { |d| $rows += ICalPal.load_data(d, klass::QUERY) }
+    else
+      # Load database
+      begin
+        $rows += ICalPal.load_data(db, klass::QUERY)
+      end
+  end
 end
 
 $log.info("Loaded #{$rows.count} #{klass} rows")

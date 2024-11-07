@@ -29,7 +29,7 @@ module ICalPal
       @op.accept(ICalPal::RDT) { |s| ICalPal::RDT.conv(s) }
 
       # head
-      @op.on("\nCOMMAND must be one of the following:\n\n")
+      @op.on_head("\nCOMMAND must be one of the following:\n\n")
 
       @op.on("%s%s %sPrint events" % pad('events'))
       @op.on("%s%s %sPrint tasks" % pad('tasks'))
@@ -47,7 +47,8 @@ module ICalPal
       @op.separator("\nGlobal options:\n\n")
 
       @op.on('-c=COMMAND', '--cmd=COMMAND', COMMANDS, 'Command to run')
-      @op.on('--db=DB', "Use DB file instead of Calendar (default: #{$defaults[:common][:db]})",
+      @op.on('--db=DB', "Use DB file instead of Calendar",
+             "(default: #{$defaults[:common][:db]}",
              'For the tasks commands this should be a directory containing .sqlite files',
              "(default: #{$defaults[:tasks][:db]})")
       @op.on('--cf=FILE', "Set config file path (default: #{$defaults[:common][:cf]})")
@@ -219,6 +220,10 @@ module ICalPal
         # datedTasks and undatedTasks
         opts[:cmd] = "tasks" if opts[:cmd] == "datedTasks"
         opts[:cmd] = "tasks" if opts[:cmd] == "undatedTasks"
+
+        # Make sure opts[:db] and opts[:tasks] are Arrays
+        opts[:db] = [ opts[:db] ] unless opts[:db].is_a?(Array)
+        opts[:tasks] = [ opts[:tasks] ] unless opts[:db].is_a?(Array)
 
         # All kids love log!
         $log.level = opts[:debug]

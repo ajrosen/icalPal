@@ -58,6 +58,9 @@ module ICalPal
     rescue SQLite3::BusyException => e
       $log.error("Non-fatal error closing database #{db.filename}")
 
+    rescue SQLite3::CantOpenException => e
+      $log.debug("Can't open #{db_file}")
+
     rescue SQLite3::SQLException => e
       $log.info("#{db_file}: #{e}")
 
