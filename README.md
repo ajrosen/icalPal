@@ -14,13 +14,13 @@ Calendar or Reminders database.
 As a system-wide Ruby gem:
 
 ```
-gem install icalpal
+gem install icalPal
 ```
 
 or in your home diretory:
 
 ```
-gem install --user-install icalpal
+gem install --user-install icalPal
 ```
 
 As a Homebrew formula:
