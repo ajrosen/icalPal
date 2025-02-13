@@ -1,10 +1,10 @@
 [![Gem Version](https://badge.fury.io/rb/icalPal.svg)](https://badge.fury.io/rb/icalPal)
 
-# icalpal
+# icalPal
 
 ## Description
 
-icalpal is a command-line tool to query a macOS Calendar and Reminders
+icalPal is a command-line tool to query a macOS Calendar and Reminders
 databases for accounts, calendars, events, and tasks.  It can be run
 on any system with [Ruby](https://www.ruby-lang.org/) and access to a
 Calendar or Reminders database.
@@ -26,15 +26,15 @@ gem install --user-install icalPal
 As a Homebrew formula:
 
 ```
-brew tap ajrosen/icalpal
-brew install icalpal
+brew tap ajrosen/icalPal
+brew install icalPal
 ```
 
 ## Features
 
 ### Compatability with [icalBuddy](https://github.com/ali-rantakari/icalBuddy)
 
-icalpal tries to be compatible with icalBuddy for command-line options
+icalPal tries to be compatible with icalBuddy for command-line options
 and for output.  There are a some important differences to be aware
 of.
 
@@ -48,17 +48,17 @@ of.
 
 ### Additional commands
 
-```icalpal accounts```
+```icalPal accounts```
 
-Shows a list of enabled Calendar accounts.  Internally they are known as *Stores*; you can run ```icalpal stores``` instead.
+Shows a list of enabled Calendar accounts.  Internally they are known as *Stores*; you can run ```icalPal stores``` instead.
 
-```icalpal datedTasks```
+```icalPal datedTasks```
 
 Shows only reminders that have a due date.
 
 ### Additional options
 
-* Options can be abbreviated, so long as they are unique.  Eg., ```icalpal -c ev --da 3``` is the same as ```icalpal -c events --days 3```.
+* Options can be abbreviated, so long as they are unique.  Eg., ```icalPal -c ev --da 3``` is the same as ```icalPal -c events --days 3```.
 * The ```-c``` part is optional, but you cannot abbreviate the command if you leave it off.
 * Use ```-o``` to print the output in different formats.  CSV or JSON are intertesting choices.
 * Copy your Calendar database file and use ```--db``` on it.
@@ -70,11 +70,11 @@ Shows only reminders that have a due date.
 * ```--color``` uses a wider color palette.  Calendar colors are what you have chosen in the Calendar app.  Not supported in all terminals, but looks great in [iTerm2](https://iterm2.com/).
 * ```--match``` lets you filter the results of any command to items where a *FIELD* matches a regular expression.  Eg., ```--match notes=zoom.us``` to show only Zoom meeetings
 
-Because icalpal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the version of Ruby (2.6.10) included with macOS.
+Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the version of Ruby (2.6.10) included with macOS.
 
 ## Usage
 
-icalpal: Usage: icalpal [options] [-c] COMMAND
+icalPal: Usage: icalPal [options] [-c] COMMAND
 
 COMMAND must be one of the following:
 ```
@@ -205,14 +205,14 @@ Environment variables:
 
 ## Output formats
 
-icalpal supports several output formats.  The **default** format tries
+icalPal supports several output formats.  The **default** format tries
 to mimic icalBuddy as much as possible.
 
 CSV, Hash, JSON, XML, and YAML print all fields for all items in their
 respective formats.  From that you can analyze the results any way you
 like.
 
-[Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built in icalpal.
+[Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built in icalPal.
 
 Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
 [RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html)
@@ -259,10 +259,10 @@ Lawton](https://github.com/jimlawton) that it even compiles anymore.
 
 Instead of trying to understand and extend the existing code, I chose
 to start anew using my language of choice: Ruby.  Using Ruby meant
-there is *much* less code; about 1,600 lines vs. 7,000.  It also means
-icalpal is multi-platform.
+there is *much* less code; about 1,800 lines vs. 7,000.  It also means
+icalPal is multi-platform.
 
 I won't pretend to understand **why** you would want to run this on
-Linux or Windows.  But since icalpal is written in Ruby and gets its
+Linux or Windows.  But since icalPal is written in Ruby and gets its
 data directly from the Calendar and Reminders database files instead
 of an API, you *can*.
