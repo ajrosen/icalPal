@@ -22,13 +22,13 @@ module ICalPal
     # @param k [String] Key/property name
     def [](k)
       case k
-      when 'age' then           # pseudo-property
+      when 'age'                # pseudo-property
         @self['sdate'].year - @self['edate'].year
 
-      when 'availability' then  # Integer -> String
-        EventKit::EKEventAvailability.select { |k, v| v == @self['availability'] }.keys
+      when 'availability'       # Integer -> String
+        EventKit::EKEventAvailability.select { |_k, v| v == @self['availability'] }.keys
 
-      when 'datetime' then      # date[ at time[ - time]]
+      when 'datetime'           # date[ at time[ - time]]
         unless $opts[:sd] || $opts[:days] == 1
           t = @self['sdate'].to_s
           t += ' at ' unless @self['all_day'].positive?
@@ -41,22 +41,22 @@ module ICalPal
         end
         t
 
-      when 'location' then      # location[ address]
-        @self['location']? [ @self['location'], @self['address'] ].join(' ').chop : nil
+      when 'location'           # location[ address]
+        (@self['location'])? [ @self['location'], @self['address'] ].join(' ').chop : nil
 
-      when 'notes' then         # \n -> :nnr
-        @self['notes']? @self['notes'].strip.gsub(/\n/, $opts[:nnr]) : nil
+      when 'notes'              # \n -> :nnr
+        (@self['notes'])? @self['notes'].strip.gsub(/\n/, $opts[:nnr]) : nil
 
-      when 'sday' then        # pseudo-property
+      when 'sday'               # pseudo-property
         ICalPal::RDT.new(*@self['sdate'].to_a[0..2])
 
-      when 'status' then        # Integer -> String
-        EventKit::EKEventStatus.select { |k, v| v == @self['status'] }.keys[0]
+      when 'status'             # Integer -> String
+        EventKit::EKEventStatus.select { |_k, v| v == @self['status'] }.keys[0]
 
-      when 'title' then         # title[ (age N)]
-        @self['title'] + ((@self['calendar'] == 'Birthdays')? " (age #{self['age']})" : "")
+      when 'title'              # title[ (age N)]
+        @self['title'] + ((@self['calendar'] == 'Birthdays')? " (age #{self['age']})" : '')
 
-      when 'uid' then           # for icalBuddy
+      when 'uid'                # for icalBuddy
         @self['UUID']
 
       else @self[k]
@@ -72,20 +72,22 @@ module ICalPal
     def initialize(obj)
       # Placeholder for days with no events
       return @self = {
-               $opts[:sep] => obj,
-               'sdate' => obj,
-               'placeholder' => true,
-               'title' => 'Nothing.',
-             } if DateTime === obj
+        $opts[:sep] => obj,
+        'sdate' => obj,
+        'placeholder' => true,
+        'title' => 'Nothing.',
+      } if DateTime === obj
 
       @self = {}
-      obj.keys.each { |k| @self[k] = obj[k] }
+      obj.each_key { |k| @self[k] = obj[k] }
 
       # Convert JSON arrays to Arrays
       @self['attendees'] = JSON.parse(obj['attendees'])
+      # rubocop: disable Lint/UselessAssignment
       @self['xdate'] = JSON.parse(obj['xdate']).map do |k|
         k = RDT.new(*Time.at(k + ITIME).to_a.reverse[4..]) if k
       end
+      # rubocop: enable Lint/UselessAssignment
 
       # Convert iCal dates to normal dates
       obj.keys.select { |i| i.end_with? '_date' }.each do |k|
@@ -94,7 +96,7 @@ module ICalPal
       end
 
       if @self['start_tz'] == '_float'
-        tzoffset = Time.zone_offset($now.zone())
+        tzoffset = Time.zone_offset($now.zone)
 
         @self['sdate'] = RDT.new(*(@self['sdate'].to_time - tzoffset).to_a.reverse[4..], $now.zone)
         @self['edate'] = RDT.new(*(@self['edate'].to_time - tzoffset).to_a.reverse[4..], $now.zone)
@@ -116,16 +118,16 @@ module ICalPal
     def non_recurring
       events = []
 
-      nDays = (self['duration'] / 86400).to_i
+      nDays = (self['duration'] / 86_400).to_i
 
       # Sanity checks
-      return events if nDays > 100000
+      return events if nDays > 100_000
 
       # Repeat for multi-day events
       (nDays + 1).times do |i|
         break if self['sdate'] > $opts[:to]
 
-        $log.debug("multi-day event #{i + 1}") if (i > 0)
+        $log.debug("multi-day event #{i + 1}") if (i.positive?)
 
         self['daynum'] = i + 1
         events.push(clone) if in_window?(self['sdate'])
@@ -145,9 +147,9 @@ module ICalPal
       stop = [ $opts[:to], (self['rdate'] || $opts[:to]) ].min
 
       # See if event ends before we start
-      if stop < $opts[:from] then
+      if stop < $opts[:from]
         $log.debug("#{stop} < #{$opts[:from]}")
-        return(Array.new)
+        return([])
       end
 
       # Get changes to series
@@ -159,11 +161,12 @@ module ICalPal
 
       while self['sdate'] <= stop
         # count
-        break if self['count'].positive? and count > self['count']
+        break if self['count'].positive? && count > self['count']
+
         count += 1
 
         # Handle specifier or clone self
-        if self['specifier'] and self['specifier'].length.positive?
+        if self['specifier'] && self['specifier'].length.positive?
           occurrences = get_occurrences(changes)
         else
           occurrences = [ clone ]
@@ -173,18 +176,20 @@ module ICalPal
         occurrences.each do |occurrence|
           changes.each do |change|
             next if change['orig_date'] == self['sdate'].to_i - ITIME
+
             events.push(occurrence) if in_window?(occurrence['sdate'], occurrence['edate'])
           end
         end
 
         break if self['specifier']
+
         apply_frequency!
       end
 
       # Remove exceptions
       events.delete_if { |event| event['xdate'].any?(event['sdate']) }
 
-      return(events)
+      events
     end
 
     private
@@ -192,15 +197,15 @@ module ICalPal
     # @!visibility public
 
     # @return a deep clone of self
-    def clone()
+    def clone
       Marshal.load(Marshal.dump(self))
     end
 
     # Get next occurences of a recurring event from a specifier
     #
-    # @param changes [Array] Recurrence changes for the event
+    # @param _changes [Array] Recurrence changes for the event
     # @return [Array<IcalPal::Event>]
-    def get_occurrences(changes)
+    def get_occurrences(_changes)
       occurrences = []
 
       dow = DOW.keys
@@ -208,7 +213,7 @@ module ICalPal
       moy = 1..12
       nth = nil
 
-      specifier = self['specifier']? self['specifier'] : []
+      specifier = (self['specifier'])? self['specifier'] : []
 
       # Deconstruct specifier
       specifier.split(';').each do |k|
@@ -226,7 +231,7 @@ module ICalPal
 
       # Build array of DOWs
       dows = [ nil ]
-      dow.each { |d| dows.push(DOW[d[-2..-1].to_sym]) }
+      dow.each { |d| dows.push(DOW[d[-2..].to_sym]) }
 
       # Months of the year (O)
       moy.each do |m|
@@ -249,16 +254,14 @@ module ICalPal
           self['sdate'] = ICalPal.nth(nth, dows, nsdate)
           self['edate'] = ICalPal.nth(nth, dows, nedate)
           occurrences.push(clone)
-        else
-          if dows[0]
-            self['sdate'] = RDT.new(nsdate.year, m.to_i, nsdate.wday)
-            self['edate'] = RDT.new(nedate.year, m.to_i, nedate.wday)
-            occurrences.push(clone)
-          end
+        elsif dows[0]
+          self['sdate'] = RDT.new(nsdate.year, m.to_i, nsdate.wday)
+          self['edate'] = RDT.new(nedate.year, m.to_i, nedate.wday)
+          occurrences.push(clone)
         end
       end
 
-      return(occurrences)
+      occurrences
     end
 
     # Apply frequency and interval
@@ -285,26 +288,24 @@ module ICalPal
     # @param e [RDT] Event end
     # @return [Boolean]
     def in_window?(s, e = s)
-      if $opts[:n] then
-        if ($now >= s && $now < e) then
+      if $opts[:n]
+        if ($now >= s && $now < e)
           $log.debug("now: #{s} to #{e} vs. #{$now}")
-          return(true)
+          true
         else
           $log.debug("not now: #{s} to #{e} vs. #{$now}")
-          return(false)
+          false
         end
+      elsif ([ s, e ].max >= $opts[:from] && s < $opts[:to])
+        $log.debug("in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
+        true
       else
-        if ([ s, e ].max >= $opts[:from] && s < $opts[:to]) then
-          $log.debug("in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
-          return(true)
-        else
-          $log.debug("not in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
-          return(false)
-        end
+        $log.debug("not in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
+        false
       end
     end
 
-    QUERY = <<~SQL
+    QUERY = <<~SQL.freeze
 SELECT DISTINCT
 
 Store.name AS account,

@@ -5,7 +5,7 @@ GEM=$(APP)-$(VERSION).gem
 
 export GITHUB_REPO = icalPal
 
-$(GEM): bin/icalpal lib/*.rb
+$(GEM): bin/icalpal lib/*.rb $(APP).gemspec
 	gem build $(APP).gemspec -q
 
 clean:

@@ -3,7 +3,7 @@ module ICalPal
   class Store
     include ICalPal
 
-    QUERY = <<~SQL
+    QUERY = <<~SQL.freeze
 SELECT DISTINCT
 
 Store.name AS account,

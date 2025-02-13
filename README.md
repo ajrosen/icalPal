@@ -1,4 +1,4 @@
-[![Gem Version](https://badge.fury.io/rb/icalpal.svg)](https://badge.fury.io/rb/icalpal)
+[![Gem Version](https://badge.fury.io/rb/icalPal.svg)](https://badge.fury.io/rb/icalPal)
 
 # icalpal
 

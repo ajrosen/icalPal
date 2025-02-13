@@ -1,0 +1,166 @@
+##################################################
+# Layout
+
+Layout/BlockAlignment:
+  Enabled: false
+
+Layout/EmptyLines:
+  Enabled: false
+
+Layout/EmptyLinesAroundClassBody:
+  EnforcedStyle: empty_lines_special
+
+Layout/EmptyLinesAroundExceptionHandlingKeywords:
+  Enabled: false
+
+Layout/ClosingHeredocIndentation:
+  Enabled: false
+
+Layout/HashAlignment:
+  Enabled: false
+
+Layout/HeredocIndentation:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 133
+
+Layout/MultilineMethodCallIndentation:
+  Enabled: false
+
+Layout/MultilineOperationIndentation:
+  Enabled: false
+
+Layout/SpaceAroundOperators:
+  Enabled: false
+
+Layout/SpaceInsideArrayLiteralBrackets:
+  EnforcedStyle: space
+
+Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: false
+
+
+##################################################
+# Lint
+
+Lint/RescueException:
+  Enabled: false
+
+Lint/SuppressedException:
+  Enabled: false
+
+Lint/ReturnInVoidContext:
+  Enabled: false
+
+
+##################################################
+# Metrics
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+
+##################################################
+# Naming
+
+Naming/HeredocDelimiterNaming:
+  Enabled: false
+
+Naming/FileName:
+  Enabled: false
+
+Naming/MethodParameterName:
+  Enabled: false
+
+Naming/VariableName:
+  Enabled: false
+
+
+##################################################
+# Style
+
+Style/BlockDelimiters:
+  AllowedPatterns: [ 'map' ]
+
+Style/CaseEquality:
+  AllowOnConstant: true
+
+Style/ConditionalAssignment:
+  EnforcedStyle: assign_inside_condition
+  IncludeTernaryExpressions: false
+
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: never
+
+Style/GlobalStdStream:
+  Enabled: false
+
+Style/GlobalVars:
+  AllowedVariables: [ $defaults, $items, $log, $now, $opts, $today, $rows ]
+
+Style/LineEndConcatenation:
+  Enabled: false
+
+Style/MultilineIfModifier:
+  Enabled: false
+
+Style/MultilineTernaryOperator:
+  Enabled: false
+
+Style/ParenthesesAroundCondition:
+  Enabled: false
+
+Style/RedundantParentheses:
+  Enabled: false
+
+Style/RedundantSelf:
+  Enabled: false
+
+Style/SoleNestedConditional:
+  Enabled: false
+
+Style/StderrPuts:
+  Enabled: false
+
+Style/SymbolProc:
+  AllowedMethods: [ map ]
+
+Style/TernaryParentheses:
+  EnforcedStyle: require_parentheses
+
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+
+Style/TrailingCommaInHashLiteral:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/RescueStandardError:
+  Enabled: false
+
+Style/SafeNavigation:
+  Enabled: false
+
+Style/RedundantInterpolation:
+  Enabled: false
+
+Style/RescueModifier:
+  Enabled: false

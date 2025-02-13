@@ -1,3 +1,5 @@
+# rubocop: disable Style/FormatString, Style/FormatStringToken
+
 require 'optparse'
 
 require_relative 'defaults'
@@ -18,12 +20,13 @@ module ICalPal
   #
   # Options can be abbreviated as long as they are unique.
   class Options
+
     # Define the OptionParser
     def initialize
       # prologue
       @op = OptionParser.new
       @op.summary_width = 23
-      @op.banner += " [-c] COMMAND"
+      @op.banner += ' [-c] COMMAND'
       @op.version = ICalPal::VERSION
 
       @op.accept(ICalPal::RDT) { |s| ICalPal::RDT.conv(s) }
@@ -31,30 +34,30 @@ module ICalPal
       # head
       @op.on_head("\nCOMMAND must be one of the following:\n\n")
 
-      @op.on("%s%s %sPrint events" % pad('events'))
-      @op.on("%s%s %sPrint tasks" % pad('tasks'))
-      @op.on("%s%s %sPrint calendars" % pad('calendars'))
-      @op.on("%s%s %sPrint accounts" % pad('accounts'))
+      @op.on('%s%s %sPrint events' % pad('events'))
+      @op.on('%s%s %sPrint tasks' % pad('tasks'))
+      @op.on('%s%s %sPrint calendars' % pad('calendars'))
+      @op.on('%s%s %sPrint accounts' % pad('accounts'))
 
       @op.separator('')
-      @op.on("%s%s %sPrint events occurring today" % pad('eventsToday'))
-      @op.on("%s%s %sPrint events occurring between today and NUM days into the future" % pad('eventsToday+NUM'))
-      @op.on("%s%s %sPrint events occurring at present time" % pad('eventsNow'))
-      @op.on("%s%s %sPrint tasks with a due date" % pad('datedTasks'))
-      @op.on("%s%s %sPrint tasks with no due date" % pad('undatedTasks'))
+      @op.on('%s%s %sPrint events occurring today' % pad('eventsToday'))
+      @op.on('%s%s %sPrint events occurring between today and NUM days into the future' % pad('eventsToday+NUM'))
+      @op.on('%s%s %sPrint events occurring at present time' % pad('eventsNow'))
+      @op.on('%s%s %sPrint tasks with a due date' % pad('datedTasks'))
+      @op.on('%s%s %sPrint tasks with no due date' % pad('undatedTasks'))
 
       # global
       @op.separator("\nGlobal options:\n\n")
 
       @op.on('-c=COMMAND', '--cmd=COMMAND', COMMANDS, 'Command to run')
-      @op.on('--db=DB', "Use DB file instead of Calendar",
+      @op.on('--db=DB', 'Use DB file instead of Calendar',
              "(default: #{$defaults[:common][:db]}",
              'For the tasks commands this should be a directory containing .sqlite files',
              "(default: #{$defaults[:tasks][:db]})")
       @op.on('--cf=FILE', "Set config file path (default: #{$defaults[:common][:cf]})")
       @op.on('-o', '--output=FORMAT', OUTFORMATS,
-            "Print as FORMAT (default: #{$defaults[:common][:output]})", "[#{OUTFORMATS.join(', ')}]")
-      
+             "Print as FORMAT (default: #{$defaults[:common][:output]})", "[#{OUTFORMATS.join(', ')}]")
+
       # include/exclude
       @op.separator("\nIncluding/excluding accounts, calendars, items:\n\n")
 
@@ -64,7 +67,7 @@ module ICalPal
       @op.separator('')
       @op.on('--it=TYPES', Array, 'List of calendar types to include')
       @op.on('--et=TYPES', Array, 'List of calendar types to exclude',
-            "[#{EventKit::EKSourceType.map { |i| i[:name] }.join(', ') }]")
+             "[#{EventKit::EKSourceType.map { |i| i[:name] }.join(', ')}]")
 
       @op.separator('')
       @op.on('--ic=CALENDARS', Array, 'List of calendars to include')
@@ -82,12 +85,12 @@ module ICalPal
 
       @op.on('--from=DATE', ICalPal::RDT, 'List events starting on or after DATE')
       @op.on('--to=DATE', ICalPal::RDT, 'List events starting on or before DATE',
-            'DATE can be yesterday, today, tomorrow, +N, -N, or anything accepted by DateTime.parse()',
-            'See https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-c-parse')
+             'DATE can be yesterday, today, tomorrow, +N, -N, or anything accepted by DateTime.parse()',
+             'See https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-c-parse')
       @op.separator('')
       @op.on('-n', 'Include only events from now on')
       @op.on('--days=N',  OptionParser::DecimalInteger,
-            'Show N days of events, including start date')
+             'Show N days of events, including start date')
       @op.on('--sed', 'Show empty dates with --sd')
       @op.on('--ia', 'Include only all-day events')
       @op.on('--ea', 'Exclude all-day events')
@@ -102,7 +105,7 @@ module ICalPal
       @op.on('--itp=PROPERTIES', Array, 'List of task properties to include')
       @op.on('--etp=PROPERTIES', Array, 'List of task properties to exclude')
       @op.on('--atp=PROPERTIES', Array, 'List of task properties to include in addition to the default list',
-            'Included for backwards compatability, these are aliases for --iep, --eep, and --aep')
+             'Included for backwards compatability, these are aliases for --iep, --eep, and --aep')
       @op.separator('')
 
       @op.on('--uid', 'Show event UIDs')
@@ -114,12 +117,10 @@ module ICalPal
       @op.on('--nrd', 'No relative dates')
 
       @op.separator('')
-      @op.separator(@op.summary_indent + 'Properties are listed in the order specified')
+      @op.separator("#{@op.summary_indent}Properties are listed in the order specified")
       @op.separator('')
-      @op.separator(@op.summary_indent +
-                   "Use 'all' for PROPERTIES to include all available properties (except any listed in --eep)")
-      @op.separator(@op.summary_indent +
-                   "Use 'list' for PROPERTIES to list all available properties and exit")
+      @op.separator("#{@op.summary_indent}Use 'all' for PROPERTIES to include all available properties (except any listed in --eep)")
+      @op.separator("#{@op.summary_indent}Use 'list' for PROPERTIES to list all available properties and exit")
 
       # formatting
       @op.separator("\nFormatting the output:\n\n")
@@ -144,7 +145,7 @@ module ICalPal
       @op.separator('')
       @op.on('--df=FORMAT', String, 'Set date format')
       @op.on('--tf=FORMAT', String, 'Set time format',
-            'See https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-i-strftime for details')
+             'See https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-i-strftime for details')
 
       @op.separator('')
       @op.on('-b', '--bullet=STRING', String, 'Use STRING for bullets')
@@ -160,16 +161,16 @@ module ICalPal
       @op.separator("\nHelp:\n\n")
 
       @op.on('-h', '--help', 'Show this message') { @op.abort(@op.help) }
-      @op.on('-V', '-v', '--version', "Show version and exit (#{@op.version})") { @op.abort(@op.version)  }
+      @op.on('-V', '-v', '--version', "Show version and exit (#{@op.version})") { @op.abort(@op.version) }
       @op.on('-d', '--debug=LEVEL', /#{Regexp.union(Logger::SEV_LABEL[0..-2]).source}/i,
-            "Set the logging level (default: #{Logger::SEV_LABEL[$defaults[:common][:debug]].downcase})",
-            "[#{Logger::SEV_LABEL[0..-2].join(', ').downcase}]")
+             "Set the logging level (default: #{Logger::SEV_LABEL[$defaults[:common][:debug]].downcase})",
+             "[#{Logger::SEV_LABEL[0..-2].join(', ').downcase}]")
 
       # environment variables
       @op.on_tail("\nEnvironment variables:\n\n")
 
-      @op.on_tail("%s%s %sAdditional arguments" % pad('ICALPAL'))
-      @op.on_tail("%s%s %sAdditional arguments from a file" % pad('ICALPAL_CONFIG'))
+      @op.on_tail('%s%s %sAdditional arguments' % pad('ICALPAL'))
+      @op.on_tail('%s%s %sAdditional arguments from a file' % pad('ICALPAL_CONFIG'))
       @op.on_tail("%s%s %s(default: #{$defaults[:common][:cf]})" % pad(''))
     end
 
@@ -218,8 +219,8 @@ module ICalPal
           .merge(cli)
 
         # datedTasks and undatedTasks
-        opts[:cmd] = "tasks" if opts[:cmd] == "datedTasks"
-        opts[:cmd] = "tasks" if opts[:cmd] == "undatedTasks"
+        opts[:cmd] = 'tasks' if opts[:cmd] == 'datedTasks'
+        opts[:cmd] = 'tasks' if opts[:cmd] == 'undatedTasks'
 
         # Make sure opts[:db] and opts[:tasks] are Arrays
         opts[:db] = [ opts[:db] ] unless opts[:db].is_a?(Array)
@@ -248,7 +249,7 @@ module ICalPal
         end
 
         # Sorting
-        opts[:sort] = 'due_date' if opts[:std] or opts[:stda]
+        opts[:sort] = 'due_date' if opts[:std] || opts[:stda]
         opts[:reverse] = true if opts[:std]
 
         # Colors
@@ -276,10 +277,10 @@ module ICalPal
     end
 
     # Commands that can be run
-    COMMANDS = %w{events eventsToday eventsNow tasks datedTasks undatedTasks calendars accounts stores}
+    COMMANDS = %w[events eventsToday eventsNow tasks datedTasks undatedTasks calendars accounts stores].freeze
 
     # Supported output formats
-    OUTFORMATS = %w{ansi csv default hash html json md rdoc remind toc xml yaml}
+    OUTFORMATS = %w[ansi csv default hash html json md rdoc remind toc xml yaml].freeze
 
     private
 
@@ -288,7 +289,10 @@ module ICalPal
     # @param t [String] Text on the left side
     # @return [String] Text indented by summary_indent, and padded according to summary_width
     def pad(t)
-      [ @op.summary_indent, t, " " * (@op.summary_width - t.length) ]
+      [ @op.summary_indent, t, ' ' * (@op.summary_width - t.length) ]
     end
+
   end
 end
+
+# rubocop: enable Style/FormatString, Style/FormatStringToken

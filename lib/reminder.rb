@@ -8,13 +8,13 @@ module ICalPal
 
     def [](k)
       case k
-      when 'notes' then         # Skip empty notes
-        @self['notes'].length > 0? @self['notes'] : nil
+      when 'notes'              # Skip empty notes
+        (@self['notes'].empty?)? @self['notes'] : nil
 
-      when 'priority' then      # Integer -> String
-        EventKit::EKReminderProperty[@self['priority']] if @self['priority'] > 0
+      when 'priority'           # Integer -> String
+        EventKit::EKReminderProperty[@self['priority']] if @self['priority'].positive?
 
-      when 'sdate' then         # For sorting
+      when 'sdate'              # For sorting
         @self['title']
 
       else @self[k]
@@ -23,32 +23,34 @@ module ICalPal
 
     def initialize(obj)
       @self = {}
-      obj.keys.each { |k| @self[k] = obj[k] }
+      obj.each_key { |k| @self[k] = obj[k] }
 
       # Priority
+      # rubocop: disable Style/NumericPredicate
       @self['prio'] = 0 if @self['priority'] == 1 # high
       @self['prio'] = 1 if @self['priority'] == 5 # medium
       @self['prio'] = 2 if @self['priority'] == 9 # low
       @self['prio'] = 3 if @self['priority'] == 0 # none
+      # rubocop: enable Style/NumericPredicate
 
       @self['long_priority'] = LONG_PRIORITY[@self['prio']]
 
       # For sorting
-      @self['sdate'] = (@self['title'])? @self['title'] : ""
+      @self['sdate'] = (@self['title'])? @self['title'] : ''
 
       # Due date
       @self['due'] = RDT.new(*Time.at(@self['due_date'] + ITIME).to_a.reverse[4..]) if @self['due_date']
       @self['due_date'] = 0 unless @self['due_date']
 
       # Notes
-      @self['notes'] = "" unless @self['notes']
+      @self['notes'] = '' unless @self['notes']
 
       # Color
       @self['color'] = nil unless $opts[:palette]
 
-      if @self['color'] then
+      if @self['color']
         # Run command
-        stdin, stdout, stderr, e = Open3.popen3(PL_CONVERT)
+        stdin, stdout, _stderr, _e = Open3.popen3(PL_CONVERT)
 
         # Send color bplist
         stdin.write(@self['color'])
@@ -65,23 +67,21 @@ module ICalPal
       end
     end
 
-    private
-
-    DEFAULT_COLOR = '#1BADF8'
-    DEFAULT_SYMBOLIC_COLOR = 'blue'
+    DEFAULT_COLOR = '#1BADF8'.freeze
+    DEFAULT_SYMBOLIC_COLOR = 'blue'.freeze
 
     LONG_PRIORITY = [
-      "High priority",
-      "Medium priority",
-      "Low priority",
-      "No priority",
-    ]
+      'High priority',
+      'Medium priority',
+      'Low priority',
+      'No priority',
+    ].freeze
 
-    PL_CONVERT = '/usr/bin/plutil -convert xml1 -o - -'
+    PL_CONVERT = '/usr/bin/plutil -convert xml1 -o - -'.freeze
 
-    DB_PATH = "#{Dir::home}/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores"
+    DB_PATH = "#{Dir.home}/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores".freeze
 
-    QUERY = <<~SQL
+    QUERY = <<~SQL.freeze
 SELECT DISTINCT
 
 zremcdReminder.zAllday as all_day,

@@ -1,6 +1,6 @@
 # Does anybody really know what time it is?
 $now = ICalPal::RDT.now
-$today = ICalPal::RDT.new(*$now.to_a[0..2] + [0, 0, 0, $now.zone])
+$today = ICalPal::RDT.new(*$now.to_a[0..2] + [ 0, 0, 0, $now.zone ])
 
 # Defaults
 $defaults = {
@@ -40,27 +40,27 @@ $defaults = {
   tasks: {
     dated: 0,
     db: [ ICalPal::Reminder::DB_PATH ],
-    iep: [ 'title', 'notes', 'due', 'priority' ],
+    iep: %w[ title notes due priority ],
     sort: 'prio',
   },
   undatedTasks: {
     dated: 1,
     db: [ ICalPal::Reminder::DB_PATH ],
-    iep: [ 'title', 'notes', 'due', 'priority' ],
+    iep: %w[ title notes due priority ],
     sort: 'prio',
   },
   datedTasks: {
     dated: 2,
     db: [ ICalPal::Reminder::DB_PATH ],
-    iep: [ 'title', 'notes', 'due', 'priority' ],
+    iep: %w[ title notes due priority ],
     sort: 'prio',
   },
   stores: {
-    iep: [ 'account', 'type' ],
+    iep: %w[ account type ],
     sort: 'account',
   },
   calendars: {
-    iep: [ 'calendar', 'type', 'UUID' ],
+    iep: %w[ calendar type UUID ],
     sort: 'calendar',
   },
   events: {
@@ -69,7 +69,7 @@ $defaults = {
     eed: false,
     eep: [],
     from: $today,
-    iep: [ 'title', 'location', 'notes', 'url', 'attendees', 'datetime' ],
+    iep: %w[ title location notes url attendees datetime ],
     n: false,
     nnr: "\n       ",
     nrd: false,

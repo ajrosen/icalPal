@@ -1,9 +1,12 @@
+# rubocop: disable Naming/ConstantName
+
 # Constants from EventKit[https://developer.apple.com/documentation/eventkit/]
+
 class EventKit
-  EKEntityType = [
-    'event',
-    'reminder',
-  ]
+  EKEntityType = %w[
+    event
+    reminder
+  ].freeze
 
   EKEventAvailability = {
     notSupported: -1,
@@ -11,28 +14,28 @@ class EventKit
     free: 1,
     tentative: 2,
     unavailable: 3,
-  }
+  }.freeze
 
   EKEventStatus = {
     none: 0,
     confirmed: 1,
     tentative: 2,
     canceled: 3,
-  }
+  }.freeze
 
-  EKRecurrenceFrequency = [
-    'daily',
-    'weekly',
-    'monthly',
-    'yearly',
-  ]
+  EKRecurrenceFrequency = %w[
+    daily
+    weekly
+    monthly
+    yearly
+  ].freeze
 
   EKReminderProperty = [
     'none',                     # 0
     'high', nil, nil, nil,      # 1
     'medium', nil, nil, nil,    # 5
     'low',                      # 9
-  ]
+  ].freeze
 
   # EKSourceType (with color)
   EKSourceType = [
@@ -43,10 +46,13 @@ class EventKit
     { name: 'Subscribed', color: '#FF0000' }, # Red
     { name: 'Birthdays',  color: '#FF00FF' }, # Magenta
     { name: 'Reminders',  color: '#066FF3' }, # Blue
-  ]
+  ].freeze
 
-  EKSpan = [
-    'this',
-    'future',
-  ]
+  EKSpan = %w[
+    this
+    future
+  ].freeze
+
 end
+
+# rubocop: enable Naming/ConstantName

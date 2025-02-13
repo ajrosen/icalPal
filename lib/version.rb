@@ -1,4 +1,4 @@
 module ICalPal
-  NAME = 'icalPal'
-  VERSION = '3.1.1'
+  NAME = 'icalPal'.freeze
+  VERSION = '3.2.0'.freeze
 end

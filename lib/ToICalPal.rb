@@ -1,7 +1,6 @@
 ##################################################
 # Render an RDoc::Markup::Document, closely mimicking
 # icalBuddy[https://github.com/ali-rantakari/icalBuddy]
-
 class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # Standard
   # ANSI[https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.416-199303-I!!PDF-E&type=items]
@@ -26,25 +25,25 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
     'pink':      '38;2;255;45;85',
     'purple':    '38;2;204;115;225',
     'rose':      '38;2;217;166;159',
-  }
+  }.freeze
 
   # Increased intensity
-  BOLD = '%c[1m' % 27.chr
+  BOLD = format('%c[1m', 27.chr)
 
   # Default rendition
-  NORM = '%c[0m' % 27.chr
+  NORM = format('%c[0m', 27.chr)
 
   # Properties for which we don't include labels
-  NO_LABEL = [ 'title', 'datetime' ]
+  NO_LABEL = %w[ title datetime ].freeze
 
   # Properties that are always colorized
-  COLOR_LABEL = [ 'title', 'calendar' ]
+  COLOR_LABEL = %w[ title calendar ].freeze
 
   # Default color for labels
-  LABEL_COLOR = [ 'cyan', '#00ffff' ]
+  LABEL_COLOR = [ 'cyan', '#00ffff' ].freeze
 
   # Color for datetime value
-  DATE_COLOR = [ 'yellow', '#ffff00' ]
+  DATE_COLOR = [ 'yellow', '#ffff00' ].freeze
 
   # @param opts [Hash] Used for conditional formatting
   # @option opts [String] :bullet Bullet
@@ -56,6 +55,7 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # @option opts [Array<String>] :ps List of property separators
   # @option opts [String] :ss Section separator
   def initialize(opts)
+    super(opts)
     @opts = opts
   end
 
@@ -72,15 +72,15 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
 
   # Add a bullet for the first property of an item
   #
-  # @param arg [Array] Ignored
-  def accept_list_start(arg)
+  # @param _arg [Array] Ignored
+  def accept_list_start(_arg)
     begin
       return if @item['placeholder']
     rescue
     end
 
     begin
-      if (@item['due_date'] + ICalPal::ITIME).between?(ICalPal::ITIME + 1, $now.to_i) then
+      if (@item['due_date'] + ICalPal::ITIME).between?(ICalPal::ITIME + 1, $now.to_i)
         @res << "#{@opts[:ab]} " unless @opts[:nb]
         return
       end
@@ -96,15 +96,15 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # @option arg [String] .label Contains the property name
   def accept_list_item_start(arg)
     @res << @opts[:ps][@ps] || '    ' unless @item['placeholder']
-    @res << colorize(*LABEL_COLOR, arg.label) << ": " unless @opts[:npn] || NO_LABEL.any?(arg.label)
+    @res << colorize(*LABEL_COLOR, arg.label) << ': ' unless @opts[:npn] || NO_LABEL.any?(arg.label)
 
     @ps += 1 unless @ps == @opts[:ps].count - 1
   end
 
   # Add a blank line
   #
-  # @param arg [Array] Ignored
-  def accept_blank_line(*arg)
+  # @param *_arg [Array] Ignored
+  def accept_blank_line(*_arg)
     @res << "\n"
   end
 
@@ -119,9 +119,9 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
     @res << h.text
 
     case h.level
-    when 1 then
-      @res << ":"
-    when 2 then
+    when 1
+      @res << ':'
+    when 2
       if @prop == 'title' && @item['calendar']
         @res << bold(" (#{@item['calendar']})") unless @opts[:nc] || @item['title'] == @item['calendar']
       end
@@ -140,8 +140,8 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
 
   # Add a section separator
   #
-  # @param weight Ignored
-  def accept_rule(weight)
+  # @param _weight Ignored
+  def accept_rule(_weight)
     @res << @opts[:ss]
     accept_blank_line
   end
@@ -167,6 +167,7 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # @return [String] str with increased intensity[#BOLD]
   def bold(str)
     return str unless @opts[:palette]
+
     BOLD + str + NORM
   end
 
@@ -177,27 +178,28 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
     return str unless c8 && c24 && @opts[:palette]
 
     case @opts[:palette]
-    when 8 then                 # Default colour table
+    when 8                      # Default colour table
       c = ANSI[c8.downcase.to_sym]
       c ||= ANSI[c24[0..6].downcase.to_sym]
       c ||= ANSI[:white]
 
-    when 24 then                # Direct colour in RGB space
+    when 24                     # Direct colour in RGB space
       rgb = c24[1..].split(/(\h\h)(\h\h)(\h\h)/)
       rgb.map! { |i| i.to_i(16) }
       c = [ 38, 2, rgb[1..] ].join(';')
     end
 
-    sprintf('%c[%sm%s%c[%sm', 27.chr, c, str, 27.chr, ANSI[:default])
+    # esc c str esc ansi
+    format('%<esc>c[%<color>sm%<string>s%<esc>c[%<ansi_default>sm',
+           { esc: 27.chr, color: c, string: str, ansi_default: ANSI[:default] })
   end
 
   # @!visibility private
 
   # @param a [Array] Ignored
-  def accept_list_end(a)
-  end
+  def accept_list_end(a) end
 
   # @param a [Array] Ignored
-  def accept_list_item_end(a)
-  end
+  def accept_list_item_end(a) end
+
 end

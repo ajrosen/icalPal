@@ -3,6 +3,7 @@ require 'date'
 module ICalPal
   # Child class of DateTime that adds support for relative dates (<em><b>R</b>elative<b>D</b>ate<b>T</b>ime</em>).
   class RDT < DateTime
+
     # Convert a String to an RDT
     #
     # @param str [String] can be +yesterday+, +today+, +tomorrow+,
@@ -14,8 +15,8 @@ module ICalPal
       when 'yesterday' then $today - 1
       when 'today' then $today
       when 'tomorrow' then $today + 1
-      when /^\+([0-9]+)/ then $today + $1.to_i
-      when /^\-([0-9]+)/ then $today - $1.to_i
+      when /^\+([0-9]+)/ then $today + Regexp.last_match(1).to_i
+      when /^-([0-9]+)/ then $today - Regexp.last_match(1).to_i
       else parse(str)
       end
     end
@@ -40,7 +41,7 @@ module ICalPal
     end
 
     alias inspect to_s
- 
+
     # @see Time.to_a
     #
     # @return [Array] Self as an array
@@ -56,8 +57,9 @@ module ICalPal
     # @see ICalPal::RDT.to_s
     #
     # @return [Boolean]
-    def ==(obj)
-      self.to_s == obj.to_s
+    def ==(other)
+      self.to_s == other.to_s
     end
+
   end
 end
