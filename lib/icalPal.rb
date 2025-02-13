@@ -9,7 +9,6 @@ require_relative 'store'
 # Encapsulate the _Store_ (accounts), _Calendar_ and _CalendarItem_
 # tables of a Calendar database, and the _Reminder_ table of a
 # Reminders database
-
 module ICalPal
   attr_reader :self
 
@@ -57,19 +56,21 @@ module ICalPal
 
     rescue SQLite3::BusyException => e
       $log.error("Non-fatal error closing database #{db.filename}")
+      raise e
 
     rescue SQLite3::CantOpenException => e
       $log.debug("Can't open #{db_file}")
+      raise e
 
     rescue SQLite3::SQLException => e
       $log.info("#{db_file}: #{e}")
+      raise e
 
     rescue SQLite3::Exception => e
       abort("#{db_file}: #{e}")
-
     end
 
-    return(rows)
+    rows
   end
 
   # @param obj [ICalPal] A +Store+ or +Calendar+
@@ -93,9 +94,9 @@ module ICalPal
   # @return [CSV::Row] The +Store+, +Calendar+, or +CalendarItem+ as a CSV::Row
   def to_csv(headers)
     values = []
-    headers.each { |h| values.push(@self[h].respond_to?(:gsub)? @self[h].gsub(/\n/, '\n') : @self[h]) }
+    headers.each { |h| values.push((@self[h].respond_to?(:gsub))? @self[h].gsub(/\n/, '\n') : @self[h]) }
 
-    CSV::Row::new(headers, values)
+    CSV::Row.new(headers, values)
   end
 
   # Convert +self+ to XML
@@ -103,8 +104,8 @@ module ICalPal
   # @return [String] All fields in a simple XML format: <field>value</field>.
   # Fields with empty values return <field/>.
   def to_xml
-    retval = ""
-    @self.keys.each { |k| retval += xmlify(k, @self[k]) }
+    retval = ''
+    @self.each_key { |k| retval += xmlify(k, @self[k]) }
 
     retval
   end
@@ -118,26 +119,26 @@ module ICalPal
   def xmlify(key, value)
     case value
     # Nil
-    when NilClass then return("<#{key}/>")
+    when NilClass then "<#{key}/>"
 
     # String, Integer
-    when String then return("<#{key}>#{value}</#{key}>")
-    when Integer then return("<#{key}>#{value}</#{key}>")
+    when String then "<#{key}>#{value}</#{key}>"
+    when Integer then "<#{key}>#{value}</#{key}>"
 
     # Array
-    when Array then
+    when Array
       # Treat empty arrays as nil values
-      return(xmlify(key, nil)) if value[0] == nil 
+      xmlify(key, nil) if value[0].nil?
 
-      retval = ""
+      retval = ''
       value.each { |x| retval += xmlify("#{key}0", x) }
-      return("<#{key}>#{retval}</#{key}>")
+      "<#{key}>#{retval}</#{key}>"
 
     # RDT
-    when ICalPal::RDT then return("<#{key}>#{value.to_s}</#{key}>")
+    when ICalPal::RDT then "<#{key}>#{value}</#{key}>"
 
     # Unknown
-    else return("<#{key}>#{value.to_s}</#{key}>")
+    else "<#{key}>#{value}</#{key}>"
     end
   end
 
@@ -150,7 +151,7 @@ module ICalPal
   def self.nth(n, dow, m)
     # Get the number of days in the month
     a = [ ICalPal::RDT.new(m.year, m.month, 1) ] # First of this month
-    a[1] = (a[0] >> 1) - 1      # First of next month, minus 1 day
+    a[1] = (a[0] >> 1) - 1                       # First of next month, minus 1 day
 
     # Reverse it if going backwards
     a.reverse! if n.negative?
@@ -164,17 +165,28 @@ module ICalPal
   end
 
   # Epoch + 31 years
-  ITIME = 978307200
+  ITIME = 978_307_200
 
   # Days of the week abbreviations used in recurrence rules
   #
   # <tt><i>SU, MO, TU, WE, TH, FR, SA</i></tt>
-  DOW = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 }
+  DOW = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 }.freeze
 
   # @!group Accessors
-  def [](k) @self[k] end
-  def []=(k, v) @self[k] = v end
-  def keys() @self.keys end
-  def values() @self.values end
+  def [](k)
+    @self[k]
+  end
+
+  def []=(k, v)
+    @self[k] = v
+  end
+
+  def keys
+    @self.keys
+  end
+
+  def values
+    @self.values
+  end
   # @!endgroup
 end
