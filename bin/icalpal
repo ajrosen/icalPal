@@ -11,6 +11,7 @@ begin
 
   require_relative '../lib/icalpal'
   require_relative '../lib/options'
+  require_relative '../lib/utils'
 rescue LoadError => e
   dep = e.message[/-- (.*)/, 1]
 
@@ -101,7 +102,27 @@ end
 # Make sure we opened at least one database
 unless success
   $log.fatal('Could not open database')
-  $opts[:db].each { |db| $log.fatal("Tried #{db}") }
+
+  # SQLite3 does not return useful error messages.  If any databases
+  # failed because of EPERM (operation not permitted), our parent
+  # process might need Full Disk Access, and we should suggest that.
+  eperm = 0
+
+  $opts[:db].each do |db|
+    # Use a real open to get a useful error
+    File.open(db).close
+  rescue Exception => e
+    $log.fatal("#{e.class}: #{db}")
+
+    eperm = 1 if e.instance_of?(Errno::EPERM)
+  end
+
+  if eperm.positive?
+    $stderr.puts
+    $stderr.puts "Does #{ancestor} have Full Disk Access in System Settings?"
+    $stderr.puts
+    $stderr.puts "Try running: open 'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles'"
+  end
 
   abort
 end
