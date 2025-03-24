@@ -21,7 +21,7 @@ uninstall:
 	-gem uninstall $(APP) -ax
 
 rubygems: $(GEM)
-	gem push $(GEM)
+	gem push $(GEM) --otp $(CODE) # make rubygems OTP=123456
 
 gemfury: $(GEM)
 	fury push $(GEM)
