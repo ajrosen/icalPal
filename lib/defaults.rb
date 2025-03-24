@@ -73,6 +73,7 @@ $defaults = {
     n: false,
     nnr: "\n       ",
     nrd: false,
+    now: false,
     ps: [ "\n    " ],
     sa: false,
     sed: false,

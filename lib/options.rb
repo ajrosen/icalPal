@@ -197,7 +197,7 @@ module ICalPal
 
         # Parse eventsNow and eventsToday commands
         cli[:cmd].match('events(Now|Today)(\+[0-9]+)?') do |m|
-          cli[:n] = true if m[1] == 'Now'
+          cli[:now] = true if m[1] == 'Now'
           cli[:days] = (m[1] == 'Today')? m[2].to_i + 1 : 1
 
           cli[:from] = $today

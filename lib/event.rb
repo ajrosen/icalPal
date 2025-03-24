@@ -130,7 +130,7 @@ module ICalPal
         $log.debug("multi-day event #{i + 1}") if (i.positive?)
 
         self['daynum'] = i + 1
-        events.push(clone) if in_window?(self['sdate'])
+        events.push(clone) if in_window?(self['sdate'], self['edate'])
 
         self['sdate'] += 1
         self['edate'] += 1
@@ -287,8 +287,8 @@ module ICalPal
     # @param s [RDT] Event start
     # @param e [RDT] Event end
     # @return [Boolean]
-    def in_window?(s, e = s)
-      if $opts[:n]
+    def in_window?(s, e)
+      if $opts[:now]
         if ($now >= s && $now < e)
           $log.debug("now: #{s} to #{e} vs. #{$now}")
           true
