@@ -26,7 +26,7 @@ EOF
 
   s.add_dependency 'nokogiri-plist', '~> 0.5.0'
   s.add_dependency 'sqlite3', '~> 2.6.0' unless s.rubygems_version == `/usr/bin/gem --version`.strip
-  s.add_dependency 'timezone', '>= 0.99.0'
+  s.add_dependency 'timezone', '>= 0.99', '~> 1.3.0'
 
   # The macOS and Homebrew versions of rubygems have incompatible
   # requirements for sqlite3.
