@@ -16,7 +16,8 @@ EOF
   s.licenses	= [ 'GPL-3.0-or-later' ]
 
   s.metadata = {
-    'bug_tracker_uri' => "https://github.com/ajrosen/#{s.name}/issues"
+    'bug_tracker_uri' => "https://github.com/ajrosen/#{s.name}/issues",
+    'rubygems_mfa_required' => 'true'
   }
 
   s.files	= Dir["#{s.name}.gemspec", 'bin/*', 'lib/*.rb']
@@ -25,21 +26,22 @@ EOF
 
   s.add_dependency 'nokogiri-plist', '~> 0.5.0'
   s.add_dependency 'sqlite3', '~> 2.6.0' unless s.rubygems_version == `/usr/bin/gem --version`.strip
+  s.add_dependency 'timezone', '>= 0.99.0'
 
   # The macOS and Homebrew versions of rubygems have incompatible
   # requirements for sqlite3.
-  # 
+  #
   # macOS comes with version 1.3.13, so it does not need to be added
   # as a dependency, but it cannot install anything newer:
-  # 
+  #
   # requires Ruby version >= 3.0, < 3.4.dev. The current ruby version is 2.6.10.
-  # 
+  #
   # Homebrew's Ruby formula does not come with sqlite3, so it does
   # need to be added as a dependency, but it cannot install version
   # 1.3.13:
-  # 
+  #
   # error: call to undeclared function
-  # 
+  #
   # So we must call add_dependency, but iff we are not building with
   # macOS' Ruby installation.
 

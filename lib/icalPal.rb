@@ -19,8 +19,7 @@ module ICalPal
   # @return [Class] The subclass of ICalPal
   def self.call(klass)
     case klass
-    when 'accounts' then Store
-    when 'stores' then Store
+    when 'accounts', 'stores' then Store
     when 'calendars' then Calendar
     when 'events' then Event
     when 'tasks' then Reminder
@@ -32,7 +31,7 @@ module ICalPal
 
   # Load data
   def self.load_data(db_file, q)
-    $log.debug(q.gsub(/\n/, ' '))
+    $log.debug(q.gsub("\n", ' '))
 
     rows = []
 
@@ -93,8 +92,7 @@ module ICalPal
   # @param headers [Array] Key names used as the header row in a CSV::Table
   # @return [CSV::Row] The +Store+, +Calendar+, or +CalendarItem+ as a CSV::Row
   def to_csv(headers)
-    values = []
-    headers.each { |h| values.push((@self[h].respond_to?(:gsub))? @self[h].gsub(/\n/, '\n') : @self[h]) }
+    values = headers.map { |h| (@self[h].respond_to?(:gsub))? @self[h].gsub("\n", '\n') : @self[h] }
 
     CSV::Row.new(headers, values)
   end
@@ -113,13 +111,14 @@ module ICalPal
   # Get the +n+'th +dow+ in month +m+
   #
   # @param n [Integer] Integer between -4 and +4
-  # @param dow [Array] Days of the week
+  # @param dow [Integer] Day of the week
   # @param m [RDT] The RDT with the year and month we're searching
   # @return [RDT] The resulting day
   def self.nth(n, dow, m)
-    # Get the number of days in the month
-    a = [ ICalPal::RDT.new(m.year, m.month, 1) ] # First of this month
-    a[1] = (a[0] >> 1) - 1                       # First of next month, minus 1 day
+    # Get the number of days in the month by advancing to the first of
+    # the next month, then going back one day
+    a = [ RDT.new(m.year, m.month, 1, m.hour, m.minute, m.second) ]
+    a[1] = (a[0] >> 1) - 1
 
     # Reverse it if going backwards
     a.reverse! if n.negative?
@@ -127,7 +126,7 @@ module ICalPal
 
     j = 0
     a[0].step(a[1], step) do |i|
-      j += step if dow.any?(i.wday)
+      j += step if dow == i.wday
       return i if j == n
     end
   end
@@ -138,7 +137,7 @@ module ICalPal
   # Days of the week abbreviations used in recurrence rules
   #
   # <tt><i>SU, MO, TU, WE, TH, FR, SA</i></tt>
-  DOW = { 'SU': 0, 'MO': 1, 'TU': 2, 'WE': 3, 'TH': 4, 'FR': 5, 'SA': 6 }.freeze
+  DOW = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 }.freeze
 
   # @!group Accessors
   def [](k)

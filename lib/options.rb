@@ -27,9 +27,9 @@ module ICalPal
       @op = OptionParser.new
       @op.summary_width = 23
       @op.banner += ' [-c] COMMAND'
-      @op.version = ICalPal::VERSION
+      @op.version = VERSION
 
-      @op.accept(ICalPal::RDT) { |s| ICalPal::RDT.conv(s) }
+      @op.accept(RDT) { |s| RDT.conv(s) }
 
       # head
       @op.on_head("\nCOMMAND must be one of the following:\n\n")
@@ -83,8 +83,8 @@ module ICalPal
       # dates
       @op.separator("\nChoosing dates:\n\n")
 
-      @op.on('--from=DATE', ICalPal::RDT, 'List events starting on or after DATE')
-      @op.on('--to=DATE', ICalPal::RDT, 'List events starting on or before DATE',
+      @op.on('--from=DATE', RDT, 'List events starting on or after DATE')
+      @op.on('--to=DATE', RDT, 'List events starting on or before DATE',
              'DATE can be yesterday, today, tomorrow, +N, -N, or anything accepted by DateTime.parse()',
              'See https://ruby-doc.org/stdlib-2.6.1/libdoc/date/rdoc/DateTime.html#method-c-parse')
       @op.separator('')

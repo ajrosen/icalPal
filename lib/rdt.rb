@@ -4,6 +4,21 @@ module ICalPal
   # Child class of DateTime that adds support for relative dates (<em><b>R</b>elative<b>D</b>ate<b>T</b>ime</em>).
   class RDT < DateTime
 
+    # Create a new RDT from a Time object
+    def self.from_time(t)
+      new(*t.to_a[0..5].reverse)
+    end
+
+    # Create a new RDT from seconds since epoch
+    def self.from_epoch(s)
+      from_time(Time.at(s))
+    end
+
+    # Create a new RDT from seconds since iCal epoch
+    def self.from_itime(s)
+      from_epoch(s + ITIME)
+    end
+
     # Convert a String to an RDT
     #
     # @param str [String] can be +yesterday+, +today+, +tomorrow+,
@@ -52,6 +67,11 @@ module ICalPal
     # @return [Integer] Seconds since epoch
     def to_i
       to_time.to_i
+    end
+
+    # @return [Array] Only the year, month and day of self
+    def ymd
+      [ year, month, day ]
     end
 
     # @see ICalPal::RDT.to_s

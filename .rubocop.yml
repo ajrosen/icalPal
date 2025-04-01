@@ -1,3 +1,6 @@
+AllCops:
+  NewCops: enable
+
 ##################################################
 # Layout
 
@@ -51,6 +54,9 @@ Lint/SuppressedException:
   Enabled: false
 
 Lint/ReturnInVoidContext:
+  Enabled: false
+
+Lint/UselessConstantScoping:
   Enabled: false
 
 

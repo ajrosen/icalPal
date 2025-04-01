@@ -1,18 +1,15 @@
-require 'time'
+require 'timezone'
 
 module ICalPal
   # Class representing items from the <tt>CalendarItem</tt> table
   class Event
     include ICalPal
 
-    # Standard accessor with special handling for +sdate+.  Setting
-    # +sdate+ will also set +sday+.
+    # Like inspect, but easier for humans to read
     #
-    # @param k [String] Key/property name
-    # @param v [Object] Key/property value
-    def []=(k, v)
-      @self[k] = v
-      @self['sday'] = ICalPal::RDT.new(*self['sdate'].to_a[0..2]) if k == 'sdate'
+    # @return [Array<String>] @self as a key=value array, sorted by key
+    def dump
+      @self.keys.sort.map { |k| "#{k}: #{@self[k]}" }
     end
 
     # Standard accessor with special handling for +age+,
@@ -34,10 +31,10 @@ module ICalPal
           t += ' at ' unless @self['all_day'].positive?
         end
 
-        unless @self['all_day'] && @self['all_day'].positive? || @self['placeholder']
+        unless (@self['all_day'] && @self['all_day'].positive?) || @self['placeholder']
           t ||= ''
           t += "#{@self['sdate'].strftime($opts[:tf])}" if @self['sdate']
-          t += " - #{@self['edate'].strftime($opts[:tf])}" unless $opts[:eed] || !@self['edate']
+          t += " - #{@self['edate'].strftime($opts[:tf])}" unless $opts[:eed] || !@self['edate'] || @self['duration'].zero?
         end
         t
 
@@ -45,10 +42,10 @@ module ICalPal
         (@self['location'])? [ @self['location'], @self['address'] ].join(' ').chop : nil
 
       when 'notes'              # \n -> :nnr
-        (@self['notes'])? @self['notes'].strip.gsub(/\n/, $opts[:nnr]) : nil
+        (@self['notes'])? @self['notes'].strip.gsub("\n", $opts[:nnr]) : nil
 
       when 'sday'               # pseudo-property
-        ICalPal::RDT.new(*@self['sdate'].to_a[0..2])
+        RDT.new(*@self['sdate'].to_a[0..2])
 
       when 'status'             # Integer -> String
         EventKit::EKEventStatus.select { |_k, v| v == @self['status'] }.keys[0]
@@ -83,23 +80,23 @@ module ICalPal
 
       # Convert JSON arrays to Arrays
       @self['attendees'] = JSON.parse(obj['attendees'])
-      # rubocop: disable Lint/UselessAssignment
       @self['xdate'] = JSON.parse(obj['xdate']).map do |k|
-        k = RDT.new(*Time.at(k + ITIME).to_a.reverse[4..]) if k
+        RDT.from_itime(k) if k
       end
-      # rubocop: enable Lint/UselessAssignment
 
       # Convert iCal dates to normal dates
       obj.keys.select { |i| i.end_with? '_date' }.each do |k|
-        t = Time.at(obj[k] + ITIME) if obj[k]
-        @self["#{k[0]}date"] = RDT.new(*t.to_a.reverse[4..], t.zone) if t
-      end
+        next unless obj[k]
 
-      if @self['start_tz'] == '_float'
-        tzoffset = Time.zone_offset($now.zone)
+        begin
+          ctime = Time.at(obj[k] + ITIME)
+          zone = Timezone.fetch(obj['start_tz']).utc_offset(ctime)
+        rescue Timezone::Error::InvalidZone
+          zone = 'UTC'
+        end
 
-        @self['sdate'] = RDT.new(*(@self['sdate'].to_time - tzoffset).to_a.reverse[4..], $now.zone)
-        @self['edate'] = RDT.new(*(@self['edate'].to_time - tzoffset).to_a.reverse[4..], $now.zone)
+        t = Time.at(ctime, in: zone)
+        @self["#{k[0]}date"] = RDT.from_time(t) if t
       end
 
       # Type of calendar event is from
@@ -127,10 +124,10 @@ module ICalPal
       (nDays + 1).times do |i|
         break if self['sdate'] > $opts[:to]
 
-        $log.debug("multi-day event #{i + 1}") if (i.positive?)
-
-        self['daynum'] = i + 1
-        events.push(clone) if in_window?(self['sdate'], self['edate'])
+        if in_window?(self['sdate'], self['edate'])
+          self['daynum'] = i + 1
+          events.push(clone)
+        end
 
         self['sdate'] += 1
         self['edate'] += 1
@@ -145,19 +142,15 @@ module ICalPal
     #   All occurrences of a recurring event that are within our window
     def recurring
       stop = [ $opts[:to], (self['rdate'] || $opts[:to]) ].min
-
-      # See if event ends before we start
-      if stop < $opts[:from]
-        $log.debug("#{stop} < #{$opts[:from]}")
-        return([])
-      end
-
-      # Get changes to series
-      changes = [ { 'orig_date' => -1 } ]
-      changes += $rows.select { |r| r['orig_item_id'] == self['ROWID'] }
-
       events = []
       count = 1
+
+      # See if event ends before we start
+      return events if $opts[:from] > stop
+
+      # Get changes to series
+      changes = [ { orig_date: -1 } ]
+      changes += $rows.select { |r| r['orig_item_id'] == self['ROWID'] }
 
       while self['sdate'] <= stop
         # count
@@ -165,58 +158,63 @@ module ICalPal
 
         count += 1
 
-        # Handle specifier or clone self
-        if self['specifier'] && self['specifier'].length.positive?
-          occurrences = get_occurrences(changes)
-        else
-          occurrences = [ clone ]
-        end
+        # Maybe push self
+        events.push(clone) if in_window?(self['sdate'], self['edate'])
+
+        # Handle specifier
+        o = []
+        o = occurrences if self['specifier'] && self['specifier'].length.positive?
 
         # Check for changes
-        occurrences.each do |occurrence|
-          changes.each do |change|
-            next if change['orig_date'] == self['sdate'].to_i - ITIME
+        o.each do |occurrence|
+          skip = false
 
-            events.push(occurrence) if in_window?(occurrence['sdate'], occurrence['edate'])
+          changes[1..].each do |change|
+            cdate = Time.at(change['start_date'] + ITIME).to_a[3..5].reverse
+            odate = occurrence['sdate'].ymd
+
+            skip = true if cdate == odate
           end
+
+          events.push(occurrence) if in_window?(occurrence['sdate'], occurrence['edate']) && !skip
         end
 
-        break if self['specifier']
-
-        apply_frequency!
+        # Handle frequency and interval
+        apply_frequency! if self['frequency'] && self['interval']
       end
 
       # Remove exceptions
       events.delete_if { |event| event['xdate'].any?(event['sdate']) }
 
-      events
+      events.uniq { |e| e['sdate'] }
     end
 
     private
 
     # @!visibility public
 
-    # @return a deep clone of self
-    def clone
-      Marshal.load(Marshal.dump(self))
+    # Deep clone an object
+    #
+    # @param obj [Object]
+    # @return [Object] a deep clone of obj
+    def clone(obj = self)
+      Marshal.load(Marshal.dump(obj))
     end
 
-    # Get next occurences of a recurring event from a specifier
+    # Get next occurrences of a recurring event given a specifier,
+    # frequency, and interval
     #
-    # @param _changes [Array] Recurrence changes for the event
-    # @return [Array<IcalPal::Event>]
-    def get_occurrences(_changes)
-      occurrences = []
+    # @return [Array<ICalPal::Event>]
+    def occurrences
+      o = []
 
       dow = DOW.keys
-      dom = [ nil ]
+      dom = []
       moy = 1..12
       nth = nil
 
-      specifier = (self['specifier'])? self['specifier'] : []
-
       # Deconstruct specifier
-      specifier.split(';').each do |k|
+      self['specifier'].split(';').each do |k|
         j = k.split('=')
 
         # D=Day of the week, M=Day of the month, O=Month of the year, S=Nth
@@ -230,38 +228,51 @@ module ICalPal
       end
 
       # Build array of DOWs
-      dows = [ nil ]
-      dow.each { |d| dows.push(DOW[d[-2..].to_sym]) }
+      dows = dow.map { |d| DOW[d[-2..].to_sym] }
 
       # Months of the year (O)
-      moy.each do |m|
-        next unless m
+      moy.each do |mo|
+        m = mo.to_i
 
-        nsdate = RDT.new(self['sdate'].year, m.to_i, 1)
-        nedate = RDT.new(self['edate'].year, m.to_i, 1)
+        # Set dates to the first of <m>
+        nsdate = RDT.new(self['sdate'].year, m, 1, self['sdate'].hour, self['sdate'].minute, self['sdate'].second)
+        nedate = RDT.new(self['edate'].year, m, 1, self['edate'].hour, self['edate'].minute, self['edate'].second)
+
+        # ...but not in the past
+        nsdate >>= 12 if nsdate.month < m
+        nedate >>= 12 if nedate.month < m
+
+        next if nsdate > $opts[:to]
+        next if ((nedate >> 1) - 1) < $opts[:from]
+
+        c = clone
 
         # Days of the month (M)
-        dom.each do |x|
-          next unless x
+        dom.each do |day|
+          c['sdate'] = RDT.new(nsdate.year, nsdate.month, day.to_i)
+          c['edate'] = RDT.new(nedate.year, nedate.month, day.to_i)
 
-          self['sdate'] = RDT.new(nsdate.year, nsdate.month, x.to_i)
-          self['edate'] = RDT.new(nedate.year, nedate.month, x.to_i)
-          occurrences.push(clone)
+          o.push(clone(c)) if in_window?(c['sdate'], c['edate'])
         end
 
         # Days of the week (D)
-        if nth
-          self['sdate'] = ICalPal.nth(nth, dows, nsdate)
-          self['edate'] = ICalPal.nth(nth, dows, nedate)
-          occurrences.push(clone)
-        elsif dows[0]
-          self['sdate'] = RDT.new(nsdate.year, m.to_i, nsdate.wday)
-          self['edate'] = RDT.new(nedate.year, m.to_i, nedate.wday)
-          occurrences.push(clone)
+        dows.each do |day|
+          if nth
+            c['sdate'] = ICalPal.nth(nth, day, nsdate)
+            c['edate'] = ICalPal.nth(nth, day, nedate)
+          else
+            diff = day - c['sdate'].wday
+            diff += 7 if diff.negative?
+
+            c['sdate'] += diff
+            c['edate'] += diff
+          end
+
+          o.push(clone(c)) if in_window?(c['sdate'], c['edate'])
         end
       end
 
-      occurrences
+      o
     end
 
     # Apply frequency and interval
@@ -278,7 +289,7 @@ module ICalPal
         when 'yearly'  then self[d] >>= self['interval'] * 12
         else $log.error("Unknown frequency: #{self['frequency']}")
         end
-      end if self['frequency'] && self['interval']
+      end
     end
 
     # Check if an event starts or ends between from and to, or if it's

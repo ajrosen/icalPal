@@ -1,6 +1,6 @@
 # Does anybody really know what time it is?
-$now = ICalPal::RDT.now
-$today = ICalPal::RDT.new(*$now.to_a[0..2] + [ 0, 0, 0, $now.zone ])
+$now = ICalPal::RDT.from_time(Time.now(in: 0))
+$today = ICalPal::RDT.new(*$now.to_a[0..2] + [ 0, 0, 0 ])
 
 # Defaults
 $defaults = {
@@ -8,11 +8,11 @@ $defaults = {
     ab: '!',
     aep: [],
     bullet: '•',
-    cf: "#{ENV['HOME']}/.icalpal",
+    cf: "#{Dir.home}/.icalpal",
     color: false,
     db: [
-      "#{ENV['HOME']}/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb",
-      "#{ENV['HOME']}/Library/Calendars/Calendar.sqlitedb",
+      "#{Dir.home}/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb",
+      "#{Dir.home}/Library/Calendars/Calendar.sqlitedb",
     ],
     debug: Logger::WARN,
     df: '%b %-d, %Y',
