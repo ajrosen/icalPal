@@ -12,6 +12,18 @@ module ICalPal
       @self.keys.sort.map { |k| "#{k}: #{@self[k]}" }
     end
 
+    # Standard accessor with special handling for +sdate+ and +edate+.  Setting
+    # those will also set +sctime+ and +ectime+ respectively.
+    #
+    # @param k [String] Key/property name
+    # @param v [Object] Key/property value
+    def []=(k, v)
+      @self[k] = v
+
+      @self['sctime'] = Time.at(@self['sdate'].to_i, in: 'UTC') if k == 'sdate'
+      @self['ectime'] = Time.at(@self['edate'].to_i, in: 'UTC') if k == 'edate'
+    end
+
     # Standard accessor with special handling for +age+,
     # +availability+, +datetime+, +location+, +notes+, +status+,
     # +title+, and +uid+
@@ -33,8 +45,8 @@ module ICalPal
 
         unless (@self['all_day'] && @self['all_day'].positive?) || @self['placeholder']
           t ||= ''
-          t += "#{@self['sdate'].strftime($opts[:tf])}" if @self['sdate']
-          t += " - #{@self['edate'].strftime($opts[:tf])}" unless $opts[:eed] || !@self['edate'] || @self['duration'].zero?
+          t += "#{@self['sctime'].strftime($opts[:tf])}" if @self['sctime']
+          t += " - #{@self['ectime'].strftime($opts[:tf])}" unless $opts[:eed] || !@self['ectime'] || @self['duration'].zero?
         end
         t
 
@@ -89,14 +101,15 @@ module ICalPal
         next unless obj[k]
 
         begin
-          ctime = Time.at(obj[k] + ITIME)
-          zone = Timezone.fetch(obj['start_tz']).utc_offset(ctime)
+          zone = Timezone.fetch(obj['start_tz'])
         rescue Timezone::Error::InvalidZone
           zone = 'UTC'
         end
 
-        t = Time.at(ctime, in: zone)
-        @self["#{k[0]}date"] = RDT.from_time(t) if t
+        ctime = obj[k] + ITIME
+
+        @self["#{k[0]}ctime"] = Time.at(ctime)
+        @self["#{k[0]}date"] = RDT.from_time(Time.at(ctime, in: zone))
       end
 
       # Type of calendar event is from

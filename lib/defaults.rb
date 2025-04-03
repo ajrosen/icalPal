@@ -1,5 +1,6 @@
 # Does anybody really know what time it is?
-$now = ICalPal::RDT.from_time(Time.now(in: 0))
+now = Time.now
+$now = ICalPal::RDT.from_time(now)
 $today = ICalPal::RDT.new(*$now.to_a[0..2] + [ 0, 0, 0 ])
 
 # Defaults
@@ -77,7 +78,7 @@ $defaults = {
     ps: [ "\n    " ],
     sa: false,
     sed: false,
-    sort: 'sdate',
+    sort: 'sctime',
     ss: "\n------------------------",
     to: nil,
     uid: false,
