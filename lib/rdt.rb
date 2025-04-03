@@ -43,7 +43,7 @@ module ICalPal
     # @return [String] A string representation of self relative to
     #  today.
     def to_s
-      return strftime($opts[:df]) if $opts[:nrd] && $opts[:df]
+      return strftime($opts[:df]) if $opts && $opts[:nrd] && $opts[:df]
 
       case Integer(RDT.new(year, month, day) - $today)
       when -2 then 'day before yesterday'
@@ -51,7 +51,7 @@ module ICalPal
       when 0 then 'today'
       when 1 then 'tomorrow'
       when 2 then 'day after tomorrow'
-      else strftime($opts[:df]) if $opts[:df]
+      else strftime($opts[:df]) if $opts && $opts[:df]
       end
     end
 
