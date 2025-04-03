@@ -5,13 +5,6 @@ module ICalPal
   class Event
     include ICalPal
 
-    # Like inspect, but easier for humans to read
-    #
-    # @return [Array<String>] @self as a key=value array, sorted by key
-    def dump
-      @self.keys.sort.map { |k| "#{k}: #{@self[k]}" }
-    end
-
     # Standard accessor with special handling for +sdate+ and +edate+.  Setting
     # those will also set +sctime+ and +ectime+ respectively.
     #

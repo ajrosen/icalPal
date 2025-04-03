@@ -155,5 +155,13 @@ module ICalPal
   def values
     @self.values
   end
+
+  # Like inspect, but easier for humans to read
+  #
+  # @return [Array<String>] @self as a key=value array, sorted by key
+  def dump
+    @self.keys.sort.map { |k| "#{k}: #{@self[k]}" }
+  end
+
   # @!endgroup
 end
