@@ -4,10 +4,26 @@
 
 ## Description
 
-icalPal is a command-line tool to query a macOS Calendar and Reminders
+icalPal is a command-line tool to query macOS Calendar and Reminders
 databases for accounts, calendars, events, and tasks.  It can be run
 on any system with [Ruby](https://www.ruby-lang.org/) and access to a
 Calendar or Reminders database.
+
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+
+**Table of Contents**
+
+- [Installation](#installation)
+- [Features](#features)
+  - [Compatability with icalBuddy](#compatability-with-icalbuddy)
+  - [Additional commands](#additional-commands)
+  - [Additional options](#additional-options)
+- [Usage](#usage)
+- [Output formats](#output-formats)
+- [History](#history)
+
+<!-- markdown-toc end -->
+
 
 ## Installation
 
@@ -32,9 +48,9 @@ brew install icalPal
 
 ## Features
 
-### Compatability with [icalBuddy](https://github.com/ali-rantakari/icalBuddy)
+### Compatability with icalBuddy
 
-icalPal tries to be compatible with icalBuddy for command-line options
+icalPal tries to be compatible with [icalBuddy](https://github.com/ali-rantakari/icalBuddy) for command-line options
 and for output.  There are a some important differences to be aware
 of.
 
@@ -62,7 +78,7 @@ Shows only reminders that have a due date.
 * The ```-c``` part is optional, but you cannot abbreviate the command if you leave it off.
 * Use ```-o``` to print the output in different formats.  CSV or JSON are intertesting choices.
 * Copy your Calendar database file and use ```--db``` on it.
-* ```--it``` and ```--et``` will filter by Calendar *type*.  Types are **Local**, **Exchange**, **CalDAV**, **MobileMe**, **Subscribed**, and **Birthdays**
+* ```--it``` and ```--et``` will filter by Calendar *type*.  Types are **Local**, **Exchange**, **CalDAV**, **MobileMe**, **Subscribed**, **Birthdays**, and **Reminders**
 * ```--il``` and ```-el``` will filter by Reminder list
 * ```--ia``` includes *only* all-day events (opposite of ```--ea```)
 * ```--aep``` is like ```--iep```, but *adds* to the default property list instead of replacing it.
@@ -201,6 +217,8 @@ Environment variables:
     ICALPAL                 Additional arguments
     ICALPAL_CONFIG          Additional arguments from a file
                             (default: /Users/ajr/.icalpal)
+
+    Do not quote or escape values.  Options set in ICALPAL override ICALPAL_CONFIG.  Options on the command line override ICALPAL.
 ```
 
 ## Output formats
@@ -212,7 +230,7 @@ CSV, Hash, JSON, XML, and YAML print all fields for all items in their
 respective formats.  From that you can analyze the results any way you
 like.
 
-[Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built in icalPal.
+[Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built into icalPal.
 
 Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
 [RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html)
