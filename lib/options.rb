@@ -172,6 +172,14 @@ module ICalPal
       @op.on_tail('%s%s %sAdditional arguments' % pad('ICALPAL'))
       @op.on_tail('%s%s %sAdditional arguments from a file' % pad('ICALPAL_CONFIG'))
       @op.on_tail("%s%s %s(default: #{$defaults[:common][:cf]})" % pad(''))
+
+      @op.on_tail('')
+
+      note = 'Do not quote or escape values.'
+      note += '  Options set in ICALPAL override ICALPAL_CONFIG.'
+      note += '  Options on the command line override ICALPAL.'
+
+      @op.on_tail("#{@op.summary_indent}#{note}")
     end
 
     # Parse options from the CLI and merge them with other sources
@@ -184,11 +192,45 @@ module ICalPal
         env = {}
         cf = {}
 
-        # Load from CLI, environment, configuration file
+        # Load from CLI
         @op.parse!(into: cli)
-        @op.parse!(ENV['ICALPAL'].split, into: env) rescue nil
-        cli[:cf] ||= ENV['ICALPAL_CONFIG'] || $defaults[:common][:cf]
-        @op.parse!(File.read(File.expand_path(cli[:cf])).split, into: cf) rescue nil
+
+        # Environment variable needs special parsing.
+        # OptionParser.parse doesn't handle whitespace in a
+        # comma-separated value.
+        begin
+          o = []
+
+          ENV['ICALPAL'].gsub(/^-/, ' -').split(' -').each do |e|
+            a = e.split(' ', 2)
+
+            if a[0]
+              o.push("-#{a[0]}")
+              o.push(a[1]) if a[1]
+            end
+          end
+
+          @op.parse!(o, into: env)
+        end if ENV['ICALPAL']
+
+        # Configuration file needs special parsing for the same reason
+        begin
+          o = []
+
+          cli[:cf] ||= ENV['ICALPAL_CONFIG'] || $defaults[:common][:cf]
+
+          File.read(File.expand_path(cli[:cf])).split("\n").each do |line|
+            a = line.split(' ', 2)
+
+            if a[0] && a[0][0] != '#'
+              o.push(a[0])
+              o.push(a[1]) if a[1]
+            end
+          end
+
+          @op.parse!(o, into: cf)
+        rescue StandardError
+        end
 
         cli[:cmd] ||= @op.default_argv[0]
         cli[:cmd] ||= env[:cmd] if env[:cmd]
@@ -244,6 +286,7 @@ module ICalPal
           opts[:to] += 1 if opts[:to]
           opts[:to] ||= opts[:from] + 1 if opts[:from]
           opts[:to] = opts[:from] + opts[:days] if opts[:days]
+          opts[:to] = RDT.new(*opts[:to].to_a[0..2] + [ 23, 59, 59 ])
           opts[:days] ||= Integer(opts[:to] - opts[:from])
           opts[:from] = $now if opts[:n]
         end
