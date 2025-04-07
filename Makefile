@@ -20,6 +20,8 @@ user-install: $(GEM)
 uninstall:
 	-gem uninstall $(APP) -ax
 
+reinstall: uninstall install
+
 rubygems: $(GEM)
 	gem push $(GEM) --otp $(CODE)
 
