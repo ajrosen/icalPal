@@ -126,12 +126,15 @@ module ICalPal
       # Sanity checks
       return events if nDays > 100_000
 
+      # If multi-day, each (unique) day needs to end at 23:59:59
+      self['edate'] = RDT.new(*@self['sdate'].to_a[0..2] + [ 23, 59, 59 ]) if nDays.positive?
+
       # Repeat for multi-day events
       (nDays + 1).times do |i|
         break if self['sdate'] > $opts[:to]
 
         if in_window?(self['sdate'], self['edate'])
-          self['daynum'] = i + 1
+          self['daynum'] = i + 1 if nDays.positive?
           events.push(clone)
         end
 
@@ -164,12 +167,10 @@ module ICalPal
 
         count += 1
 
-        # Maybe push self
-        events.push(clone) if in_window?(self['sdate'], self['edate'])
-
         # Handle specifier
         o = []
-        o = occurrences if self['specifier'] && self['specifier'].length.positive?
+        o.push(self) unless self['specifier'] && self['specifier'].length.positive?
+        o += occurrences if self['specifier'] && self['specifier'].length.positive?
 
         # Check for changes
         o.each do |occurrence|
@@ -182,7 +183,7 @@ module ICalPal
             skip = true if cdate == odate
           end
 
-          events.push(occurrence) if in_window?(occurrence['sdate'], occurrence['edate']) && !skip
+          events.push(clone(occurrence)) if in_window?(occurrence['sdate'], occurrence['edate']) && !skip
         end
 
         # Handle frequency and interval
@@ -234,7 +235,11 @@ module ICalPal
       end
 
       # Build array of DOWs
-      dows = dow.map { |d| DOW[d[-2..].to_sym] }
+      dows = []
+      dow.each do |d|
+        dows.push(DOW[d[-2..].to_sym])
+        nth = d[0..-3].to_i if [ '+', '-' ].include? d[0]
+      end
 
       # Months of the year (O)
       moy.each do |mo|

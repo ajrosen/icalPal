@@ -1,5 +1,3 @@
-require 'date'
-
 module ICalPal
   # Child class of DateTime that adds support for relative dates (<em><b>R</b>elative<b>D</b>ate<b>T</b>ime</em>).
   class RDT < DateTime
