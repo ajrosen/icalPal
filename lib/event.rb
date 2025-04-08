@@ -208,8 +208,7 @@ module ICalPal
       Marshal.load(Marshal.dump(obj))
     end
 
-    # Get next occurrences of a recurring event given a specifier,
-    # frequency, and interval
+    # Get next occurrences of a recurring event given a specifier
     #
     # @return [Array<ICalPal::Event>]
     def occurrences
