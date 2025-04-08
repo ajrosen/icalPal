@@ -39,13 +39,6 @@ or in your home diretory:
 gem install --user-install icalPal
 ```
 
-As a Homebrew formula:
-
-```
-brew tap ajrosen/icalPal
-brew install icalPal
-```
-
 ## Features
 
 ### Compatability with icalBuddy
