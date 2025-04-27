@@ -1,8 +1,3 @@
-# Does anybody really know what time it is?
-now = Time.now
-$now = ICalPal::RDT.from_time(now)
-$today = ICalPal::RDT.new(*$now.to_a[0..2] + [ 0, 0, 0 ])
-
 # Defaults
 $defaults = {
   common: {
@@ -27,6 +22,7 @@ $defaults = {
     is: [],
     it: [],
     li: 0,
+    norc: false,
     output: 'default',
     ps: [ "\n  " ],
     r: false,
@@ -38,32 +34,38 @@ $defaults = {
     sp: false,
     tf: '%-I:%M %p',
   },
+
   tasks: {
-    dated: 0,
+    dated: ICalPal::Reminder::ALL_TASKS,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
+
   undatedTasks: {
-    dated: 1,
+    dated: ICalPal::Reminder::UNDATED_TASKS,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
+
   datedTasks: {
-    dated: 2,
+    dated: ICalPal::Reminder::DATED_TASKS,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
+
   stores: {
     iep: %w[ account type ],
     sort: 'account',
   },
+
   calendars: {
     iep: %w[ calendar type UUID ],
     sort: 'calendar',
   },
+
   events: {
     days: nil,
     ea: false,

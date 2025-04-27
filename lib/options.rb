@@ -1,8 +1,7 @@
 # rubocop: disable Style/FormatString, Style/FormatStringToken
 
-require 'optparse'
+autoload(:OptionParser, 'optparse')
 
-require_relative 'defaults'
 require_relative 'version'
 
 module ICalPal
@@ -55,6 +54,7 @@ module ICalPal
              'For the tasks commands this should be a directory containing .sqlite files',
              "(default: #{$defaults[:tasks][:db]})")
       @op.on('--cf=FILE', "Set config file path (default: #{$defaults[:common][:cf]})")
+      @op.on('--norc', 'Ignore ICALPAL and ICALPAL_CONFIG environment variables')
       @op.on('-o', '--output=FORMAT', OUTFORMATS,
              "Print as FORMAT (default: #{$defaults[:common][:output]})", "[#{OUTFORMATS.join(', ')}]")
 
@@ -211,7 +211,7 @@ module ICalPal
           end
 
           @op.parse!(o, into: env)
-        end if ENV['ICALPAL']
+        end if ENV['ICALPAL'] && !cli[:norc]
 
         # Configuration file needs special parsing for the same reason
         begin
@@ -230,7 +230,7 @@ module ICalPal
 
           @op.parse!(o, into: cf)
         rescue StandardError
-        end
+        end unless cli[:norc]
 
         cli[:cmd] ||= @op.default_argv[0]
         cli[:cmd] ||= env[:cmd] if env[:cmd]
@@ -240,10 +240,10 @@ module ICalPal
         # Parse eventsNow and eventsToday commands
         cli[:cmd].match('events(Now|Today)(\+[0-9]+)?') do |m|
           cli[:now] = true if m[1] == 'Now'
-          cli[:days] = (m[1] == 'Today')? m[2].to_i + 1 : 1
+          cli[:days] = (m[1] == 'Today')? m[2].to_i : 1
 
           cli[:from] = $today
-          cli[:to] = $today + cli[:days]
+          cli[:to] = $today + cli[:days] if cli[:days]
           cli[:days] = Integer(cli[:to] - cli[:from])
 
           cli[:cmd] = 'events'
@@ -330,7 +330,9 @@ module ICalPal
     # Pad non-options to align with options
     #
     # @param t [String] Text on the left side
-    # @return [String] Text indented by summary_indent, and padded according to summary_width
+    #
+    # @return [Array<String>] Array containing +summary_indent+, +t+,
+    # a number of spaces equal to (+summary_width+ - +t.length+)
     def pad(t)
       [ @op.summary_indent, t, ' ' * (@op.summary_width - t.length) ]
     end
