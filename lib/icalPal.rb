@@ -1,15 +1,17 @@
-require_relative 'EventKit'
-require_relative 'ToICalPal'
-require_relative 'calendar'
-require_relative 'event'
-require_relative 'rdt'
-require_relative 'reminder'
-require_relative 'store'
-
 # Encapsulate the _Store_ (accounts), _Calendar_ and _CalendarItem_
 # tables of a Calendar database, and the _Reminder_ table of a
 # Reminders database
 module ICalPal
+  autoload(:Calendar, "#{__dir__}/calendar.rb")
+  autoload(:Event,  "#{__dir__}/event.rb")
+  autoload(:Reminder, "#{__dir__}/reminder.rb")
+  autoload(:Store, "#{__dir__}/store.rb")
+
+  autoload(:RDT, "#{__dir__}/rdt.rb")
+  autoload(:ToICalPal, "#{__dir__}/ToICalPal.rb")
+
+  autoload(:Utils, "#{__dir__}/utils.rb")
+
   attr_reader :self
 
   # Dynamic instantiation of our classes based on the command being
@@ -103,7 +105,7 @@ module ICalPal
   # Fields with empty values return <field/>.
   def to_xml
     retval = ''
-    @self.each_key { |k| retval += xmlify(k, @self[k]) }
+    @self.each_key { |k| retval += Utils.xmlify(k, @self[k]) }
 
     retval
   end

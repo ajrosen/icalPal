@@ -1,8 +1,8 @@
 # rubocop: disable Style/FormatString, Style/FormatStringToken
 
-require 'optparse'
+autoload(:OptionParser, 'optparse')
+autoload(:EventKit, "#{__dir__}/EventKit.rb")
 
-require_relative 'defaults'
 require_relative 'version'
 
 module ICalPal

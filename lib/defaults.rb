@@ -1,8 +1,3 @@
-# Does anybody really know what time it is?
-now = Time.now
-$now = ICalPal::RDT.from_time(now)
-$today = ICalPal::RDT.new(*$now.to_a[0..2] + [ 0, 0, 0 ])
-
 # Defaults
 $defaults = {
   common: {
@@ -40,19 +35,19 @@ $defaults = {
   },
   tasks: {
     dated: 0,
-    db: [ ICalPal::Reminder::DB_PATH ],
+    db: [ "#{Dir.home}/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores" ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
   undatedTasks: {
     dated: 1,
-    db: [ ICalPal::Reminder::DB_PATH ],
+    db: [ "#{Dir.home}/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores" ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
   datedTasks: {
     dated: 2,
-    db: [ ICalPal::Reminder::DB_PATH ],
+    db: [ "#{Dir.home}/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores" ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },

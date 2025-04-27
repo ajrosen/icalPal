@@ -1,5 +1,5 @@
-require 'open3'
-require 'nokogiri-plist'
+autoload(:Open3, 'open3')
+autoload(:Nokogiri, 'nokogiri-plist')
 
 module ICalPal
   # Class representing items from the <tt>Reminders</tt> database
@@ -79,7 +79,9 @@ module ICalPal
 
     PL_CONVERT = '/usr/bin/plutil -convert xml1 -o - -'.freeze
 
-    DB_PATH = "#{Dir.home}/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores".freeze
+    ALL_TASKS = 0
+    UNDATED_TASKS = 1
+    DATED_TASKS = 2
 
     QUERY = <<~SQL.freeze
 SELECT DISTINCT

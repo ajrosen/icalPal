@@ -1,5 +1,3 @@
-require 'timezone'
-
 module ICalPal
   # Class representing items from the <tt>CalendarItem</tt> table
   class Event
@@ -71,6 +69,7 @@ module ICalPal
     # @overload initialize(obj<DateTime>)
     #  Create a placeholder event for days with no events when using --sed
     #  @param obj [DateTime]
+    #  @return [Hash]
     def initialize(obj)
       # Placeholder for days with no events
       return @self = {
@@ -119,12 +118,12 @@ module ICalPal
     #   If an event spans multiple days, the return value will contain
     #   a unique {Event} for each day that falls within our window
     def non_recurring
-      events = []
-
       nDays = (self['duration'] / 86_400).to_i
 
       # Sanity checks
-      return events if nDays > 100_000
+      return [] if nDays > 100_000
+
+      events = []
 
       # If multi-day, each (unique) day needs to end at 23:59:59
       self['edate'] = RDT.new(*@self['sdate'].to_a[0..2] + [ 23, 59, 59 ]) if nDays.positive?

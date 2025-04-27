@@ -1,18 +1,29 @@
+autoload(:DateTime, 'timezone')
+
 module ICalPal
   # Child class of DateTime that adds support for relative dates (<em><b>R</b>elative<b>D</b>ate<b>T</b>ime</em>).
   class RDT < DateTime
 
     # Create a new RDT from a Time object
+    #
+    # @param t [Time] A Time object
+    # @return [RDT] a new RDT
     def self.from_time(t)
       new(*t.to_a[0..5].reverse)
     end
 
     # Create a new RDT from seconds since epoch
+    #
+    # @param s [Integer] Number of seconds since the epoch (Jan  1 00:00:00 UTC 1970)
+    # @return [RDT] a new RDT
     def self.from_epoch(s)
       from_time(Time.at(s))
     end
 
     # Create a new RDT from seconds since iCal epoch
+    #
+    # @param s [Integer] Number of seconds since the iCal epoch (Jan  1 00:00:00 UTC 2001)
+    # @return [RDT] a new RDT
     def self.from_itime(s)
       from_epoch(s + ITIME)
     end

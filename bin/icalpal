@@ -1,17 +1,13 @@
 #!/usr/bin/env ruby
 
 begin
-  require 'logger'
+  autoload(:CSV, 'csv')
+  autoload(:Logger, 'logger')
+  autoload(:Psych, 'psych')
+  autoload(:RDoc, 'rdoc')
+  autoload(:SQLite3, 'sqlite3')
 
-  require 'csv'
-  require 'json'
-  require 'rdoc'
-  require 'sqlite3'
-  require 'yaml'
-
-  require_relative '../lib/icalpal'
-  require_relative '../lib/options'
-  require_relative '../lib/utils'
+  require_relative '../lib/icalPal.rb'
 rescue LoadError => e
   dep = e.message[/-- (.*)/, 1]
 
@@ -22,9 +18,15 @@ rescue LoadError => e
   exit
 end
 
-
 ##################################################
 # Load options
+
+# Does anybody really know what time it is?
+$now = ICalPal::RDT.now
+$today = ICalPal::RDT.new(*$now.ymd + [ 0, 0, 0 ])
+
+require_relative '../lib/defaults'
+require_relative '../lib/options'
 
 # All kids love log!
 $log = Logger.new(STDERR, { level: $defaults[:common][:debug] })
@@ -40,9 +42,6 @@ $log.formatter = proc do |s, t, _p, m| # Severity, time, progname, msg
 end
 
 $opts = ICalPal::Options.new.parse_options
-
-$rows = []                      # Rows from the database
-$items = []                     # Items to be printed
 
 
 ##################################################
@@ -66,6 +65,9 @@ end
 ##################################################
 # Load the data
 
+$rows = []                      # Rows from the database
+$items = []                     # Items to be printed
+
 # What are we getting?
 klass = ICalPal.call($opts[:cmd])
 success = false
@@ -74,7 +76,7 @@ success = false
 $opts[:db].each do |db|
   $log.debug("Trying #{db}")
 
-  if klass == ICalPal::Reminder
+  if klass.to_s == 'ICalPal::Reminder'
     begin
       # Load all .sqlite files
       $log.debug("Loading *.sqlite in #{db}")
@@ -91,6 +93,7 @@ $opts[:db].each do |db|
     begin
       $rows += ICalPal.load_data(db, klass::QUERY)
       success = true
+      break
 
     rescue SQLite3::CantOpenException
       # Non-fatal exception, try the next one
@@ -118,7 +121,7 @@ unless success
 
   if eperm.positive?
     $stderr.puts
-    $stderr.puts "Does #{ancestor} have Full Disk Access in System Settings?"
+    $stderr.puts "Does #{ICalPal::Utils.ancestor} have Full Disk Access in System Settings?"
     $stderr.puts
     $stderr.puts "Try running: open 'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles'"
   end
@@ -127,23 +130,24 @@ unless success
 end
 
 $log.info("Loaded #{$rows.count} #{klass} rows")
-$log.info("Window is #{$opts[:from]} to #{$opts[:to]}")
+$log.info("Window is #{$opts[:from]} to #{$opts[:to]}") if $opts[:from] || $opts[:to]
+$log.info("Now is #{$now}") if $opts[:now]
 
 
 ##################################################
 # Process the data
 
 # Add rows
+$items = []
+
 $rows.each do |row|
   # --es/--is
   next if $opts[:es].any? row['account']
   next unless $opts[:is].empty? || ($opts[:is].any? row['account'])
 
   # --ec/--ic
-  unless klass == ICalPal::Store || !row['calendar']
-    next if $opts[:ec].any? row['calendar']
-    next unless $opts[:ic].empty? || ($opts[:ic].any? row['calendar'])
-  end
+  next if $opts[:ec].any? row['calendar']
+  next unless $opts[:ic].empty? || ($opts[:ic].any? row['calendar'])
 
   # Instantiate an item
   item = klass.new(row)
@@ -159,13 +163,10 @@ $rows.each do |row|
   # --match
   if $opts[:match]
     r = $opts[:match].split('=')
-
-    if item[r[0]].to_s.respond_to?(:match)
-      next unless item[r[0]].to_s =~ Regexp.new(r[1], Regexp::IGNORECASE)
-    end
+    next unless item[r[0]].to_s =~ Regexp.new(r[1], Regexp::IGNORECASE)
   end
 
-  if ICalPal::Event === item
+  if item.class.to_s == 'ICalPal::Event'
     # Check for all-day and cancelled events
     next if $opts[:ea] && item['all_day'].positive?
     next if $opts[:ia] && !item['all_day'].positive?
@@ -176,14 +177,16 @@ $rows.each do |row|
       item.non_recurring.each { |j| add(j) }
   else
     # Check for dated reminders
-    if ICalPal::Reminder === item
-      next if $opts[:dated] == 1 && item['due_date'].positive?
-      next if $opts[:dated] == 2 && item['due_date'].zero?
+    if item.class == 'ICalPal::Reminder'
+      next if $opts[:dated] == ICalPal::Reminder::UNDATED_TASKS && item['due_date'].positive?
+      next if $opts[:dated] == ICalPal::Reminder::DATED_TASKS && item['due_date'].zero?
     end
 
     add(item)
   end
 end
+
+$log.info("Added #{$items.count} items")
 
 # Add placeholders for empty days
 if $opts[:sed] && $opts[:sd] && klass == ICalPal::Event
@@ -210,7 +213,7 @@ $log.debug("#{$items.count} items remain")
 # Configure formatting
 mu = case $opts[:output]
      when 'ansi' then RDoc::Markup::ToAnsi.new
-     when 'default' then RDoc::Markup::ToICalPal.new($opts)
+     when 'default' then ICalPal::ToICalPal.new($opts)
      when 'html'
        rdoc = RDoc::Options.new
        rdoc.pipe = true
@@ -247,7 +250,7 @@ unless mu
        when 'xml'
          xml = items.map { |i| "<#{$opts[:cmd].chomp('s')}>#{i.to_xml}</#{$opts[:cmd].chomp('s')}>" }
          "<#{$opts[:cmd]}>\n#{xml.join}</#{$opts[:cmd]}>"
-       when 'yaml' then items.map { |i| i.self }.to_yaml
+       when 'yaml' then Psych.dump(items.map { |i| i.self })
        when 'remind' then items.map { |i|
            "REM #{i['sdate'].strftime('%F AT %R')} " +
              "DURATION #{((i['edate'] - i['sdate']).to_f * 1440).to_i} " +

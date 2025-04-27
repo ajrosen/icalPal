@@ -1,38 +1,42 @@
-# Convert a key/value pair to XML.  The value should be +nil+, +String+,
-# +Integer+, +Array+, or +ICalPal::RDT+
-#
-# @param key The key
-# @param value The value
-# @return [String] The key/value pair in a simple XML format
-def xmlify(key, value)
-  case value
-    # Nil
-  when NilClass then "<#{key}/>"
+module ICalPal
+  class Utils
+    # Convert a key/value pair to XML.  The value should be +NilClass+, +String+,
+    # +Integer+, +Array+, or +ICalPal::RDT+
+    #
+    # @param key [String] The key
+    # @param value [NilClass, String, Integer, Array, ICalPal::RDT] The value
+    # @return [String] The key/value pair in a simple XML format
+    def self.xmlify(key, value)
+      case value
+        # Nil
+      when NilClass then "<#{key}/>"
 
-    # Array
-  when Array
-    # Treat empty arrays as nil values
-    xmlify(key, nil) if value[0].nil?
+        # Array
+      when Array
+        # Treat empty arrays as nil values
+        xmlify(key, nil) if value[0].nil?
 
-    retval = ''
-    value.each { |x| retval += xmlify("#{key}0", x) }
-    "<#{key}>#{retval}</#{key}>"
+        retval = ''
+        value.each { |x| retval += xmlify("#{key}0", x) }
+        "<#{key}>#{retval}</#{key}>"
 
-    # Unknown
-  else "<#{key}>#{value}</#{key}>"
+        # Unknown
+      else "<#{key}>#{value}</#{key}>"
+      end
+    end
+
+    # Get the application icalPal was most likely started by
+    #
+    # @return [Integer] The basename of the program whose parent process id is 1 (launchd)
+    def self.ancestor
+      ppid = Process.ppid
+
+      while (ppid != 1)
+        ps = `ps -p #{ppid} -o ppid,command | tail -1`
+        ppid = ps[/^[0-9 ]+ /].to_i
+      end
+
+      ps[ps.rindex('/') + 1..].chop
+    end
   end
-end
-
-# Get the application icalPal is most likely running in
-#
-# @return [Integer] The basename of the program whose parent process id is 1 (launchd)
-def ancestor
-  ppid = Process.ppid
-
-  while (ppid != 1)
-    ps = `ps -p #{ppid} -o ppid,command | tail -1`
-    ppid = ps[/^[0-9 ]+ /].to_i
-  end
-
-  ps[ps.rindex('/') + 1..].chop
 end
