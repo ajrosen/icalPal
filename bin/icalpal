@@ -10,6 +10,7 @@ begin
   require 'yaml'
 
   require_relative '../lib/icalpal'
+  require_relative '../lib/defaults'
   require_relative '../lib/options'
   require_relative '../lib/utils'
 rescue LoadError => e

@@ -27,6 +27,7 @@ $defaults = {
     is: [],
     it: [],
     li: 0,
+    norc: false,
     output: 'default',
     ps: [ "\n  " ],
     r: false,
@@ -38,32 +39,38 @@ $defaults = {
     sp: false,
     tf: '%-I:%M %p',
   },
+
   tasks: {
     dated: 0,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
+
   undatedTasks: {
     dated: 1,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
+
   datedTasks: {
     dated: 2,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
+
   stores: {
     iep: %w[ account type ],
     sort: 'account',
   },
+
   calendars: {
     iep: %w[ calendar type UUID ],
     sort: 'calendar',
   },
+
   events: {
     days: nil,
     ea: false,
