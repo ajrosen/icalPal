@@ -41,21 +41,21 @@ $defaults = {
   },
 
   tasks: {
-    dated: ICalPal::Reminder::ALL_TASKS,
+    dated: 0,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
 
   undatedTasks: {
-    dated: ICalPal::Reminder::UNDATED_TASKS,
+    dated: 1,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
   },
 
   datedTasks: {
-    dated: ICalPal::Reminder::DATED_TASKS,
+    dated: 2,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
     sort: 'prio',
