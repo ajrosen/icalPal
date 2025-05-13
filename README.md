@@ -43,9 +43,10 @@ gem install --user-install icalPal
 
 ### Compatability with icalBuddy
 
-icalPal tries to be compatible with [icalBuddy](https://github.com/ali-rantakari/icalBuddy) for command-line options
-and for output.  There are a some important differences to be aware
-of.
+icalPal tries to be compatible with
+[icalBuddy](https://github.com/ali-rantakari/icalBuddy) for
+command-line options and for output.  There are a some important
+differences to be aware of.
 
 * Options require two hyphens, except for single-letter options that require one hyphen
 * *eventsFrom* is not supported.  Instead there is *--from*, *--to*, and *--days*
@@ -59,7 +60,8 @@ of.
 
 ```icalPal accounts```
 
-Shows a list of enabled Calendar accounts.  Internally they are known as *Stores*; you can run ```icalPal stores``` instead.
+Shows a list of enabled Calendar accounts.  Internally they are known
+as *Stores*; you can run ```icalPal stores``` instead.
 
 ```icalPal datedTasks```
 
@@ -79,7 +81,9 @@ Shows only reminders that have a due date.
 * ```--color``` uses a wider color palette.  Calendar colors are what you have chosen in the Calendar app.  Not supported in all terminals, but looks great in [iTerm2](https://iterm2.com/).
 * ```--match``` lets you filter the results of any command to items where a *FIELD* matches a regular expression.  Eg., ```--match notes=zoom.us``` to show only Zoom meeetings
 
-Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the version of Ruby (2.6.10) included with macOS.
+Because icalPal is written in Ruby, and not a native Mac application,
+you can run it just about anywhere.  It's been tested with the version
+of Ruby (2.6.10) included with macOS.
 
 ## Usage
 
@@ -102,10 +106,12 @@ COMMAND must be one of the following:
 Global options:
 ```
     -c, --cmd=COMMAND       Command to run
-        --db=DB             Use DB file instead of Calendar (default: /Users/ajr/Library/Calendars/Calendar.sqlitedb)
+        --db=DB             Use DB file instead of Calendar
+                            (default: ["/Users/user/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb", "/Users/user/Library/Calendars/Calendar.sqlitedb"]
                             For the tasks commands this should be a directory containing .sqlite files
-                            (default: /Users/ajr/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores)
-        --cf=FILE           Set config file path (default: /Users/ajr/.icalpal)
+                            (default: /Users/user/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores)
+        --cf=FILE           Set config file path (default: /Users/user/.icalpal)
+        --norc              Ignore ICALPAL and ICALPAL_CONFIG environment variables
     -o, --output=FORMAT     Print as FORMAT (default: default)
                             [ansi, csv, default, hash, html, json, md, rdoc, remind, toc, xml, yaml]
 ```
@@ -209,7 +215,7 @@ Environment variables:
 ```
     ICALPAL                 Additional arguments
     ICALPAL_CONFIG          Additional arguments from a file
-                            (default: /Users/ajr/.icalpal)
+                            (default: /Users/user/.icalpal)
 
     Do not quote or escape values.  Options set in ICALPAL override ICALPAL_CONFIG.  Options on the command line override ICALPAL.
 ```
@@ -223,7 +229,8 @@ CSV, Hash, JSON, XML, and YAML print all fields for all items in their
 respective formats.  From that you can analyze the results any way you
 like.
 
-[Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built into icalPal.
+[Remind](https://dianne.skoll.ca/projects/remind/) format uses a
+minimal implementation built into icalPal.
 
 Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
 [RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html)
@@ -232,7 +239,8 @@ framework to build and render the items.
 Each item to be printed is a new
 [RDoc::Markup::Document](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Document.html).
 
-When using one of the <em>separate by</em> options, a section header is added first.  The section contains:
+When using one of the <em>separate by</em> options, a section header
+is added first.  The section contains:
 
 * [RDoc::Markup::BlankLine](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/BlankLine.html)
   (unless this is the first section)
@@ -259,9 +267,10 @@ information about the item and property to the default formatter.
 ## History
 
 I used icalBuddy for many years.  It's great for scripting,
-automation, and as a desktop widget for apps like
-[GeekTool](https://www.tynsoe.org/geektool/) and
-[Übersicht](https://tracesof.net/uebersicht/).
+automation, and as a widget for apps like
+[Übersicht](https://tracesof.net/uebersicht/),
+[GeekTool](https://www.tynsoe.org/geektool/), and
+[SketchyBar](https://felixkratz.github.io/SketchyBar/).
 
 As with many applications, I started to run into some limitations in
 icalBuddy.  The biggest being that active development ended in 2014.
@@ -270,7 +279,7 @@ Lawton](https://github.com/jimlawton) that it even compiles anymore.
 
 Instead of trying to understand and extend the existing code, I chose
 to start anew using my language of choice: Ruby.  Using Ruby meant
-there is *much* less code; about 1,800 lines vs. 7,000.  It also means
+there is *much* less code; less than 2,000 lines vs. 7,000.  It also means
 icalPal is multi-platform.
 
 I won't pretend to understand **why** you would want to run this on
