@@ -95,6 +95,7 @@ COMMAND must be one of the following:
     eventsToday             Print events occurring today
     eventsToday+NUM         Print events occurring between today and NUM days into the future
     eventsNow               Print events occurring at present time
+    eventsRemaining         Print events occurring between present time and midnight
     datedTasks              Print tasks with a due date
     undatedTasks            Print tasks with no due date
 ```
