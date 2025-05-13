@@ -177,10 +177,10 @@ module ICalPal
           skip = false
 
           changes[1..].each do |change|
-            cdate = Time.at(change['start_date'] + ITIME).to_a[3..5].reverse
+            codate = Time.at(change['orig_date'] + ITIME).to_a[3..5].reverse
             odate = occurrence['sdate'].ymd
 
-            skip = true if cdate == odate
+            skip = true if codate == odate
           end
 
           events.push(clone(occurrence)) if in_window?(occurrence['sdate'], occurrence['edate']) && !skip
