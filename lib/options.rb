@@ -42,6 +42,7 @@ module ICalPal
       @op.on('%s%s %sPrint events occurring today' % pad('eventsToday'))
       @op.on('%s%s %sPrint events occurring between today and NUM days into the future' % pad('eventsToday+NUM'))
       @op.on('%s%s %sPrint events occurring at present time' % pad('eventsNow'))
+      @op.on('%s%s %sPrint events occurring between present time and midnight' % pad('eventsRemaining'))
       @op.on('%s%s %sPrint tasks with a due date' % pad('datedTasks'))
       @op.on('%s%s %sPrint tasks with no due date' % pad('undatedTasks'))
 
@@ -238,9 +239,14 @@ module ICalPal
         cli[:cmd] = 'stores' if cli[:cmd] == 'accounts'
 
         # Parse eventsNow and eventsToday commands
-        cli[:cmd].match('events(Now|Today)(\+[0-9]+)?') do |m|
+        cli[:cmd].match('events(Now|Today|Remaining)(\+[0-9]+)?') do |m|
           cli[:now] = true if m[1] == 'Now'
           cli[:days] = (m[1] == 'Today')? m[2].to_i : 1
+
+          if m[1] == 'Remaining'
+            cli[:n] = true
+            cli[:days] = 0
+          end
 
           cli[:from] = $today
           cli[:to] = $today + cli[:days] if cli[:days]
@@ -320,7 +326,7 @@ module ICalPal
     end
 
     # Commands that can be run
-    COMMANDS = %w[events eventsToday eventsNow tasks datedTasks undatedTasks calendars accounts stores].freeze
+    COMMANDS = %w[events eventsToday eventsNow eventsRemaining tasks datedTasks undatedTasks calendars accounts stores].freeze
 
     # Supported output formats
     OUTFORMATS = %w[ansi csv default hash html json md rdoc remind toc xml yaml].freeze
