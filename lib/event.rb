@@ -1,4 +1,4 @@
-require 'timezone'
+r 'timezone'
 
 module ICalPal
   # Class representing items from the <tt>CalendarItem</tt> table
@@ -13,8 +13,8 @@ module ICalPal
     def []=(k, v)
       @self[k] = v
 
-      @self['sctime'] = Time.at(@self['sdate'].to_i, in: 'UTC') if k == 'sdate'
-      @self['ectime'] = Time.at(@self['edate'].to_i, in: 'UTC') if k == 'edate'
+      @self['sctime'] = Time.at(@self['sdate'].to_i, in: '+00:00') if k == 'sdate'
+      @self['ectime'] = Time.at(@self['edate'].to_i, in: '+00:00') if k == 'edate'
     end
 
     # Standard accessor with special handling for +age+,
@@ -96,7 +96,7 @@ module ICalPal
         begin
           zone = Timezone.fetch(obj['start_tz'])
         rescue Timezone::Error::InvalidZone
-          zone = 'UTC'
+          zone = '+00:00'
         end
 
         ctime = obj[k] + ITIME
