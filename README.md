@@ -82,8 +82,9 @@ Shows only reminders that have a due date.
 * ```--match``` lets you filter the results of any command to items where a *FIELD* matches a regular expression.  Eg., ```--match notes=zoom.us``` to show only Zoom meeetings
 
 Because icalPal is written in Ruby, and not a native Mac application,
-you can run it just about anywhere.  It's been tested with the version
-of Ruby (2.6.10) included with macOS.
+you can run it just about anywhere.  It's been tested with the
+versions of Ruby included with macOS Sequoia (2.6.10) and
+[Homebrew](https://brew.sh/) (3.4.4).
 
 ## Usage
 
