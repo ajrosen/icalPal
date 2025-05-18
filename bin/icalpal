@@ -1,27 +1,36 @@
 #!/usr/bin/env ruby
 
-begin
-  require 'logger'
-
-  require 'csv'
-  require 'json'
-  require 'rdoc'
-  require 'sqlite3'
-  require 'yaml'
-
-  require_relative '../lib/icalpal'
-  require_relative '../lib/defaults'
-  require_relative '../lib/options'
-  require_relative '../lib/utils'
-rescue LoadError => e
-  dep = e.message[/-- (.*)/, 1]
-
-  $stderr.puts "FATAL: icalpal is missing a dependency: #{dep}"
-  $stderr.puts
-  $stderr.puts "Install with 'gem install --user-install #{dep}'"
-
-  exit
+# require a gem
+#
+# @param gem [String] The gem
+def r(gem)
+  begin
+    # puts "require \"#{gem}\""
+    require gem
+  rescue LoadError => e
+    $stderr.puts "FATAL: icalPal is missing a dependency: #{gem}"
+    $stderr.puts e
+    $stderr.puts
+    abort "Try installing with 'gem install --user-install #{gem}'"
+  end
 end
+
+# require_relative a library
+#
+# @param library [String] The library
+def rr(library)
+  begin
+    # puts "require_relative \"../lib/#{library}\""
+    require_relative "../lib/#{library}"
+  rescue LoadError => e
+    $stderr.puts "FATAL: Could not load library: #{library}"
+    $stderr.puts
+    abort e.message
+  end
+end
+
+%w[ logger csv json rdoc sqlite3 yaml ].each { |g| r g }
+%w[ icalPal defaults options utils ].each { |l| rr l }
 
 
 ##################################################

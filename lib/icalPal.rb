@@ -1,10 +1,4 @@
-require_relative 'EventKit'
-require_relative 'ToICalPal'
-require_relative 'calendar'
-require_relative 'event'
-require_relative 'rdt'
-require_relative 'reminder'
-require_relative 'store'
+%w[ EventKit ToICalPal calendar event rdt reminder store ].each { |l| rr l }
 
 # Encapsulate the _Store_ (accounts), _Calendar_ and _CalendarItem_
 # tables of a Calendar database, and the _Reminder_ table of a
