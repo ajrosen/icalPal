@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.name	= ICalPal::NAME
   s.version	= ICalPal::VERSION
 
-  s.summary	= 'Command-line tool to query the macOS Calendar'
+  s.summary	= 'Command-line tool to query the macOS Calendar and Reminders'
   s.description	= <<-EOF
 Inspired by icalBuddy and maintains close compatability.  Includes
 many additional features for querying, filtering, and formatting.
@@ -20,30 +20,13 @@ EOF
     'rubygems_mfa_required' => 'true'
   }
 
-  s.files	= Dir["#{s.name}.gemspec", 'bin/*', 'lib/*.rb']
+  s.files	= Dir["#{s.name}.gemspec", 'bin/*', 'ext/*.rb', 'lib/*.rb']
   s.executables	= [ "#{s.name}" ]
   s.extra_rdoc_files = [ 'README.md' ]
 
-  # The macOS and Homebrew versions of rubygems have incompatible
-  # requirements for sqlite3.
-  #
-  # macOS comes with version 1.3.13, so it does not need to be added
-  # as a dependency, but it cannot install anything newer:
-  #
-  # requires Ruby version >= 3.0, < 3.4.dev. The current ruby version is 2.6.10.
-  #
-  # Homebrew's Ruby formula does not come with sqlite3, so it does
-  # need to be added as a dependency, but it cannot install version
-  # 1.3.13:
-  #
-  # error: call to undeclared function
-  #
-  # So we must call add_dependency, but iff we are not building with
-  # macOS' Ruby installation.
-
-  s.add_dependency 'nokogiri-plist', '~> 0.5.0'
-  s.add_dependency 'sqlite3', '~> 2.6.0' unless s.rubygems_version == `/usr/bin/gem --version`.strip
-  s.add_dependency 'timezone', '>= 0.99', '~> 1.3.0'
+  # Some installation settings cannot be handled at build time.
+  # Handle everything at installation time.
+  s.extensions << 'ext/extconf.rb'
 
   s.bindir = 'bin'
   s.required_ruby_version = '>= 2.6.0'

@@ -1,5 +1,5 @@
-require 'open3'
-require 'nokogiri-plist'
+r 'open3'
+r 'plist'
 
 module ICalPal
   # Class representing items from the <tt>Reminders</tt> database
@@ -57,7 +57,7 @@ module ICalPal
         stdin.close
 
         # Read output
-        plist = Nokogiri::PList(stdout.read)['$objects']
+        plist = Plist.parse_xml(stdout.read)['$objects']
 
         @self['color'] = plist[3]
         @self['symbolic_color_name'] = (plist[2] == 'custom')? plist[4] : plist[2]
