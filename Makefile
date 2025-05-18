@@ -1,7 +1,7 @@
 APP=$(shell ruby -e 'require "./lib/version" and puts ICalPal::NAME')
 VERSION=$(shell ruby -e 'require "./lib/version" and puts ICalPal::VERSION')
 
-GEM=/tmp/$(APP)-$(VERSION).gem
+GEM=$(APP)-$(VERSION).gem
 
 export GITHUB_REPO = icalPal
 
@@ -34,4 +34,4 @@ release:
 	github-release release -t ${APP}-${VERSION} -n "${APP} ${VERSION}"
 
 upload:
-	github-release upload -t ${APP}-${VERSION} -n "${GEM}" -R -f "${GEM}"
+	github-release upload -t ${APP}-${VERSION} -n "${APP}-${VERSION}.gem" -R -f "${GEM}"
