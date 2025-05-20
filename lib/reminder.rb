@@ -9,7 +9,7 @@ module ICalPal
     def [](k)
       case k
       when 'notes'              # Skip empty notes
-        (@self['notes'].empty?)? @self['notes'] : nil
+        (@self['notes'].empty?)? nil : @self['notes']
 
       when 'priority'           # Integer -> String
         EventKit::EKReminderProperty[@self['priority']] if @self['priority'].positive?

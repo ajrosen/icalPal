@@ -8,6 +8,7 @@ $defaults = {
   common: {
     ab: '!',
     aep: [],
+    atp: [],
     bullet: '•',
     cf: "#{Dir.home}/.icalpal",
     color: false,
@@ -19,6 +20,7 @@ $defaults = {
     df: '%b %-d, %Y',
     ec: [],
     eep: [],
+    etp: [],
     el: [],
     es: [],
     et: [],
@@ -43,26 +45,26 @@ $defaults = {
   tasks: {
     dated: 0,
     db: [ ICalPal::Reminder::DB_PATH ],
-    iep: %w[ title notes due priority ],
+    itp: %w[ title notes due priority ],
     sort: 'prio',
   },
 
   undatedTasks: {
     dated: 1,
     db: [ ICalPal::Reminder::DB_PATH ],
-    iep: %w[ title notes due priority ],
+    itp: %w[ title notes due priority ],
     sort: 'prio',
   },
 
   datedTasks: {
     dated: 2,
     db: [ ICalPal::Reminder::DB_PATH ],
-    iep: %w[ title notes due priority ],
+    itp: %w[ title notes due priority ],
     sort: 'prio',
   },
 
   stores: {
-    iep: %w[ account type ],
+    itp: %w[ account type ],
     sort: 'account',
   },
 

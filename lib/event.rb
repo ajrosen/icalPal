@@ -177,7 +177,7 @@ module ICalPal
           skip = false
 
           changes[1..].each do |change|
-            codate = Time.at(change['orig_date'] + ITIME).to_a[3..5].reverse
+            codate = Time.at(change['orig_date'] + ITIME, in: '+00:00').to_a[3..5].reverse
             odate = occurrence['sdate'].ymd
 
             skip = true if codate == odate
