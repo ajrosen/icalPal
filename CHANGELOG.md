@@ -1,3 +1,8 @@
+icalPal-3.6.1 / 2025-05-18
+==================
+
+  * aep, eep, and iep options were being applied to tasks commands
+
 icalPal-3.6.0 / 2025-05-18
 ==================
 
