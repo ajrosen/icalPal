@@ -99,8 +99,9 @@ module ICalPal
           zone = '+00:00'
         end
 
+        # Save as seconds, Time, RDT
         ctime = obj[k] + ITIME
-
+        @self["#{k[0]}seconds"] = ctime
         @self["#{k[0]}ctime"] = Time.at(ctime)
         @self["#{k[0]}date"] = RDT.from_time(Time.at(ctime, in: zone))
       end
