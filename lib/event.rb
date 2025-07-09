@@ -304,7 +304,7 @@ module ICalPal
     end
 
     # Check if an event starts or ends between from and to, or if it's
-    # running now (for -n)
+    # running now (for eventsNow)
     #
     # @param s [RDT] Event start
     # @param e [RDT] Event end
