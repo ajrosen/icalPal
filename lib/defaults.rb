@@ -64,7 +64,7 @@ $defaults = {
   },
 
   stores: {
-    itp: %w[ account type ],
+    iep: %w[ account type ],
     sort: 'account',
   },
 

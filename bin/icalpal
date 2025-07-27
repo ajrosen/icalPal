@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# rubocop: disable Style/RedundantBegin
+
 # require a gem
 #
 # @param gem [String] The gem
@@ -28,6 +30,8 @@ def rr(library)
     abort e.message
   end
 end
+
+# rubocop: enable Style/RedundantBegin
 
 %w[ logger csv json rdoc sqlite3 yaml ].each { |g| r g }
 %w[ icalPal defaults options utils ].each { |l| rr l }
@@ -235,7 +239,7 @@ mu = case $opts[:output]
 ##################################################
 # Print the data
 
-items = $items[0..$opts[:li] - 1]
+items = $items[0..($opts[:li] - 1)]
 
 unless mu
   $log.debug("Output in #{$opts[:output]} format")

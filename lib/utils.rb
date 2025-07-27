@@ -34,5 +34,5 @@ def ancestor
     ppid = ps[/^[0-9 ]+ /].to_i
   end
 
-  ps[ps.rindex('/') + 1..].chop
+  ps[(ps.rindex('/') + 1)..].chop
 end
