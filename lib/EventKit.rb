@@ -30,7 +30,7 @@ class EventKit
     yearly
   ].freeze
 
-  EKReminderProperty = [
+  EKReminderPriority = [
     'none',                     # 0
     'high', nil, nil, nil,      # 1
     'medium', nil, nil, nil,    # 5

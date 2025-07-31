@@ -12,7 +12,7 @@ module ICalPal
         (@self['notes'].empty?)? nil : @self['notes']
 
       when 'priority'           # Integer -> String
-        EventKit::EKReminderProperty[@self['priority']] if @self['priority'].positive?
+        EventKit::EKReminderPriority[@self['priority']] if @self['priority'].positive?
 
       when 'sdate'              # For sorting
         @self['title']

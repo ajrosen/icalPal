@@ -282,9 +282,11 @@ module ICalPal
         opts[:version] = @op.version
 
         # From the Department of Redundancy Department
-        (opts[:cmd].include? 'tasks')?
-          opts[:props] = (opts[:itp] + opts[:atp] - opts[:etp]).uniq :
-          opts[:props] = (opts[:iep] + opts[:aep] - opts[:eep]).uniq
+        opts[:iep] = opts[:itp] if opts[:itp]
+        opts[:eep] = opts[:etp] if opts[:etp]
+        opts[:aep] = opts[:atp] if opts[:atp]
+
+        opts[:props] = (opts[:iep] + opts[:aep] - opts[:eep]).uniq
 
         # From, to, days
         if opts[:from]
