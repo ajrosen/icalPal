@@ -230,7 +230,7 @@ begin
 
   $log.info("Sorting #{$items.count} items by #{sort}, reverse #{$opts[:reverse].inspect}")
 
-  $items.sort_by! { |i| sort }
+  $items.sort_by! { |i| [i[sort[0]], i[sort[1]], i[sort[2]] ] }
   $items.reverse! if $opts[:reverse]
 rescue Exception => e
   $log.info("Sorting failed: #{e}\n")
