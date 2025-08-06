@@ -37,6 +37,29 @@ class EventKit
     'low',                      # 9
   ].freeze
 
+  EKReminderDueDateDeltaUnit = %w[
+    minutes
+    hours
+    days
+    weeks
+    months
+  ].freeze
+
+  EKReminderProximity = [
+    nil,
+    'arriving',
+    'leaving'
+  ].freeze
+
+  EKReminderAccessLevel = [
+    { value: 2, level: 'can add' }
+  ].freeze
+
+  EKReminderSharingStatus = [
+    { value: 1, status: 'accepted' },
+    { value: 5, status: 'invited' }
+  ].freeze
+
   # EKSourceType (with color)
   EKSourceType = [
     { name: 'Local',      color: '#FFFFFF' }, # White

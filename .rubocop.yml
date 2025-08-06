@@ -118,7 +118,7 @@ Style/GlobalStdStream:
   Enabled: false
 
 Style/GlobalVars:
-  AllowedVariables: [ $defaults, $items, $log, $now, $opts, $today, $rows ]
+  AllowedVariables: [ $defaults, $items, $log, $now, $opts, $today, $rows, $sections ]
 
 Style/LineEndConcatenation:
   Enabled: false

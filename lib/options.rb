@@ -79,7 +79,7 @@ module ICalPal
       @op.on('--el=LISTS', Array, 'List of reminder lists to exclude')
 
       @op.separator('')
-      @op.on('--match=FIELD=REGEXP', String, 'Include only items whose FIELD matches REGEXP (ignoring case)')
+      @op.on('--match=FIELD=REGEX', String, 'Include only items whose FIELD matches REGEX (ignoring case)')
 
       # dates
       @op.separator("\nChoosing dates:\n\n")
@@ -233,10 +233,15 @@ module ICalPal
         rescue StandardError
         end unless cli[:norc]
 
+        # Find command
         cli[:cmd] ||= @op.default_argv[0]
         cli[:cmd] ||= env[:cmd] if env[:cmd]
         cli[:cmd] ||= cf[:cmd] if cf[:cmd]
-        cli[:cmd] = 'stores' if cli[:cmd] == 'accounts'
+
+        # Handle command aliases
+        cli[:cmd] = 'accounts' if cli[:cmd] == 'stores'
+        cli[:cmd] = cli[:cmd].sub('reminders', 'tasks')
+        cli[:cmd] = cli[:cmd].sub('datedReminders', 'datedTasks')
 
         # Parse eventsNow and eventsToday commands
         cli[:cmd].match('events(Now|Today|Remaining)(\+[0-9]+)?') do |m|
@@ -327,7 +332,7 @@ module ICalPal
     end
 
     # Commands that can be run
-    COMMANDS = %w[events eventsToday eventsNow eventsRemaining tasks datedTasks undatedTasks calendars accounts stores].freeze
+    COMMANDS = %w[events eventsToday eventsNow eventsRemaining tasks datedTasks undatedTasks calendars accounts].freeze
 
     # Supported output formats
     OUTFORMATS = %w[ansi csv default hash html json md rdoc remind toc xml yaml].freeze

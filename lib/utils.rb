@@ -1,3 +1,29 @@
+PL_CONVERT = '/usr/bin/plutil -convert xml1 -o - -'.freeze
+
+# Load a plist
+#
+# @param obj [String] Data that can be converted by +/usr/bin/plutil+
+# @return [Array] Objects representing nodes in the plist
+def plconvert(obj)
+  r 'open3'
+  r 'plist'
+
+  # Run PL_CONVERT command
+  sin, sout, _serr, _e = Open3.popen3(PL_CONVERT)
+
+  # Send obj
+  sin.write(obj)
+  sin.close
+
+  # Read output
+  begin
+    plist = Plist.parse_xml(sout.read)
+    plist['$objects'] if plist
+  rescue Plist::UnimplementedElementError
+    nil
+  end
+end
+
 # Convert a key/value pair to XML.  The value should be +nil+, +String+,
 # +Integer+, +Array+, or +ICalPal::RDT+
 #

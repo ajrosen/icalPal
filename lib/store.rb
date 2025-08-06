@@ -3,16 +3,42 @@ module ICalPal
   class Store
     include ICalPal
 
+    def [](k)
+      case k
+      when 'name', 'title'      # Aliases
+        @self['account']
+
+      when 'owner'              # Owner iff there is an account
+        (@self['owner'] == @self['account'])? nil : @self['owner']
+
+      else @self[k]
+      end
+    end
+
+    def initialize(obj)
+      super
+
+      # Convert JSON arrays to Arrays
+      @self['delegations'] = JSON.parse(obj['delegations']).sort if obj['delegations']
+    end
+
     QUERY = <<~SQL.freeze
 SELECT DISTINCT
 
-Store.name AS account,
-*
+s1.name AS account,
+s1.owner_name AS owner,
+s1.notes,
+s1.type,
 
-FROM #{self.name.split('::').last}
+(SELECT json_group_array(name)
+ FROM #{self.name.split('::').last} s2
+ WHERE s2.delegated_account_owner_store_id == s1.external_id
+) AS delegations
 
-WHERE Store.disabled IS NOT 1
-AND Store.display_order IS NOT -1
+FROM #{self.name.split('::').last} s1
+
+WHERE s1.delegated_account_owner_store_id IS NULL
+
 SQL
 
   end

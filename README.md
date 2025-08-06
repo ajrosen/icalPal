@@ -10,14 +10,13 @@ on any system with [Ruby](https://www.ruby-lang.org/) and access to a
 Calendar or Reminders database.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-
 **Table of Contents**
 
 - [Installation](#installation)
 - [Features](#features)
-  - [Compatability with icalBuddy](#compatability-with-icalbuddy)
   - [Additional commands](#additional-commands)
   - [Additional options](#additional-options)
+  - [Additional properties](#additional-properties)
 - [Usage](#usage)
 - [Output formats](#output-formats)
 - [History](#history)
@@ -67,24 +66,61 @@ as *Stores*; you can run ```icalPal stores``` instead.
 
 Shows only reminders that have a due date.
 
+```icalPal reminders```
+
+*reminders*, *datedReminders*, and *undatedReminders* can be used instead of *tasks*
+
 ### Additional options
 
 * Options can be abbreviated, so long as they are unique.  Eg., ```icalPal -c ev --da 3``` is the same as ```icalPal -c events --days 3```.
 * The ```-c``` part is optional, but you cannot abbreviate the command if you leave it off.
 * Use ```-o``` to print the output in different formats.  CSV or JSON are intertesting choices.
-* Copy your Calendar database file and use ```--db``` on it.
+* Copy your Calendar or Reminders database file and use ```--db``` on it.
 * ```--it``` and ```--et``` will filter by Calendar *type*.  Types are **Local**, **Exchange**, **CalDAV**, **MobileMe**, **Subscribed**, **Birthdays**, and **Reminders**
 * ```--il``` and ```-el``` will filter by Reminder list
 * ```--ia``` includes *only* all-day events (opposite of ```--ea```)
 * ```--aep``` is like ```--iep```, but *adds* to the default property list instead of replacing it.
 * ```--sep``` to separate by any property, not just calendar (```--sc```) or date (```--sd```)
-* ```--color``` uses a wider color palette.  Calendar colors are what you have chosen in the Calendar app.  Not supported in all terminals, but looks great in [iTerm2](https://iterm2.com/).
+* ```--color``` uses a wider color palette.  Colors are what you have chosen in the Calendar and Reminders apps, including custom colors
 * ```--match``` lets you filter the results of any command to items where a *FIELD* matches a regular expression.  Eg., ```--match notes=zoom.us``` to show only Zoom meeetings
 
 Because icalPal is written in Ruby, and not a native Mac application,
 you can run it just about anywhere.  It's been tested with the
-versions of Ruby included with macOS Sequoia (2.6.10) and
-[Homebrew](https://brew.sh/) (3.4.4).
+versions of Ruby included with macOS Sequoia and Tahoe (2.6.10) and
+[Homebrew](https://brew.sh/) (3.4.x).
+
+### Additional properties
+
+Several additional properties are available for each command.
+
+* Accounts
+  * account
+  * notes
+  * owner
+  * type
+  * delegations
+
+* Calendar
+  * account
+  * shared\_owner_name, shared\_owner_address
+  * self\_identity_email, owner\_identity_email
+  * subcal_account_id, subcal_url
+  * published_URL
+  * notes
+  * locale
+
+* Tasks
+	* id
+	* group
+	* section
+	* tags
+	* assignee
+	* timezone
+	* Notifications
+	  * due (due_date formatted with --df and --tf options)
+	  * alert (Early Reminder)
+	  * location, proximity (arriving or leaving), radius (in meters)
+	  * messaging (email addresses and phone numbers from "When Messaging")
 
 ## Usage
 
@@ -109,16 +145,16 @@ Global options:
 ```
     -c, --cmd=COMMAND       Command to run
         --db=DB             Use DB file instead of Calendar
-                            (default: ["/Users/user/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb", "/Users/user/Library/Calendars/Calendar.sqlitedb"]
+                            (default: ["$HOME/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb", "/Users/user/Library/Calendars/Calendar.sqlitedb"]
                             For the tasks commands this should be a directory containing .sqlite files
-                            (default: /Users/user/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores)
-        --cf=FILE           Set config file path (default: /Users/user/.icalpal)
+                            (default: $HOME/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores)
+        --cf=FILE           Set config file path (default: $HOME/.icalpal)
         --norc              Ignore ICALPAL and ICALPAL_CONFIG environment variables
     -o, --output=FORMAT     Print as FORMAT (default: default)
                             [ansi, csv, default, hash, html, json, md, rdoc, remind, toc, xml, yaml]
 ```
 
-Including/excluding calendars and reminders:
+Including/excluding accounts, calendars, reminders and items:
 ```
         --is=ACCOUNTS       List of accounts to include
         --es=ACCOUNTS       List of accounts to exclude
@@ -133,8 +169,7 @@ Including/excluding calendars and reminders:
         --il=LISTS          List of reminder lists to include
         --el=LISTS          List of reminder lists to exclude
 
-        --match=FIELD=REGEXP
-                            Include only items whose FIELD matches REGEXP (ignoring case)
+        --match=FIELD=REGEX Include only items whose FIELD matches REGEXP (ignoring case)
 ```
 
 Choosing dates:

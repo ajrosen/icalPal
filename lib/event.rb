@@ -55,7 +55,7 @@ module ICalPal
       when 'status'             # Integer -> String
         EventKit::EKEventStatus.select { |_k, v| v == @self['status'] }.keys[0]
 
-      when 'title'              # title[ (age N)]
+      when 'event', 'name', 'title' # title[ (age N)]
         @self['title'] + ((@self['calendar'] == 'Birthdays')? " (age #{self['age']})" : '')
 
       when 'uid'                # for icalBuddy
@@ -80,8 +80,7 @@ module ICalPal
         'title' => 'Nothing.',
       } if DateTime === obj
 
-      @self = {}
-      obj.each_key { |k| @self[k] = obj[k] }
+      super
 
       # Convert JSON arrays to Arrays
       @self['attendees'] = JSON.parse(obj['attendees'])
@@ -106,12 +105,7 @@ module ICalPal
         @self["#{k[0]}date"] = RDT.from_time(Time.at(ctime, in: zone))
       end
 
-      # Type of calendar event is from
-      obj['type'] = EventKit::EKSourceType.find_index { |i| i[:name] == 'Subscribed' } if obj['subcal_url']
-      type = EventKit::EKSourceType[obj['type']]
-
-      @self['symbolic_color_name'] ||= @self['color']
-      @self['type'] = type[:name]
+      @self.delete('unique_identifier')
     end
 
     # Check non-recurring events

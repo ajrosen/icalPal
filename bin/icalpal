@@ -56,6 +56,7 @@ end
 $opts = ICalPal::Options.new.parse_options
 
 $rows = []                      # Rows from the database
+$sections = []                  # Calendar list sections
 $items = []                     # Items to be printed
 
 
@@ -93,19 +94,31 @@ $opts[:db].each do |db|
       # Load all .sqlite files
       $log.debug("Loading *.sqlite in #{db}")
       Dir.glob("#{db}/*.sqlite").each do |d|
-        $rows += ICalPal.load_data(d, klass::QUERY)
         success = true
 
+        rows = klass.load_data(d, klass::QUERY)
+        $rows += rows
+
+        sections = klass.load_data(d, klass::SECTIONS_QUERY)
+        $sections += sections
+
+        $log.info("Loaded #{rows.length} rows and #{sections.length} sections from #{d}")
       rescue SQLite3::CantOpenException
         # Non-fatal exception, try the next one
       end
+
+    rescue Errno::EPERM
+      # Probably need Full Disk Access
     end
   else
     # Load database
     begin
-      $rows += ICalPal.load_data(db, klass::QUERY)
+      rows = ICalPal.load_data(db, klass::QUERY)
+      $rows += rows
+
       success = true
 
+      $log.info("Loaded #{rows.length} rows from #{db}")
     rescue SQLite3::CantOpenException
       # Non-fatal exception, try the next one
     end
@@ -140,8 +153,7 @@ unless success
   abort
 end
 
-$log.info("Loaded #{$rows.count} #{klass} rows")
-$log.info("Window is #{$opts[:from]} to #{$opts[:to]}")
+$log.info("Window is #{$opts[:from]} to #{$opts[:to]}") if $opts[:from]
 
 
 ##################################################
@@ -191,8 +203,8 @@ $rows.each do |row|
   else
     # Check for dated reminders
     if ICalPal::Reminder === item
-      next if $opts[:dated] == 1 && item['due_date'].positive?
-      next if $opts[:dated] == 2 && item['due_date'].zero?
+      next if $opts[:dated] == 1 && item['due_date'] && item['due_date'].positive?
+      next if $opts[:dated] == 2 && (!item['due_date'] || item['due_date'].zero?)
     end
 
     add(item)
@@ -211,9 +223,14 @@ end
 
 # Sort the rows
 begin
-  $log.info("Sorting #{$items.count} items by #{[ $opts[:sep], $opts[:sort], 'sdate' ]}, reverse #{$opts[:reverse].inspect}")
+  sort = []
+  sort.push $opts[:sep] if $opts[:sep]
+  sort.push $opts[:sort] if $opts[:sort]
+  sort.push 'sdate'
 
-  $items.sort_by! { |i| [ i[$opts[:sep]], i[$opts[:sort]], i['sdate'] ] }
+  $log.info("Sorting #{$items.count} items by #{sort}, reverse #{$opts[:reverse].inspect}")
+
+  $items.sort_by! { |i| sort }
   $items.reverse! if $opts[:reverse]
 rescue Exception => e
   $log.info("Sorting failed: #{e}\n")

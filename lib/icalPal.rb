@@ -1,7 +1,7 @@
 %w[ EventKit ToICalPal calendar event rdt reminder store ].each { |l| rr l }
 
 # Encapsulate the _Store_ (accounts), _Calendar_ and _CalendarItem_
-# tables of a Calendar database, and the _Reminder_ table of a
+# tables of a Calendar database, and _Reminders_ (tasks) of a
 # Reminders database
 module ICalPal
   attr_reader :self
@@ -9,11 +9,11 @@ module ICalPal
   # Dynamic instantiation of our classes based on the command being
   # run
   #
-  # @param klass [String] One of +accounts+, +stores+, +calendars+, +events+, or +tasks+
+  # @param klass [String] One of +accounts+, +calendars+, +events+, or +tasks+
   # @return [Class] The subclass of ICalPal
   def self.call(klass)
     case klass
-    when 'accounts', 'stores' then Store
+    when 'accounts' then Store
     when 'calendars' then Calendar
     when 'events' then Event
     when 'tasks' then Reminder
@@ -23,7 +23,11 @@ module ICalPal
     end
   end
 
-  # Load data
+  # Load data from a database
+  #
+  # @param db_file [String] Path to the database file
+  # @param q [String] The query to run
+  # @return [Array<Hash>] Array of rows returned by the query
   def self.load_data(db_file, q)
     $log.debug(q.gsub("\n", ' '))
 
@@ -40,7 +44,7 @@ module ICalPal
       $opts[:props] = stmt.columns - $opts[:eep] if $opts[:props].any? 'all'
 
       # Iterate the SQLite3::ResultSet once
-      stmt.execute.each_with_index { |i, j| rows[j] = i }
+      stmt.execute.each { |i| rows.push(i) }
       stmt.close
 
       # Close the database
@@ -66,25 +70,30 @@ module ICalPal
     rows
   end
 
-  # @param obj [ICalPal] A +Store+ or +Calendar+
+  # Initialize fields common to all ICalPal classes
+  #
+  # @param obj [ICalPal] An +Store+, +Calendar+, +Event+, or +Reminder+
   def initialize(obj)
-    obj['type'] = EventKit::EKSourceType.find_index { |i| i[:name] == 'Subscribed' } if obj['subcal_url']
-    type = EventKit::EKSourceType[obj['type']]
+    @self = obj
 
     obj['store'] = obj['account']
+
+    obj['type'] = EventKit::EKSourceType.find_index { |i| i[:name] == 'Subscribed' } if obj['subcal_url']
+    return unless obj['type']
+
+    type = EventKit::EKSourceType[obj['type']]
 
     obj['type'] = type[:name]
     obj['color'] ||= type[:color]
     obj['symbolic_color_name'] ||= type[:color]
-
-    @self = obj
   end
 
   # Create a new CSV::Row with values from +self+.  Newlines are
   # replaced with '\n' to ensure each Row is a single line of text.
   #
   # @param headers [Array] Key names used as the header row in a CSV::Table
-  # @return [CSV::Row] The +Store+, +Calendar+, or +CalendarItem+ as a CSV::Row
+  # @return [CSV::Row] The +Store+, +Calendar+, +CalendarItem+, or
+  # +Reminder+ as a CSV::Row
   def to_csv(headers)
     values = headers.map { |h| (@self[h].respond_to?(:gsub))? @self[h].gsub("\n", '\n') : @self[h] }
 

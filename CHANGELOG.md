@@ -1,3 +1,68 @@
+icalPal-3.8.0
+==================
+
+  * Add properties for tasks commands
+	* id
+	* group
+	* section
+	* tags
+	* assignee
+	* timezone
+	* Notifications
+	  * due (due_date formatted with --df and --tf options)
+	  * alert (Early Reminder)
+	  * location, proximity (arriving or leaving), radius (in meters)
+	  * messaging (email addresses and phone numbers from "When Messaging")
+
+  * Limit properties for accounts command
+	* account
+	* notes
+	* owner
+	* type
+	* delegations
+
+  * Limit properties for calendar command
+	* account
+	* UUID
+	* shared\_owner_name, shared\_owner_address
+	* self\_identity_email, owner\_identity_email
+	* subcal\_account_id, subcal_url
+	* published_URL
+	* notes
+	* locale
+
+  * New command aliases
+	* reminders for tasks commands
+
+  * Property aliases
+	* name or title for account in accounts command
+	* name or title for calendar in calendars command
+	* name or event for title in events commands
+	* name, reminder, or task for title in tasks commands
+
+  * Bug fixes
+	* Add additional properties from --iep/--aep with --iep/--aep all
+	* Do not include properties twice
+	* Adjust indentation of task properties to match icalBuddy
+	* Sorting tasks
+	* Handle Errno::EPERM (needs Full Disk Access) for Reminders database
+
+icalPal-3.7.2
+==================
+
+  * atp, etp, and itp options were not aliases for aep, eep, and iep per the documentation
+
+icalPal-3.7.1
+==================
+
+  * Fix stores command (#36)
+
+
+icalPal-3.7.0
+==================
+
+  * Add sseconds/eseconds fields for easier post-processing
+
 icalPal-3.6.1 / 2025-05-18
 ==================
 

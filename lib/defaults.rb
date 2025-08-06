@@ -44,6 +44,7 @@ $defaults = {
     dated: 0,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
+    ps: [ "\n    " ],
     sort: 'prio',
   },
 
@@ -51,6 +52,7 @@ $defaults = {
     dated: 1,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
+    ps: [ "\n    " ],
     sort: 'prio',
   },
 
@@ -58,10 +60,11 @@ $defaults = {
     dated: 2,
     db: [ ICalPal::Reminder::DB_PATH ],
     iep: %w[ title notes due priority ],
+    ps: [ "\n    " ],
     sort: 'prio',
   },
 
-  stores: {
+  accounts: {
     iep: %w[ account type ],
     sort: 'account',
   },
