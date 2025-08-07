@@ -9,7 +9,7 @@ $(GEM): bin/* */*.rb $(APP).gemspec
 	gem build $(APP).gemspec -q -o $(GEM)
 
 clean:
-	rm -fv $(GEM)
+	rm -fv *.gem
 
 install: $(GEM)
 	gem install $(GEM)
@@ -30,7 +30,11 @@ gemfury: $(GEM)
 
 publish: rubygems gemfury
 
+github-push:
+	git push
+
 release:
+	github-push
 	github-release release -t ${APP}-${VERSION} -n "${APP} ${VERSION}"
 
 upload:
