@@ -238,6 +238,9 @@ module ICalPal
         cli[:cmd] ||= env[:cmd] if env[:cmd]
         cli[:cmd] ||= cf[:cmd] if cf[:cmd]
 
+        # Must have a command
+        raise(OptionParser::MissingArgument, 'COMMAND is required') unless cli[:cmd]
+
         # Handle command aliases
         cli[:cmd] = 'accounts' if cli[:cmd] == 'stores'
         cli[:cmd] = cli[:cmd].sub('reminders', 'tasks')
@@ -261,7 +264,6 @@ module ICalPal
         end if cli[:cmd]
 
         # Must have a valid command
-        raise(OptionParser::MissingArgument, 'COMMAND is required') unless cli[:cmd]
         raise(OptionParser::InvalidArgument, "Unknown COMMAND #{cli[:cmd]}") unless (COMMANDS.any? cli[:cmd])
 
         # Merge options
@@ -294,8 +296,9 @@ module ICalPal
         opts[:props] = (opts[:iep] + opts[:aep] - opts[:eep]).uniq
 
         # From, to, days
+        opts[:days] -= 1 if opts[:days]
+
         if opts[:from]
-          opts[:to] += 1 if opts[:to]
           opts[:to] ||= opts[:from] + 1 if opts[:from]
           opts[:to] = opts[:from] + opts[:days] if opts[:days]
           opts[:to] = RDT.new(*opts[:to].to_a[0..2] + [ 23, 59, 59 ])

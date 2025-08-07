@@ -1,3 +1,13 @@
+icalPal-3.8.2
+==================
+
+  * Fix for #40
+
+icalPal-3.8.1
+==================
+
+  * Fix sorting regression bug
+
 icalPal-3.8.0
 ==================
 
