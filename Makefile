@@ -34,7 +34,6 @@ github-push:
 	git push
 
 release:
-	github-push
 	github-release release -t ${APP}-${VERSION} -n "${APP} ${VERSION}"
 
 upload:

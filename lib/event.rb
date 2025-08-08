@@ -85,7 +85,7 @@ module ICalPal
       # Convert JSON arrays to Arrays
       @self['attendees'] = JSON.parse(obj['attendees'])
       @self['xdate'] = JSON.parse(obj['xdate']).map do |k|
-        RDT.from_itime(k) if k
+        RDT.from_itime(Time.at(k, in: '+00:00')) if k
       end
 
       # Convert iCal dates to normal dates
