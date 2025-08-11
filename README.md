@@ -51,7 +51,7 @@ differences to be aware of.
 * *eventsFrom* is not supported.  Instead there is *--from*, *--to*, and *--days*
 * *uncompletedTasks* is simply *tasks*
 * *undatedUncompletedTasks* is simply *undatedTasks*
-* *tasksDueBefore:DATE* is not yet supported
+* *tasksDueBefore:DATE* uses *--from*, *--to*, and *--days* instead of *:DATE*
 * The command can go anywhere; it doesn't have to be the last argument
 * Property separators are comma-delimited
 
@@ -68,13 +68,18 @@ Shows only reminders that have a due date.
 
 ```icalPal reminders```
 
-*reminders*, *datedReminders*, and *undatedReminders* can be used instead of *tasks*
+*reminders*, *datedReminders*, *undatedReminders*, and
+*remindersDueBefore* can be used instead of *tasks*
+
+Reminders can also be viewed in the *Scheduled Reminders* calendar,
+using the *tasks* commands.  Repeating reminders are treated the same
+as repeating events.
 
 ### Additional options
 
 * Options can be abbreviated, so long as they are unique.  Eg., ```icalPal -c ev --da 3``` is the same as ```icalPal -c events --days 3```.
 * The ```-c``` part is optional, but you cannot abbreviate the command if you leave it off.
-* Use ```-o``` to print the output in different formats.  CSV or JSON are intertesting choices.
+* Use ```-o``` to print the output in different formats.  CSV or JSON are interesting choices.
 * Copy your Calendar or Reminders database file and use ```--db``` on it.
 * ```--it``` and ```--et``` will filter by Calendar *type*.  Types are **Local**, **Exchange**, **CalDAV**, **MobileMe**, **Subscribed**, **Birthdays**, and **Reminders**
 * ```--il``` and ```-el``` will filter by Reminder list
@@ -139,15 +144,19 @@ COMMAND must be one of the following:
     eventsRemaining         Print events occurring between present time and midnight
     datedTasks              Print tasks with a due date
     undatedTasks            Print tasks with no due date
+    tasksDueBefore          Print uncompleted tasks due between the given dates
+
+    stores can be used instead of accounts
+    reminders can be used instead of tasks
 ```
 
 Global options:
 ```
     -c, --cmd=COMMAND       Command to run
         --db=DB             Use DB file instead of Calendar
-                            (default: ["$HOME/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb", "/Users/user/Library/Calendars/Calendar.sqlitedb"]
+                            (default: ["$HOME/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb", $HOME/Library/Calendars/Calendar.sqlitedb]
                             For the tasks commands this should be a directory containing .sqlite files
-                            (default: $HOME/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores)
+                            (default: "$HOME/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores")
         --cf=FILE           Set config file path (default: $HOME/.icalpal)
         --norc              Ignore ICALPAL and ICALPAL_CONFIG environment variables
     -o, --output=FORMAT     Print as FORMAT (default: default)
@@ -243,7 +252,7 @@ Formatting the output:
 Help:
 ```
     -h, --help              Show this message
-    -V, -v, --version       Show version and exit (2.0.0)
+    -V, -v, --version       Show version and exit (3.9.0)
     -d, --debug=LEVEL       Set the logging level (default: warn)
                             [debug, info, warn, error, fatal]
 ```
@@ -252,7 +261,7 @@ Environment variables:
 ```
     ICALPAL                 Additional arguments
     ICALPAL_CONFIG          Additional arguments from a file
-                            (default: /Users/user/.icalpal)
+                            (default: $HOME/.icalpal)
 
     Do not quote or escape values.  Options set in ICALPAL override ICALPAL_CONFIG.  Options on the command line override ICALPAL.
 ```
@@ -276,8 +285,8 @@ framework to build and render the items.
 Each item to be printed is a new
 [RDoc::Markup::Document](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Document.html).
 
-When using one of the <em>separate by</em> options, a section header
-is added first.  The section contains:
+When using one of the _separate by_ options, a section header is added
+first.  The section contains:
 
 * [RDoc::Markup::BlankLine](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/BlankLine.html)
   (unless this is the first section)
@@ -315,9 +324,10 @@ It's only thanks to the efforts of [Jim
 Lawton](https://github.com/jimlawton) that it even compiles anymore.
 
 Instead of trying to understand and extend the existing code, I chose
-to start anew using my language of choice: Ruby.  Using Ruby meant
-there is *much* less code; less than 2,000 lines vs. 7,000.  It also means
-icalPal is multi-platform.
+to start anew using my language of choice:
+[Ruby](https://www.ruby-lang.org).  Using Ruby meant there is *much*
+less code; a little over 2,000 lines vs. 7,000.  It also means icalPal
+is multi-platform.
 
 I won't pretend to understand **why** you would want to run this on
 Linux or Windows.  But since icalPal is written in Ruby and gets its

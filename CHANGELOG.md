@@ -1,3 +1,8 @@
+icalPal-3.9.0
+==================
+
+  * Implement tasksDueBefore command
+
 icalPal-3.8.2
 ==================
 

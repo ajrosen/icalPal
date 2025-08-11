@@ -74,17 +74,14 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   #
   # @param _arg [Array] Ignored
   def accept_list_start(_arg)
-    begin
-      return if @item['placeholder']
+    return if @opts[:nb] || @item['placeholder']
 
-      if (@item['due_date'] + ICalPal::ITIME).between?(ICalPal::ITIME + 1, $now.to_i)
-        @res << "#{@opts[:ab]} " unless @opts[:nb]
-        return
-      end
-    rescue
+    if @item['due_date'] && (@item['due_date']).between?(0, $now.to_i)
+      # Use alert bullet for overdue items
+      @res << "#{@opts[:ab]} "
+    else
+      @res << "#{@opts[:bullet]} "
     end
-
-    @res << "#{@opts[:bullet]} " unless @opts[:nb]
   end
 
   # Add a property name

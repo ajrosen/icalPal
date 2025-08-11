@@ -78,7 +78,7 @@ module ICalPal
         'sdate' => obj,
         'placeholder' => true,
         'title' => 'Nothing.',
-      } if DateTime === obj
+      } if obj.is_a?(DateTime)
 
       super
 

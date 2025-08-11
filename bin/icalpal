@@ -191,7 +191,7 @@ $rows.each do |row|
     end
   end
 
-  if ICalPal::Event === item
+  if item.is_a?(ICalPal::Event)
     # Check for all-day and cancelled events
     next if $opts[:ea] && item['all_day'].positive?
     next if $opts[:ia] && !item['all_day'].positive?
@@ -202,9 +202,11 @@ $rows.each do |row|
       item.non_recurring.each { |j| add(j) }
   else
     # Check for dated reminders
-    if ICalPal::Reminder === item
+    if item.is_a?(ICalPal::Reminder)
       next if $opts[:dated] == 1 && item['due_date'] && item['due_date'].positive?
       next if $opts[:dated] == 2 && (!item['due_date'] || item['due_date'].zero?)
+      next unless $opts[:dated] == 3 && item['due_date'] &&
+        (item['due_date']).between?($opts[:from].to_i, $opts[:to].to_i)
     end
 
     add(item)
@@ -327,8 +329,8 @@ items.each_with_index do |i, j|
     value = i[prop]
 
     next unless value
-    next if Array === value && !value[0]
-    next if String === value && value.empty?
+    next if value.is_a?(Array) && !value[0]
+    next if value.is_a?(String) && value.empty?
 
     $log.debug("#{prop}: #{value}")
 

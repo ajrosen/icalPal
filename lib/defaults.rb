@@ -64,6 +64,15 @@ $defaults = {
     sort: 'prio',
   },
 
+  tasksDueBefore: {
+    dated: 3,
+    db: [ ICalPal::Reminder::DB_PATH ],
+    iep: %w[ title notes due priority ],
+    ps: [ "\n    " ],
+    sort: 'prio',
+    to: $today,
+  },
+
   accounts: {
     iep: %w[ account type ],
     sort: 'account',

@@ -45,6 +45,10 @@ module ICalPal
       @op.on('%s%s %sPrint events occurring between present time and midnight' % pad('eventsRemaining'))
       @op.on('%s%s %sPrint tasks with a due date' % pad('datedTasks'))
       @op.on('%s%s %sPrint tasks with no due date' % pad('undatedTasks'))
+      @op.on('%s%s %sPrint uncompleted tasks due between the given dates' % pad('tasksDueBefore'))
+      @op.separator('')
+      @op.separator("#{@op.summary_indent}stores can be used instead of accounts")
+      @op.separator("#{@op.summary_indent}reminders can be used instead of tasks")
 
       # global
       @op.separator("\nGlobal options:\n\n")
@@ -273,9 +277,12 @@ module ICalPal
           .merge(env)
           .merge(cli)
 
-        # datedTasks and undatedTasks
-        opts[:cmd] = 'tasks' if opts[:cmd] == 'datedTasks'
-        opts[:cmd] = 'tasks' if opts[:cmd] == 'undatedTasks'
+        # Other tasks commands
+        if opts[:cmd] == 'tasksDueBefore'
+          opts.delete(:days) unless opts[:days]
+          opts[:from] = RDT.from_epoch(0) unless opts[:from]
+        end
+        opts[:cmd] = 'tasks' if %w[ datedTasks undatedTasks tasksDueBefore ].include? opts[:cmd]
 
         # Make sure opts[:db] and opts[:tasks] are Arrays
         opts[:db] = [ opts[:db] ] unless opts[:db].is_a?(Array)
@@ -335,7 +342,7 @@ module ICalPal
     end
 
     # Commands that can be run
-    COMMANDS = %w[events eventsToday eventsNow eventsRemaining tasks datedTasks undatedTasks calendars accounts].freeze
+    COMMANDS = %w[events eventsToday eventsNow eventsRemaining tasks datedTasks undatedTasks tasksDueBefore calendars accounts].freeze
 
     # Supported output formats
     OUTFORMATS = %w[ansi csv default hash html json md rdoc remind toc xml yaml].freeze

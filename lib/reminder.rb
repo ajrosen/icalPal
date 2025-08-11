@@ -96,12 +96,13 @@ module ICalPal
       # Due date
       if @self['due_date']
         begin
+          @self['due_date'] += ITIME
           zone = Timezone.fetch(@self['timezone'])
         rescue Timezone::Error::InvalidZone
           zone = '+00:00'
         end
 
-        @self['due'] = RDT.from_time(Time.at(@self['due_date'] + ITIME, in: zone))
+        @self['due'] = RDT.from_time(Time.at(@self['due_date'], in: zone))
       end
 
       # Notes
