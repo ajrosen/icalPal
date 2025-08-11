@@ -1,8 +1,5 @@
 r 'timezone'
 
-# Images
-# Section
-
 module ICalPal
   # Class representing items from the <tt>Reminders</tt> database
   class Reminder
@@ -90,9 +87,6 @@ module ICalPal
 
       @self['long_priority'] = LONG_PRIORITY[@self['prio']] if @self['prio']
 
-      # For sorting
-      @self['sdate'] = (@self['title'])? @self['title'] : ''
-
       # Due date
       if @self['due_date']
         begin
@@ -166,12 +160,14 @@ r1.zContactHandles as messaging,
 r1.zDueDateDeltaAlertsData as alert,
 r1.zTimezone as timezone,
 r1.zckIdentifier as id,
+r1.zCompleted as completed,
 
 bl1.zBadgeEmblem as badge,
 bl1.zColor as color,
 bl1.zName as list_name,
 bl1.zParentList as parent,
 bl1.zSharingStatus as shared,
+bl1.zShouldCategorizeGroceryItems as grocery,
 
 -- section members
 json(bl1.ZMembershipsOfRemindersInSectionsAsData) -> '$.memberships' AS members,
@@ -237,8 +233,7 @@ FROM zremcdReminder r1
 
 LEFT OUTER JOIN zremcdBaseList bl1 ON r1.zList = bl1.z_pk
 
-WHERE r1.zCompleted = 0
-AND r1.zMarkedForDeletion = 0
+WHERE r1.zMarkedForDeletion = 0
 
 SQL
 

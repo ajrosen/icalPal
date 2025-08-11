@@ -201,12 +201,18 @@ $rows.each do |row|
       item.recurring.each { |j| add(j) } :
       item.non_recurring.each { |j| add(j) }
   else
-    # Check for dated reminders
+    # Check for completed or dated reminders
     if item.is_a?(ICalPal::Reminder)
+      next if $opts[:ed] && item['completed'].zero?
+      next unless $opts[:id] || item['completed'].zero?
+
       next if $opts[:dated] == 1 && item['due_date'] && item['due_date'].positive?
       next if $opts[:dated] == 2 && (!item['due_date'] || item['due_date'].zero?)
-      next unless $opts[:dated] == 3 && item['due_date'] &&
-        (item['due_date']).between?($opts[:from].to_i, $opts[:to].to_i)
+
+      if $opts[:dated] == 3
+        next unless item['due_date']
+        next unless item['due_date'].between?($opts[:from].to_i, $opts[:to].to_i)
+      end
     end
 
     add(item)
@@ -232,7 +238,7 @@ begin
 
   $log.info("Sorting #{$items.count} items by #{sort}, reverse #{$opts[:reverse].inspect}")
 
-  $items.sort_by! { |i| [i[sort[0]], i[sort[1]], i[sort[2]] ] }
+  $items.sort_by! { |i| [ i[sort[0]], i[sort[1]], i[sort[2]] ] }
   $items.reverse! if $opts[:reverse]
 rescue Exception => e
   $log.info("Sorting failed: #{e}\n")

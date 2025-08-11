@@ -83,6 +83,8 @@ as repeating events.
 * Copy your Calendar or Reminders database file and use ```--db``` on it.
 * ```--it``` and ```--et``` will filter by Calendar *type*.  Types are **Local**, **Exchange**, **CalDAV**, **MobileMe**, **Subscribed**, **Birthdays**, and **Reminders**
 * ```--il``` and ```-el``` will filter by Reminder list
+* ```--id``` includes completed reminders
+* ```--ed``` excludes uncompleted reminders
 * ```--ia``` includes *only* all-day events (opposite of ```--ea```)
 * ```--aep``` is like ```--iep```, but *adds* to the default property list instead of replacing it.
 * ```--sep``` to separate by any property, not just calendar (```--sc```) or date (```--sd```)
@@ -116,6 +118,8 @@ Several additional properties are available for each command.
 
 * Tasks
 	* id
+	* grocery
+	* completed
 	* group
 	* section
 	* tags
@@ -177,6 +181,9 @@ Including/excluding accounts, calendars, reminders and items:
 
         --il=LISTS          List of reminder lists to include
         --el=LISTS          List of reminder lists to exclude
+
+        --id                Include completed reminders
+        --ed                Exclude uncompleted reminders
 
         --match=FIELD=REGEX Include only items whose FIELD matches REGEXP (ignoring case)
 ```

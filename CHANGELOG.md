@@ -2,6 +2,8 @@ icalPal-3.9.0
 ==================
 
   * Implement tasksDueBefore command
+  * Add grocery and completed properties to tasks commands
+  * Add --id and --ed options for tasks commands
 
 icalPal-3.8.2
 ==================

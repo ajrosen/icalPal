@@ -83,6 +83,10 @@ module ICalPal
       @op.on('--el=LISTS', Array, 'List of reminder lists to exclude')
 
       @op.separator('')
+      @op.on('--id', 'Include completed reminders')
+      @op.on('--ed', 'Exclude uncompleted reminders')
+
+      @op.separator('')
       @op.on('--match=FIELD=REGEX', String, 'Include only items whose FIELD matches REGEX (ignoring case)')
 
       # dates
