@@ -259,7 +259,7 @@ Formatting the output:
 Help:
 ```
     -h, --help              Show this message
-    -V, -v, --version       Show version and exit (3.9.0)
+    -V, -v, --version       Show version and exit (3.9.1)
     -d, --debug=LEVEL       Set the logging level (default: warn)
                             [debug, info, warn, error, fatal]
 ```
