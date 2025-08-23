@@ -1,4 +1,9 @@
-icalPal-3.9.0
+icalPal-3.9.2
+==================
+
+  * Escape control characters in CSV and Remind output
+
+icalPal-3.9.1
 ==================
 
   * Implement tasksDueBefore command

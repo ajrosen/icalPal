@@ -290,7 +290,7 @@ unless mu
        when 'remind' then items.map { |i|
            "REM #{i['sdate'].strftime('%F AT %R')} " +
              "DURATION #{((i['edate'] - i['sdate']).to_f * 1440).to_i} " +
-             "MSG #{i['title']}"
+             "MSG #{i['title'].gsub(/([[:cntrl:]])/) { |c| c.dump[1..-2] } }"
          }.join("\n")
        else abort "No formatter for #{$opts[:output]}"
        end

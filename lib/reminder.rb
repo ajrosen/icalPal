@@ -53,7 +53,7 @@ module ICalPal
       when 'name', 'reminder', 'task' # Aliases
         @self['title']
 
-      else @self[k]
+      else super
       end
     end
 

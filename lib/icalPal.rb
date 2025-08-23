@@ -88,14 +88,17 @@ module ICalPal
     obj['symbolic_color_name'] ||= type[:color]
   end
 
-  # Create a new CSV::Row with values from +self+.  Newlines are
-  # replaced with '\n' to ensure each Row is a single line of text.
+  # Create a new CSV::Row with values from +self+.  Control characters
+  # are escaped to ensure they are not interpreted by the terminal.
   #
   # @param headers [Array] Key names used as the header row in a CSV::Table
   # @return [CSV::Row] The +Store+, +Calendar+, +CalendarItem+, or
   # +Reminder+ as a CSV::Row
   def to_csv(headers)
-    values = headers.map { |h| (@self[h].respond_to?(:gsub))? @self[h].gsub("\n", '\n') : @self[h] }
+    values = headers.map do |h|
+      (@self[h].respond_to?(:gsub))?
+        @self[h].gsub(/([[:cntrl:]])/) { |c| c.dump[1..-2] } : @self[h]
+    end
 
     CSV::Row.new(headers, values)
   end
