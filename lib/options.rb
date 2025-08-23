@@ -337,6 +337,8 @@ module ICalPal
         raise(OptionParser::InvalidArgument, '--li cannot be negative') if opts[:li].negative?
         raise(OptionParser::InvalidOption, 'Start date must be before end date') if opts[:from] && opts[:from] > opts[:to]
         raise(OptionParser::MissingArgument, 'No properties to display') if opts[:props].empty?
+        raise(OptionParser::InvalidArgument, 'Cannot use remind output with tasks') if opts[:cmd] == 'tasks' &&
+          opts[:output] == 'remind'
 
       rescue StandardError => e
         @op.abort("#{e}\n\n#{@op.help}\n#{e}")
