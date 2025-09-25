@@ -32,10 +32,17 @@ As a system-wide Ruby gem:
 gem install icalPal
 ```
 
-or in your home diretory:
+In your home directory:
 
 ```
 gem install --user-install icalPal
+```
+
+As a [Homebrew](https://brew.sh) formula:
+
+```
+brew tap ajrosen/tap
+brew install icalPal
 ```
 
 ## Features
