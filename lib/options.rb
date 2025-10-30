@@ -239,7 +239,7 @@ module ICalPal
 
           @op.parse!(o, into: cf)
         rescue StandardError
-        end unless cli[:norc]
+        end unless cli[:norc] && !cli[:cf]
 
         # Find command
         cli[:cmd] ||= @op.default_argv[0]
@@ -254,22 +254,31 @@ module ICalPal
         cli[:cmd] = cli[:cmd].sub('reminders', 'tasks')
         cli[:cmd] = cli[:cmd].sub('datedReminders', 'datedTasks')
 
-        # Parse eventsNow and eventsToday commands
-        cli[:cmd].match('events(Now|Today|Remaining)(\+[0-9]+)?') do |m|
-          cli[:now] = true if m[1] == 'Now'
-          cli[:days] = (m[1] == 'Today')? m[2].to_i : 1
-
-          if m[1] == 'Remaining'
-            cli[:n] = true
-            cli[:days] = 0
-          end
-
-          cli[:from] = $today
-          cli[:to] = $today + cli[:days] if cli[:days]
-          cli[:days] = Integer(cli[:to] - cli[:from])
-
+        # Handle events command variants
+        cli[:cmd].match('events(?<v>Now|Today|Remaining)(?<n>\+[0-9]+)?') do |m|
           cli[:cmd] = 'events'
-        end if cli[:cmd]
+
+          case m.named_captures['v']
+          when 'Now'
+            cli[:now] = true
+
+          when 'Today'
+            cli[:from] = $today
+            cli[:days] = (m.named_captures['n'])? m.named_captures['n'].to_i : 1
+
+          when 'Remaining'
+            cli[:from] = RDT.from_time($now)
+            cli[:to] = $today.day_end
+            cli[:days] = 1
+          end
+        end
+
+        # Handle tasks command variants
+        if cli[:cmd] == 'tasksDueBefore'
+          cli.delete(:days) unless cli[:days]
+          cli[:from] = RDT.from_epoch(0) unless cli[:from]
+        end
+        cli[:cmd] = 'tasks' if %w[ datedTasks undatedTasks tasksDueBefore ].include? cli[:cmd]
 
         # Must have a valid command
         raise(OptionParser::InvalidArgument, "Unknown COMMAND #{cli[:cmd]}") unless (COMMANDS.any? cli[:cmd])
@@ -280,13 +289,6 @@ module ICalPal
           .merge(cf)
           .merge(env)
           .merge(cli)
-
-        # Other tasks commands
-        if opts[:cmd] == 'tasksDueBefore'
-          opts.delete(:days) unless opts[:days]
-          opts[:from] = RDT.from_epoch(0) unless opts[:from]
-        end
-        opts[:cmd] = 'tasks' if %w[ datedTasks undatedTasks tasksDueBefore ].include? opts[:cmd]
 
         # Make sure opts[:db] and opts[:tasks] are Arrays
         opts[:db] = [ opts[:db] ] unless opts[:db].is_a?(Array)
@@ -310,11 +312,19 @@ module ICalPal
         opts[:days] -= 1 if opts[:days]
 
         if opts[:from]
+          # -n
+          opts[:from] = RDT.from_time($now) if opts[:n]
+
+          # Default :to is :from + 1 day
+          # --days overrides
           opts[:to] ||= opts[:from] + 1 if opts[:from]
           opts[:to] = opts[:from] + opts[:days] if opts[:days]
-          opts[:to] = RDT.new(*opts[:to].to_a[0..2] + [ 23, 59, 59 ])
+
+          # Make :to be end of day
+          opts[:to] = opts[:to].day_end
+
+          # Calculate days unless specified
           opts[:days] ||= Integer(opts[:to] - opts[:from])
-          opts[:from] = $now if opts[:n]
         end
 
         # Sorting
@@ -348,7 +358,9 @@ module ICalPal
     end
 
     # Commands that can be run
-    COMMANDS = %w[events eventsToday eventsNow eventsRemaining tasks datedTasks undatedTasks tasksDueBefore calendars accounts].freeze
+    COMMANDS = %w[events eventsToday eventsNow eventsRemaining
+                  tasks datedTasks undatedTasks tasksDueBefore
+                  calendars accounts].freeze
 
     # Supported output formats
     OUTFORMATS = %w[ansi csv default hash html json md rdoc remind toc xml yaml].freeze
