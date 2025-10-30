@@ -13,7 +13,7 @@ def r(gem)
     $stderr.puts "FATAL: icalPal is missing a dependency: #{gem}"
     $stderr.puts e
     $stderr.puts
-    abort "Try installing with 'gem install --user-install #{gem}'"
+    abort "Try installing with 'gem install #{gem}'"
   end
 end
 
@@ -63,7 +63,7 @@ $items = []                     # Items to be printed
 ##################################################
 # All kids love log!
 
-$log.info("Options: #{$opts}")
+$log.info("Options:\n#{$opts.to_json}")
 
 
 ##################################################
@@ -90,39 +90,38 @@ $opts[:db].each do |db|
   $log.debug("Trying #{db}")
 
   if klass == ICalPal::Reminder
-    begin
-      # Load all .sqlite files
-      $log.debug("Loading *.sqlite in #{db}")
-      Dir.glob("#{db}/*.sqlite").each do |d|
-        success = true
+    # Load all .sqlite files
+    $log.debug("Loading *.sqlite in #{db}")
+    Dir.glob("#{db}/*.sqlite").each do |d|
+      success = true
 
-        rows = klass.load_data(d, klass::QUERY)
-        $rows += rows
+      rows = klass.load_data(d, klass::QUERY)
+      $rows += rows
 
-        sections = klass.load_data(d, klass::SECTIONS_QUERY)
-        $sections += sections
+      sections = klass.load_data(d, klass::SECTIONS_QUERY)
+      $sections += sections
 
-        $log.info("Loaded #{rows.length} rows and #{sections.length} sections from #{d}")
-      rescue SQLite3::CantOpenException
-        # Non-fatal exception, try the next one
-      end
-
-    rescue Errno::EPERM
-      # Probably need Full Disk Access
+      $log.info("Loaded #{rows.length} rows and #{sections.length} sections from #{d}")
     end
   else
     # Load database
-    begin
-      rows = ICalPal.load_data(db, klass::QUERY)
-      $rows += rows
+    rows = ICalPal.load_data(db, klass::QUERY)
+    $rows += rows
 
-      success = true
+    success = true
 
-      $log.info("Loaded #{rows.length} rows from #{db}")
-    rescue SQLite3::CantOpenException
-      # Non-fatal exception, try the next one
-    end
+    $log.info("Loaded #{rows.length} rows from #{db}")
   end
+
+rescue Errno::EPERM
+  # Probably need Full Disk Access
+
+rescue SQLite3::CantOpenException
+  # Non-fatal exception, try the next one
+
+rescue StandardError => e
+  # Log the error and (try to) continue
+  $log.error("#{db}: #{e.message}")
 end
 
 # Make sure we opened at least one database
@@ -153,6 +152,7 @@ unless success
   abort
 end
 
+$log.debug("Loaded #{$rows.length} #{klass} items")
 $log.info("Window is #{$opts[:from]} to #{$opts[:to]}") if $opts[:from]
 
 
@@ -290,7 +290,7 @@ unless mu
        when 'remind' then items.map { |i|
            "REM #{i['sdate'].strftime('%F AT %R')} " +
              "DURATION #{((i['edate'] - i['sdate']).to_f * 1440).to_i} " +
-             "MSG #{i['title'].gsub(/([[:cntrl:]])/) { |c| c.dump[1..-2] } }"
+             "MSG #{i['title'].gsub(/([[:cntrl:]])/) { |c| c.dump[1..-2] }}"
          }.join("\n")
        else abort "No formatter for #{$opts[:output]}"
        end
