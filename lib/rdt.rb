@@ -4,7 +4,7 @@ module ICalPal
 
     # Create a new RDT from a Time object
     def self.from_time(t)
-      new(*t.to_a[0..5].reverse)
+      new(*t.to_a[0..5].reverse, (t.gmt_offset / 3600).to_s)
     end
 
     # Create a new RDT from seconds since epoch
@@ -42,8 +42,9 @@ module ICalPal
     #  today.
     def to_s
       return strftime($opts[:df]) if $opts && $opts[:nrd] && $opts[:df]
+      return super unless $today && $opts
 
-      case Integer(RDT.new(year, month, day) - $today)
+      case Integer(RDT.new(*ymd, month, day) - $today)
       when -2 then 'day before yesterday'
       when -1 then 'yesterday'
       when 0 then 'today'
@@ -67,17 +68,19 @@ module ICalPal
       to_time.to_i
     end
 
+    # @return [RDT] Self at 00:00:00
+    def day_start
+      RDT.new(year, month, day, 0, 0, 0, zone)
+    end
+
+    # @return [RDT] Self at 23:59:59
+    def day_end
+      RDT.new(year, month, day, 23, 59, 59, zone)
+    end
+
     # @return [Array] Only the year, month and day of self
     def ymd
       [ year, month, day ]
     end
-
-    # @see ICalPal::RDT.to_s
-    #
-    # @return [Boolean]
-    def ==(other)
-      self.to_s == other.to_s
-    end
-
   end
 end
