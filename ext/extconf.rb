@@ -7,7 +7,7 @@ begin
   Gem.path.each { |p| gemdir = p if File.writable? p }
 
   # Dependencies common to all environments
-  dependencies = %w[ plist timezone ]
+  dependencies = %w[ plist tzinfo ]
 
   if RUBY_VERSION >= '3.4'
     # bigdecimal is not part of the default gems starting from Ruby 3.4.0.
@@ -33,15 +33,15 @@ begin
     # So neither environment can install the other's sqlite3 gem.  We
     # must install sqlite3, but iff we are not building with macOS'
     # Ruby installation.
-    dependencies.push('sqlite3') 
+    dependencies.push('sqlite3')
   end
 
   di = Gem::DependencyInstaller.new(install_dir: gemdir)
   dependencies.each { |d| di.install(d) }
-rescue Exception => e
+rescue Exception
   exit(1)
-end 
+end
 
-File.write("Makefile", "clean:\n\ttrue\ninstall:\n\ttrue")
+File.write('Makefile', "clean:\n\ttrue\ninstall:\n\ttrue")
 
 exit(0)
