@@ -1,7 +1,8 @@
 # Does anybody really know what time it is?
-now = Time.now
-$now = ICalPal::RDT.from_time(now)
-$today = ICalPal::RDT.new(*$now.to_a[0..2] + [ 0, 0, 0 ])
+$now = Time.now
+$nowto_i = $now.to_i
+$nowrdt = ICalPal::RDT.from_time($now)
+$today = $nowrdt.day_start
 
 # Defaults
 $defaults = {
