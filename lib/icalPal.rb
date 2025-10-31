@@ -40,6 +40,8 @@ module ICalPal
 
       # Prepare the query
       stmt = db.prepare(q)
+
+      # Check for "list" and "all" pseudo-properties
       abort(stmt.columns.sort.join(' ')) if $opts[:props].any? 'list'
       $opts[:props] = stmt.columns - $opts[:eep] if $opts[:props].any? 'all'
 
@@ -50,21 +52,6 @@ module ICalPal
       # Close the database
       db.close
       $log.debug("Closed #{db_file}")
-
-    rescue SQLite3::BusyException => e
-      $log.error("Non-fatal error closing database #{db.filename}")
-      raise e
-
-    rescue SQLite3::CantOpenException => e
-      $log.debug("Can't open #{db_file}")
-      raise e
-
-    rescue SQLite3::SQLException => e
-      $log.info("#{db_file}: #{e}")
-      raise e
-
-    rescue SQLite3::Exception => e
-      abort("#{db_file}: #{e}")
     end
 
     rows
@@ -123,7 +110,7 @@ module ICalPal
   def self.nth(n, dow, m)
     # Get the number of days in the month by advancing to the first of
     # the next month, then going back one day
-    a = [ RDT.new(m.year, m.month, 1, m.hour, m.minute, m.second) ]
+    a = [ RDT.new(m.year, m.month, 1, m.hour, m.min, m.sec, m.zone) ]
     a[1] = (a[0] >> 1) - 1
 
     # Reverse it if going backwards
@@ -137,7 +124,7 @@ module ICalPal
     end
   end
 
-  # Epoch + 31 years
+  # Epoch + 31 years (Mon Jan  1 00:00:00 UTC 2001)
   ITIME = 978_307_200
 
   # Days of the week abbreviations used in recurrence rules

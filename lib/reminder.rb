@@ -1,4 +1,4 @@
-r 'timezone'
+r 'tzinfo'
 
 module ICalPal
   # Class representing items from the <tt>Reminders</tt> database
@@ -8,6 +8,12 @@ module ICalPal
     def self.load_data(db_file, q)
       # Load items
       ICalPal.load_data(db_file, q)
+
+    rescue SQLite3::SQLException => e
+      # Data-local.sqlite does not have zremcdBaseList
+      raise e unless e.message =~ /no such table/
+
+      []
     end
 
     def [](k)
@@ -91,8 +97,8 @@ module ICalPal
       if @self['due_date']
         begin
           @self['due_date'] += ITIME
-          zone = Timezone.fetch(@self['timezone'])
-        rescue Timezone::Error::InvalidZone
+          zone = TZInfo::Timezone.get(@self['timezone'])
+        rescue TZInfo::InvalidTimezoneIdentifier
           zone = '+00:00'
         end
 
@@ -169,15 +175,12 @@ bl1.zParentList as parent,
 bl1.zSharingStatus as shared,
 bl1.zShouldCategorizeGroceryItems as grocery,
 
--- section members
 json(bl1.ZMembershipsOfRemindersInSectionsAsData) -> '$.memberships' AS members,
 
--- group
 (SELECT zName
  FROM zremcdBaseList bl2
  WHERE bl2.z_pk = bl1.zParentList) AS 'group',
 
--- location
 (SELECT json_group_array(zremcdObject.zTitle)
 FROM zremcdObject
 WHERE zremcdObject.z_pk IN (
@@ -186,7 +189,6 @@ WHERE zremcdObject.z_pk IN (
  WHERE zremcdObject.zReminder = r1.z_pk
 )) AS location,
 
--- proximity
 (SELECT json_group_array(zremcdObject.zProximity)
  FROM zremcdObject
  WHERE zremcdObject.z_pk IN (
@@ -195,7 +197,6 @@ WHERE zremcdObject.z_pk IN (
   WHERE zremcdObject.zReminder = r1.z_pk
  )) AS proximity,
 
--- radius
 (SELECT json_group_array(zremcdObject.zRadius)
  FROM zremcdObject
  WHERE zremcdObject.z_pk IN (
@@ -204,17 +205,15 @@ WHERE zremcdObject.z_pk IN (
   WHERE zremcdObject.zReminder = r1.z_pk
  )) AS radius,
 
--- tags
 (SELECT json_group_array(zName)
  FROM zremcdHashtagLabel
  WHERE zremcdHashtagLabel.z_pk IN (
 	SELECT zremcdObject.zHashtagLabel
 	FROM zremcdObject
-	JOIN zremcdreminder ON zremcdObject.zReminder3 = r1.z_pk
+	JOIN zremcdReminder ON zremcdObject.zReminder3 = r1.z_pk
 	WHERE zremcdObject.zReminder3 = r1.z_pk
  )) AS tags,
 
--- assignee
 (SELECT
  json_array(zNickname, zFirstName, zLastName, zAddress1)
  FROM zremcdObject
@@ -224,7 +223,6 @@ WHERE zremcdObject.z_pk IN (
   WHERE zReminder1 = r1.z_pk
 )) AS assignee,
 
--- url
 (SELECT zURL
  FROM zremcdObject
  WHERE zReminder2 = r1.z_pk) AS url

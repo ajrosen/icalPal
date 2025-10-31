@@ -76,7 +76,7 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   def accept_list_start(_arg)
     return if @opts[:nb] || @item['placeholder']
 
-    if @item['due_date'] && (@item['due_date']).between?(0, $now.to_i)
+    if @item['due_date'] && (@item['due_date']).between?(0, $nowto_i)
       # Use alert bullet for overdue items
       @res << "#{@opts[:ab]} "
     else

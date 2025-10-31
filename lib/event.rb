@@ -1,5 +1,3 @@
-r 'timezone'
-
 module ICalPal
   # Class representing items from the <tt>CalendarItem</tt> table
   class Event
@@ -13,8 +11,8 @@ module ICalPal
     def []=(k, v)
       @self[k] = v
 
-      @self['sctime'] = Time.at(@self['sdate'].to_i, in: '+00:00') if k == 'sdate'
-      @self['ectime'] = Time.at(@self['edate'].to_i, in: '+00:00') if k == 'edate'
+      @self['sctime'] = Time.at(@self['sdate'].to_i) if k == 'sdate'
+      @self['ectime'] = Time.at(@self['edate'].to_i) if k == 'edate'
     end
 
     # Standard accessor with special handling for +age+,
@@ -50,16 +48,16 @@ module ICalPal
         (@self['notes'])? @self['notes'].strip.gsub("\n", $opts[:nnr]) : nil
 
       when 'sday'               # pseudo-property
-        RDT.new(*@self['sdate'].to_a[0..2])
+        @self['sdate'].day_start
 
       when 'status'             # Integer -> String
         EventKit::EKEventStatus.select { |_k, v| v == @self['status'] }.keys[0]
 
-      when 'event', 'name', 'title' # title[ (age N)]
-        @self['title'] + ((@self['calendar'] == 'Birthdays')? " (age #{self['age']})" : '')
-
       when 'uid'                # for icalBuddy
         @self['UUID']
+
+      when 'event', 'name', 'title' # title[ (age N)]
+        @self['title'] + ((@self['calendar'] == 'Birthdays')? " (age #{self['age']})" : '')
 
       else @self[k]
       end
@@ -78,7 +76,7 @@ module ICalPal
         'sdate' => obj,
         'placeholder' => true,
         'title' => 'Nothing.',
-      } if obj.is_a?(DateTime)
+      } if obj.is_a?(DateTime) && $opts[:sed]
 
       super
 
@@ -92,17 +90,14 @@ module ICalPal
       obj.keys.select { |i| i.end_with? '_date' }.each do |k|
         next unless obj[k]
 
-        begin
-          zone = Timezone.fetch(obj['start_tz'])
-        rescue Timezone::Error::InvalidZone
-          zone = '+00:00'
-        end
-
         # Save as seconds, Time, RDT
         ctime = obj[k] + ITIME
+        ctime -= $now.utc_offset if obj['start_tz'] == '_float'
+        ttime = Time.at(ctime)
+
         @self["#{k[0]}seconds"] = ctime
-        @self["#{k[0]}ctime"] = Time.at(ctime)
-        @self["#{k[0]}date"] = RDT.from_time(Time.at(ctime, in: zone))
+        @self["#{k[0]}ctime"] = ttime
+        @self["#{k[0]}date"] = RDT.from_time(ttime)
       end
 
       @self.delete('unique_identifier')
@@ -122,14 +117,14 @@ module ICalPal
       return events if nDays > 100_000
 
       # If multi-day, each (unique) day needs to end at 23:59:59
-      self['edate'] = RDT.new(*@self['sdate'].to_a[0..2] + [ 23, 59, 59 ]) if nDays.positive?
+      self['edate'] = RDT.new(*@self['sdate'].to_a[0..2] + [ 23, 59, 59 ], @self['sdate'].zone) if nDays.positive?
 
       # Repeat for multi-day events
       (nDays + 1).times do |i|
-        break if self['sdate'] > $opts[:to]
+        break unless $opts[:now] || @self['sdate'] <= $opts[:to]
 
-        if in_window?(self['sdate'], self['edate'])
-          self['daynum'] = i + 1 if nDays.positive?
+        if in_window?(@self['sdate'], @self['edate'])
+          @self['daynum'] = i + 1 if nDays.positive?
           events.push(clone)
         end
 
@@ -156,7 +151,7 @@ module ICalPal
       changes = [ { orig_date: -1 } ]
       changes += $rows.select { |r| r['orig_item_id'] == self['ROWID'] }
 
-      while self['sdate'] <= stop
+      while @self['sdate'] <= stop
         # count
         break if self['count'].positive? && count > self['count']
 
@@ -240,8 +235,8 @@ module ICalPal
         m = mo.to_i
 
         # Set dates to the first of <m>
-        nsdate = RDT.new(self['sdate'].year, m, 1, self['sdate'].hour, self['sdate'].minute, self['sdate'].second)
-        nedate = RDT.new(self['edate'].year, m, 1, self['edate'].hour, self['edate'].minute, self['edate'].second)
+        nsdate = RDT.new(@self['sdate'].year, m, 1, @self['sdate'].hour, @self['sdate'].min, @self['sdate'].sec, @self['sdate'].zone)
+        nedate = RDT.new(@self['edate'].year, m, 1, @self['edate'].hour, @self['edate'].min, @self['edate'].sec, @self['edate'].zone)
 
         # ...but not in the past
         nsdate >>= 12 if nsdate.month < m
@@ -305,7 +300,7 @@ module ICalPal
     # @return [Boolean]
     def in_window?(s, e)
       if $opts[:now]
-        if ($now >= s && $now < e)
+        if $nowto_i.between?(s.to_i, e.to_i)
           $log.debug("now: #{s} to #{e} vs. #{$now}")
           true
         else
