@@ -1,3 +1,17 @@
+icalPal-3.9.3
+==================
+
+  * Fix for #35
+  * Fix for #42
+  * Honor --cf option when --norc is also given
+
+  * Cleaner handling of eventsNow, eventsRemaining, and eventsToday commands
+  * Move SQL error handling in lib/icalPal.rb to bin/icalPal
+  * Handle SQLite3::SQLException in reminders (from Data-local.sqlite)
+  * Switch from timezone to tzinfo
+  * Switch $now from RDT to Time
+  * Add day_start and day_end methods to RDT
+
 icalPal-3.9.2
 ==================
 
