@@ -268,17 +268,29 @@ module ICalPal
 
           when 'Remaining'
             cli[:from] = RDT.from_time($now)
-            cli[:to] = $today.day_end
+            cli[:to] = $today.day_end(0)
             cli[:days] = 1
           end
         end
 
         # Handle tasks command variants
-        if cli[:cmd] == 'tasksDueBefore'
-          cli.delete(:days) unless cli[:days]
-          cli[:from] = RDT.from_epoch(0) unless cli[:from]
+        if cli[:cmd] =~ /tasks/i
+          case cli[:cmd]
+          when 'undatedTasks'
+            cli[:dated] = 1
+
+          when 'datedTasks'
+            cli[:dated] = 2
+
+          when 'tasksDueBefore'
+            cli[:dated] = 3
+            cli.delete(:days) unless cli[:days]
+            cli[:from] = RDT.from_epoch(0) unless cli[:from]
+            cli[:to] = $today unless cli[:to]
+          end
+
+          cli[:cmd] = 'tasks'
         end
-        cli[:cmd] = 'tasks' if %w[ datedTasks undatedTasks tasksDueBefore ].include? cli[:cmd]
 
         # Must have a valid command
         raise(OptionParser::InvalidArgument, "Unknown COMMAND #{cli[:cmd]}") unless (COMMANDS.any? cli[:cmd])
