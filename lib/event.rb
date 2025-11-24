@@ -16,14 +16,14 @@ module ICalPal
     end
 
     # Standard accessor with special handling for +age+,
-    # +availability+, +datetime+, +location+, +notes+, +status+,
-    # +title+, and +uid+
+    # +availability+, +datetime+, +location+, +notes+, +sday+,
+    # +status+, +uid+, and +event+/+name+/+title+
     #
     # @param k [String] Key/property name
     def [](k)
       case k
       when 'age'                # pseudo-property
-        @self['sdate'].year - @self['edate'].year
+        @self['sdate'].year - Time.at(@self['start_date'] + ITIME).year
 
       when 'availability'       # Integer -> String
         EventKit::EKEventAvailability.select { |_k, v| v == @self['availability'] }.keys
@@ -48,7 +48,7 @@ module ICalPal
         (@self['notes'])? @self['notes'].strip.gsub("\n", $opts[:nnr]) : nil
 
       when 'sday'               # pseudo-property
-        @self['sdate'].day_start
+        @self['sdate'].day_start(0)
 
       when 'status'             # Integer -> String
         EventKit::EKEventStatus.select { |_k, v| v == @self['status'] }.keys[0]
@@ -76,7 +76,7 @@ module ICalPal
         'sdate' => obj,
         'placeholder' => true,
         'title' => 'Nothing.',
-      } if obj.is_a?(DateTime) && $opts[:sed]
+      } if $opts[:sed] && obj.is_a?(DateTime)
 
       super
 
@@ -90,10 +90,13 @@ module ICalPal
       obj.keys.select { |i| i.end_with? '_date' }.each do |k|
         next unless obj[k]
 
+        zone = nil
+        zone = '+00:00' if obj['all_day'].positive?
+
         # Save as seconds, Time, RDT
         ctime = obj[k] + ITIME
-        ctime -= $now.utc_offset if obj['start_tz'] == '_float'
-        ttime = Time.at(ctime)
+        ctime -= Time.at(ctime).utc_offset if obj['start_tz'] == '_float'
+        ttime = Time.at(ctime, in: zone)
 
         @self["#{k[0]}seconds"] = ctime
         @self["#{k[0]}ctime"] = ttime
@@ -173,7 +176,7 @@ module ICalPal
             skip = true if codate == odate
           end
 
-          events.push(clone(occurrence)) if in_window?(occurrence['sdate'], occurrence['edate']) && !skip
+          events.push(clone(occurrence)) if !skip && in_window?(occurrence['sdate'], occurrence['edate'])
         end
 
         # Handle frequency and interval
@@ -261,11 +264,16 @@ module ICalPal
             c['sdate'] = ICalPal.nth(nth, day, nsdate)
             c['edate'] = ICalPal.nth(nth, day, nedate)
           else
-            diff = day - c['sdate'].wday
-            diff += 7 if diff.negative?
+            %w[ sdate edate ].each do |d|
+              diff = day - c['sdate'].wday
+              diff += 7 if diff.negative?
 
-            c['sdate'] += diff
-            c['edate'] += diff
+              t1 = Time.at(c[d].to_time)
+              t2 = Time.at(t1.to_i + (diff * 86_400))
+              t2 += (t1.gmt_offset - t2.gmt_offset)
+
+              c[d] = RDT.from_time(t2)
+            end
           end
 
           o.push(clone(c)) if in_window?(c['sdate'], c['edate'])
@@ -277,18 +285,18 @@ module ICalPal
 
     # Apply frequency and interval
     def apply_frequency!
-      # Leave edate alone for birthdays to compute age
-      dates = [ 'sdate' ]
-      dates << 'edate' unless self['calendar'].include?('Birthday')
-
-      dates.each do |d|
+      %w[ sdate edate ].each do |d|
         case EventKit::EKRecurrenceFrequency[self['frequency'] - 1]
-        when 'daily'   then self[d] +=  self['interval']
-        when 'weekly'  then self[d] +=  self['interval'] * 7
-        when 'monthly' then self[d] >>= self['interval']
-        when 'yearly'  then self[d] >>= self['interval'] * 12
+        when 'daily'   then nd = self[d] + self['interval']
+        when 'weekly'  then nd = self[d] + (self['interval'] * 7)
+        when 'monthly' then nd = self[d] >> self['interval']
+        when 'yearly'  then nd = self[d] >> (self['interval'] * 12)
         else $log.error("Unknown frequency: #{self['frequency']}")
         end
+
+        # Create a new Time object in case we crossed a daylight saving change
+        t = Time.parse("#{nd.year}-#{nd.month}-#{nd.day} #{nd.hour}:#{nd.min}:#{nd.sec}")
+        self[d] = RDT.from_time(t)
       end
     end
 
@@ -307,8 +315,8 @@ module ICalPal
           $log.debug("not now: #{s} to #{e} vs. #{$now}")
           false
         end
-      elsif ([ s, e ].max >= $opts[:from] && s < $opts[:to])
-        $log.debug("in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
+      elsif (s < $opts[:to] && [ s, e ].max >= $opts[:from])
+        $log.debug("#{@self['title']} in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
         true
       else
         $log.debug("not in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
