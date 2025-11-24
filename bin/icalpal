@@ -231,14 +231,14 @@ end
 
 # Sort the rows
 begin
-  sort = []
-  sort.push $opts[:sep] if $opts[:sep]
-  sort.push $opts[:sort] if $opts[:sort]
-  sort.push 'sdate'
+  $sort_attrs = []
+  $sort_attrs.push $opts[:sep] if $opts[:sep]
+  $sort_attrs.push $opts[:sort] if $opts[:sort]
+  $sort_attrs.push 'sdate'
 
-  $log.info("Sorting #{$items.count} items by #{sort}, reverse #{$opts[:reverse].inspect}")
+  $log.info("Sorting #{$items.count} items by #{$sort_attrs}, reverse #{$opts[:reverse].inspect}")
 
-  $items.sort_by! { |i| [ i[sort[0]], i[sort[1]], i[sort[2]] ] }
+  $items.sort!
   $items.reverse! if $opts[:reverse]
 rescue Exception => e
   $log.info("Sorting failed: #{e}\n")
@@ -321,8 +321,10 @@ items.each_with_index do |i, j|
     doc << RDoc::Markup::Raw.new($opts[:sep])
 
     doc << RDoc::Markup::BlankLine.new if j.positive?
-    doc << RDoc::Markup::Heading.new(1, i[$opts[:sep]].to_s)
-    doc << RDoc::Markup::Rule.new(0)
+    if i[$opts[:sep]]
+      doc << RDoc::Markup::Heading.new(1, i[$opts[:sep]].to_s)
+      doc << RDoc::Markup::Rule.new(0)
+    end
 
     section = i[$opts[:sep]]
   end
