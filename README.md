@@ -1,4 +1,6 @@
-[![Gem Version](https://badge.fury.io/rb/icalPal.svg)](https://badge.fury.io/rb/icalPal)
+![GitHub Release](https://img.shields.io/github/v/release/ajrosen/icalPal?display_name=tag&logo=rubygems&label=gem%20version)
+[![Downloads](https://img.shields.io/gem/dtv/icalPal?label=downloads)](https://badge.fury.io/rb/icalPal.svg?icon=si%3Arubygems&icon_color=%23ff0000)
+[![Downloads](https://img.shields.io/gem/dt/icalPal?label=total%20downloads)](https://badge.fury.io/rb/icalPal.svg?icon=si%3Arubygems&icon_color=%23ff0000)
 
 # icalPal
 
@@ -117,6 +119,7 @@ Several additional properties are available for each command.
 * Calendar
   * account
   * shared\_owner_name, shared\_owner_address
+  * sharees
   * self\_identity_email, owner\_identity_email
   * subcal_account_id, subcal_url
   * published_URL
