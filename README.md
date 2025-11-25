@@ -1,15 +1,18 @@
-[![Gem Version](https://badge.fury.io/rb/icalPal.svg)](https://badge.fury.io/rb/icalPal)
+![GitHub Release](https://img.shields.io/github/v/release/ajrosen/icalPal?display_name=tag&logo=rubygems&label=gem%20version)
+[![Downloads](https://img.shields.io/gem/dtv/icalPal?label=downloads)](https://badge.fury.io/rb/icalPal.svg?icon=si%3Arubygems&icon_color=%23ff0000)
+[![Downloads](https://img.shields.io/gem/dt/icalPal?label=total%20downloads)](https://badge.fury.io/rb/icalPal.svg?icon=si%3Arubygems&icon_color=%23ff0000)
 
 # icalPal
 
 ## Description
 
-icalPal is a command-line tool to query macOS Calendar and Reminders
-databases for accounts, calendars, events, and tasks.  It can be run
-on any system with [Ruby](https://www.ruby-lang.org/) and access to a
-Calendar or Reminders database.
+icalPal is a command-line tool to query macOS *Calendar* and
+*Reminders* databases for accounts, calendars, events, and tasks.  It
+can be run on any system with [Ruby](https://www.ruby-lang.org/) and
+access to a Calendar or Reminders database.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+
 **Table of Contents**
 
 - [Installation](#installation)
@@ -26,13 +29,13 @@ Calendar or Reminders database.
 
 ## Installation
 
-As a system-wide Ruby gem:
+Install icalPal for all users:
 
 ```
 gem install icalPal
 ```
 
-In your home directory:
+For only you:
 
 ```
 gem install --user-install icalPal
@@ -64,6 +67,8 @@ differences to be aware of.
 
 ### Additional commands
 
+icalPal also supports additional commands.
+
 ```icalPal accounts```
 
 Shows a list of enabled Calendar accounts.  Internally they are known
@@ -79,7 +84,7 @@ Shows only reminders that have a due date.
 *remindersDueBefore* can be used instead of *tasks*
 
 Reminders can also be viewed in the *Scheduled Reminders* calendar,
-using the *tasks* commands.  Repeating reminders are treated the same
+using the *events* commands.  Repeating reminders are treated the same
 as repeating events.
 
 ### Additional options
@@ -98,39 +103,35 @@ as repeating events.
 * ```--color``` uses a wider color palette.  Colors are what you have chosen in the Calendar and Reminders apps, including custom colors
 * ```--match``` lets you filter the results of any command to items where a *FIELD* matches a regular expression.  Eg., ```--match notes=zoom.us``` to show only Zoom meeetings
 
-Because icalPal is written in Ruby, and not a native Mac application,
-you can run it just about anywhere.  It's been tested with the
-versions of Ruby included with macOS Sequoia and Tahoe (2.6.10) and
-[Homebrew](https://brew.sh/) (3.4.x).
-
 ### Additional properties
 
 Several additional properties are available for each command.
 
 * Accounts
   * account
+  * delegations
   * notes
   * owner
   * type
-  * delegations
 
 * Calendar
   * account
-  * shared\_owner_name, shared\_owner_address
-  * self\_identity_email, owner\_identity_email
-  * subcal_account_id, subcal_url
-  * published_URL
-  * notes
   * locale
+  * notes
+  * published_URL
+  * self\_identity_email, owner\_identity_email
+  * shared\_owner_name, shared\_owner_address
+  * sharees
+  * subcal_account_id, subcal_url
 
 * Tasks
-	* id
-	* grocery
+	* assignee
 	* completed
+	* grocery
 	* group
+	* id
 	* section
 	* tags
-	* assignee
 	* timezone
 	* Notifications
 	  * due (due_date formatted with --df and --tf options)
@@ -143,7 +144,7 @@ Several additional properties are available for each command.
 icalPal: Usage: icalPal [options] [-c] COMMAND
 
 COMMAND must be one of the following:
-```
+
     events                  Print events
     tasks                   Print tasks
     calendars               Print calendars
@@ -159,29 +160,27 @@ COMMAND must be one of the following:
 
     stores can be used instead of accounts
     reminders can be used instead of tasks
-```
 
 Global options:
-```
+
     -c, --cmd=COMMAND       Command to run
         --db=DB             Use DB file instead of Calendar
-                            (default: ["$HOME/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb", $HOME/Library/Calendars/Calendar.sqlitedb]
+                            (default: ["$HOME/Library/Group Containers/group.com.apple.calendar/Calendar.sqlitedb", "$HOME/Library/Calendars/Calendar.sqlitedb"]
                             For the tasks commands this should be a directory containing .sqlite files
-                            (default: "$HOME/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores")
+                            (default: ["$HOME/Library/Group Containers/group.com.apple.reminders/Container_v1/Stores"])
         --cf=FILE           Set config file path (default: $HOME/.icalpal)
         --norc              Ignore ICALPAL and ICALPAL_CONFIG environment variables
     -o, --output=FORMAT     Print as FORMAT (default: default)
                             [ansi, csv, default, hash, html, json, md, rdoc, remind, toc, xml, yaml]
-```
 
-Including/excluding accounts, calendars, reminders and items:
-```
+Including/excluding accounts, calendars, items:
+
         --is=ACCOUNTS       List of accounts to include
         --es=ACCOUNTS       List of accounts to exclude
 
         --it=TYPES          List of calendar types to include
         --et=TYPES          List of calendar types to exclude
-                            [Local, Exchange, CalDAV, MobileMe, Subscribed, Birthdays]
+                            [Local, Exchange, CalDAV, MobileMe, Subscribed, Birthdays, Reminders]
 
         --ic=CALENDARS      List of calendars to include
         --ec=CALENDARS      List of calendars to exclude
@@ -192,11 +191,10 @@ Including/excluding accounts, calendars, reminders and items:
         --id                Include completed reminders
         --ed                Exclude uncompleted reminders
 
-        --match=FIELD=REGEX Include only items whose FIELD matches REGEXP (ignoring case)
-```
+        --match=FIELD=REGEX Include only items whose FIELD matches REGEX (ignoring case)
 
 Choosing dates:
-```
+
         --from=DATE         List events starting on or after DATE
         --to=DATE           List events starting on or before DATE
                             DATE can be yesterday, today, tomorrow, +N, -N, or anything accepted by DateTime.parse()
@@ -207,10 +205,9 @@ Choosing dates:
         --sed               Show empty dates with --sd
         --ia                Include only all-day events
         --ea                Exclude all-day events
-```
 
 Choose properties to include in the output:
-```
+
         --iep=PROPERTIES    List of properties to include
         --eep=PROPERTIES    List of properties to exclude
         --aep=PROPERTIES    List of properties to include in addition to the default list
@@ -231,10 +228,9 @@ Choose properties to include in the output:
 
     Use 'all' for PROPERTIES to include all available properties (except any listed in --eep)
     Use 'list' for PROPERTIES to list all available properties and exit
-```
 
 Formatting the output:
-```
+
         --li=N              Show at most N items (default: 0 for no limit)
 
         --sc                Separate by calendar
@@ -261,24 +257,21 @@ Formatting the output:
 
     -f                      Format output using standard ANSI colors
         --color             Format output using a larger color palette
-```
 
 Help:
-```
+
     -h, --help              Show this message
-    -V, -v, --version       Show version and exit (3.9.1)
+    -V, -v, --version       Show version and exit (3.10.0)
     -d, --debug=LEVEL       Set the logging level (default: warn)
                             [debug, info, warn, error, fatal]
-```
 
 Environment variables:
-```
+
     ICALPAL                 Additional arguments
     ICALPAL_CONFIG          Additional arguments from a file
                             (default: $HOME/.icalpal)
 
     Do not quote or escape values.  Options set in ICALPAL override ICALPAL_CONFIG.  Options on the command line override ICALPAL.
-```
 
 ## Output formats
 
@@ -295,35 +288,9 @@ properly formatted.
 
 Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
 [RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html)
-framework to build and render the items.
-
-Each item to be printed is a new
-[RDoc::Markup::Document](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Document.html).
-
-When using one of the _separate by_ options, a section header is added
-first.  The section contains:
-
-* [RDoc::Markup::BlankLine](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/BlankLine.html)
-  (unless this is the first section)
-* RDoc::Markup::Heading (level 1)
-* [RDoc::Markup::Rule](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Rule.html)
-
-The rest of the document is a series of
-[RDoc::Markup::List](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/List.html)
-objects, one for each of the item's properties:
-
-* [RDoc::Markup::List](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/List.html)
-* RDoc::Markup::Heading (level 2)
-* [RDoc::Markup::BlankLine](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/BlankLine.html)
-* [RDoc::Markup::ListItem](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/ListItem.html)
-* [RDoc::Markup::Paragraph](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Paragraph.html)
-
-The document will also include a number of
-[RDoc::Markup::Verbatim](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Verbatim.html)
-and
-[RDoc::Markup::Raw](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup/Raw.html)
-items.  They are not included in the output, but are used to pass
-information about the item and property to the default formatter.
+framework to build and render the items.  See
+[RDoc](https://github.com/ajrosen/icalPal/blob/main/RDoc.md) for a
+breakdown of how icalPal uses RDoc::Markup.
 
 ## History
 
@@ -341,8 +308,13 @@ Lawton](https://github.com/jimlawton) that it even compiles anymore.
 Instead of trying to understand and extend the existing code, I chose
 to start anew using my language of choice:
 [Ruby](https://www.ruby-lang.org).  Using Ruby meant there is *much*
-less code; a little over 2,000 lines vs. 7,000.  It also means icalPal
+less code; a little over 2,200 lines vs. 7,000.  It also means icalPal
 is multi-platform.
+
+Because icalPal is written in Ruby, and not a native Mac application,
+you can run it just about anywhere.  It's been tested with the
+versions of Ruby included with macOS Sequoia and Tahoe (2.6.10) and
+[Homebrew](https://brew.sh/) (3.4.x).
 
 I won't pretend to understand **why** you would want to run this on
 Linux or Windows.  But since icalPal is written in Ruby and gets its

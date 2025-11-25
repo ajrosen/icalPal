@@ -56,6 +56,12 @@ module ICalPal
       when 'sdate'              # For sorting
         @self['due_date']
 
+      when 'sday'
+        @self['due'].day_start(0) if @self['due']
+
+      when 'section'
+        (@self['section'])? @self['section'] : 'Others'
+
       when 'name', 'reminder', 'task' # Aliases
         @self['title']
 
@@ -67,11 +73,13 @@ module ICalPal
       super
 
       # Convert JSON arrays to Arrays
-      @self['tags'] = JSON.parse(obj['tags']) if obj['tags']
-      @self['location'] = JSON.parse(obj['location']).compact.uniq[0] if obj['location']
-      @self['proximity'] = JSON.parse(obj['proximity']).compact.uniq[0] if obj['proximity']
-      @self['radius'] = JSON.parse(obj['radius']).compact.uniq[0] if obj['radius']
-      @self['assignee'] = JSON.parse(obj['assignee']) if obj['assignee']
+      %w[ assignee tags ].each do |a|
+        @self[a] = JSON.parse(obj[a]) if obj[a]
+      end
+
+      %w[ location proximity radius ].each do |a|
+        @self[a] = JSON.parse(obj[a]).compact.uniq[0] if obj[a]
+      end
 
       # Section
       if @self['members']
@@ -139,6 +147,30 @@ module ICalPal
       end if plist
 
       @self['messaging'] = messaging
+    end
+
+    # @see ICalPal.<=>
+    #
+    # When comparing sections, "Others" always goes last
+    def <=>(other)
+      $sort_attrs.each do |s|
+        next if self[s] == other[s]
+
+        # nil is always less than
+        return -1 if other[s].nil?
+        return 1 if self[s].nil?
+
+        if s == 'section'
+          # Section "Others" always goes last
+          return -1 if other[s] == 'Others'
+          return 1 if self[s] == 'Others'
+        end
+
+        return -1 if self[s] < other[s]
+        return 1 if self[s] > other[s]
+      end
+
+      0
     end
 
     DEFAULT_COLOR = '#1BADF8'.freeze

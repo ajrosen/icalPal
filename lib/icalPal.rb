@@ -149,6 +149,25 @@ module ICalPal
     @self.values
   end
 
+  # @see Array.<=>
+  #
+  # If either self or other is nil, but not both, the nil object is
+  # always less than
+  def <=>(other)
+    $sort_attrs.each do |s|
+      next if self[s] == other[s]
+
+      # nil is always less than
+      return -1 if other[s].nil?
+      return 1 if self[s].nil?
+
+      return -1 if self[s] < other[s]
+      return 1 if self[s] > other[s]
+    end
+
+    0
+  end
+
   # Like inspect, but easier for humans to read
   #
   # @return [Array<String>] @self as a key=value array, sorted by key

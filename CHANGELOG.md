@@ -1,3 +1,15 @@
+icalPal-3.10.0
+==================
+
+  * Add sharees property to calendars command
+  * Fix defaults for tasks command variants
+  * Move sorting logic to ICalPal classes
+    * Fix sorting when a sort field is nil
+    * Support "Others" section in reminders
+  * Don't print section header if section is nil
+  * Fix for DateTime not handling DST when adding days/weeks/months/years
+  * Compute age using start_date
+
 icalPal-3.9.3
 ==================
 

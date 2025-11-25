@@ -68,14 +68,26 @@ module ICalPal
       to_time.to_i
     end
 
+    # @param [Integer] Optional UTC offset
     # @return [RDT] Self at 00:00:00
-    def day_start
-      RDT.new(year, month, day, 0, 0, 0, zone)
+    def day_start(z = zone)
+      RDT.new(year, month, day, 0, 0, 0, z)
     end
 
+    # @param [Integer] Optional UTC offset
     # @return [RDT] Self at 23:59:59
-    def day_end
-      RDT.new(year, month, day, 23, 59, 59, zone)
+    def day_end(z = zone)
+      RDT.new(year, month, day, 23, 59, 59, z)
+    end
+
+    # @return [Array] Only the year, month and day of self
+    def ymd
+      [ year, month, day ]
+    end
+
+    # @return [Array] Only the hour, min and sec of self
+    def hms
+      [ hour, min, sec ]
     end
 
     # @return [Array] Only the year, month and day of self

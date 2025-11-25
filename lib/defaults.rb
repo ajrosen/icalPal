@@ -49,31 +49,6 @@ $defaults = {
     sort: 'prio',
   },
 
-  undatedTasks: {
-    dated: 1,
-    db: [ ICalPal::Reminder::DB_PATH ],
-    iep: %w[ title notes due priority ],
-    ps: [ "\n    " ],
-    sort: 'prio',
-  },
-
-  datedTasks: {
-    dated: 2,
-    db: [ ICalPal::Reminder::DB_PATH ],
-    iep: %w[ title notes due priority ],
-    ps: [ "\n    " ],
-    sort: 'prio',
-  },
-
-  tasksDueBefore: {
-    dated: 3,
-    db: [ ICalPal::Reminder::DB_PATH ],
-    iep: %w[ title notes due priority ],
-    ps: [ "\n    " ],
-    sort: 'prio',
-    to: $today,
-  },
-
   accounts: {
     iep: %w[ account type ],
     sort: 'account',

@@ -37,8 +37,6 @@ s1.type,
 
 FROM #{self.name.split('::').last} s1
 
-WHERE s1.delegated_account_owner_store_id IS NULL
-
 SQL
 
   end
