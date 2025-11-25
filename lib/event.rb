@@ -95,7 +95,7 @@ module ICalPal
 
         # Save as seconds, Time, RDT
         ctime = obj[k] + ITIME
-        ctime -= Time.at(ctime).utc_offset if obj['start_tz'] == '_float'
+        ctime -= Time.at(ctime).utc_offset if obj["#{k}_tz"] == '_float' && !zone
         ttime = Time.at(ctime, in: zone)
 
         @self["#{k[0]}seconds"] = ctime
@@ -343,6 +343,7 @@ CalendarItem.all_day,
 CalendarItem.availability,
 CalendarItem.conference_url_detected,
 CalendarItem.description AS notes,
+CalendarItem.end_tz,
 CalendarItem.has_recurrences,
 CalendarItem.invitation_status,
 CalendarItem.orig_item_id,
