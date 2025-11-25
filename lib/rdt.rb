@@ -90,5 +90,9 @@ module ICalPal
       [ hour, min, sec ]
     end
 
+    # @return [Array] Only the year, month and day of self
+    def ymd
+      [ year, month, day ]
+    end
   end
 end
