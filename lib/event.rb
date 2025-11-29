@@ -95,7 +95,7 @@ module ICalPal
 
         # Save as seconds, Time, RDT
         ctime = obj[k] + ITIME
-        ctime -= Time.at(ctime).utc_offset if obj["#{k}_tz"] == '_float' && !zone
+        ctime -= Time.at(ctime).utc_offset if obj["#{k.split('_')[0]}_tz"] == '_float'
         ttime = Time.at(ctime, in: zone)
 
         @self["#{k[0]}seconds"] = ctime
