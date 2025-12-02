@@ -9,7 +9,8 @@ $(GEM): bin/* */*.rb $(APP).gemspec
 	gem build $(APP).gemspec -q -o $(GEM)
 
 clean:
-	rm -fv *.gem
+	@rm -rf .yardoc doc
+	@rm -fv *.gem
 
 install: $(GEM)
 	gem install $(GEM)
@@ -21,6 +22,13 @@ uninstall:
 	-gem uninstall $(APP) -ax
 
 reinstall: uninstall install
+
+doc: clean
+	rm -rf .yardoc doc
+	yard doc --protected --private --embed-mixins --no-stats --no-progress
+
+version:			# make version LEVEL=[major,minor,patch]
+	bump $(LEVEL)
 
 rubygems: $(GEM)
 	gem push $(GEM) --otp $(CODE)
@@ -38,3 +46,5 @@ release:
 
 upload:
 	github-release upload -t ${APP}-${VERSION} -n "${APP}-${VERSION}.gem" -R -f "${GEM}"
+
+all: doc $(GEM) release upload
