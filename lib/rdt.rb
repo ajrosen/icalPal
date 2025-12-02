@@ -25,13 +25,23 @@ module ICalPal
     # @return [RDT] a new RDT
     def self.conv(str)
       case str
-      when 'yesterday' then $today - 1
+      when 'yesterday' then $today.add(-1)
       when 'today' then $today
-      when 'tomorrow' then $today + 1
+      when 'tomorrow' then $today.add(1)
       when /^\+([0-9]+)/ then $today + Regexp.last_match(1).to_i
       when /^-([0-9]+)/ then $today - Regexp.last_match(1).to_i
       else parse(str)
       end
+    end
+
+    # Add a number of days accounting for daylight saving time changes
+    #
+    # @param days [Integer] Number of days to add
+    # @return [RDT] A new RDT
+    def add(days)
+      n = self + days
+      t = Time.parse("#{n.year}-#{n.month}-#{n.day} #{n.hour}:#{n.min}:#{n.sec}")
+      RDT.from_time(t)
     end
 
     # Values can be +day before yesterday+, +yesterday+,
@@ -41,10 +51,10 @@ module ICalPal
     # @return [String] A string representation of self relative to
     #  today.
     def to_s
-      return strftime($opts[:df]) if $opts && $opts[:nrd] && $opts[:df]
+      return strftime($opts[:df]) if $opts && $opts[:df] && $opts[:nrd]
       return super unless $today && $opts
 
-      case Integer(RDT.new(*ymd, month, day) - $today)
+      case (self - $today).round
       when -2 then 'day before yesterday'
       when -1 then 'yesterday'
       when 0 then 'today'
@@ -68,13 +78,13 @@ module ICalPal
       to_time.to_i
     end
 
-    # @param [Integer] Optional UTC offset
+    # @param z [Integer] Optional UTC offset
     # @return [RDT] Self at 00:00:00
     def day_start(z = zone)
       RDT.new(year, month, day, 0, 0, 0, z)
     end
 
-    # @param [Integer] Optional UTC offset
+    # @param z [Integer] Optional UTC offset
     # @return [RDT] Self at 23:59:59
     def day_end(z = zone)
       RDT.new(year, month, day, 23, 59, 59, z)
@@ -90,9 +100,5 @@ module ICalPal
       [ hour, min, sec ]
     end
 
-    # @return [Array] Only the year, month and day of self
-    def ymd
-      [ year, month, day ]
-    end
   end
 end
