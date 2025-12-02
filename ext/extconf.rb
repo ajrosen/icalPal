@@ -7,7 +7,7 @@ begin
   Gem.path.each { |p| gemdir = p if File.writable? p }
 
   # Dependencies common to all environments
-  dependencies = %w[ plist tzinfo ]
+  dependencies = %w[ plist ]
 
   if RUBY_VERSION >= '3.4'
     # bigdecimal is not part of the default gems starting from Ruby 3.4.0.
