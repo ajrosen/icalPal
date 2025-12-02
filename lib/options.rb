@@ -275,15 +275,9 @@ module ICalPal
 
         # Handle tasks command variants
         if cli[:cmd] =~ /tasks/i
-          case cli[:cmd]
-          when 'undatedTasks'
-            cli[:dated] = 1
+          cli[:dated] = cli[:cmd]
 
-          when 'datedTasks'
-            cli[:dated] = 2
-
-          when 'tasksDueBefore'
-            cli[:dated] = 3
+          if cli[:dated] == 'tasksDueBefore'
             cli.delete(:days) unless cli[:days]
             cli[:from] = RDT.from_epoch(0) unless cli[:from]
             cli[:to] = $today unless cli[:to]

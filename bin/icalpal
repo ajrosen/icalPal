@@ -206,10 +206,10 @@ $rows.each do |row|
       next if $opts[:ed] && item['completed'].zero?
       next unless $opts[:id] || item['completed'].zero?
 
-      next if $opts[:dated] == 1 && item['due_date'] && item['due_date'].positive?
-      next if $opts[:dated] == 2 && (!item['due_date'] || item['due_date'].zero?)
+      next if $opts[:dated] == 'undatedTasks' && item['due_date'] && item['due_date'].positive?
+      next if $opts[:dated] == 'datedTasks' && (!item['due_date'] || item['due_date'].zero?)
 
-      if $opts[:dated] == 3
+      if $opts[:dated] == 'tasksDueBefore'
         next unless item['due_date']
         next unless item['due_date'].between?($opts[:from].to_i, $opts[:to].to_i)
       end
