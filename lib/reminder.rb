@@ -1,5 +1,3 @@
-r 'tzinfo'
-
 module ICalPal
   # Class representing items from the <tt>Reminders</tt> database
   class Reminder
@@ -103,14 +101,9 @@ module ICalPal
 
       # Due date
       if @self['due_date']
-        begin
-          @self['due_date'] += ITIME
-          zone = TZInfo::Timezone.get(@self['timezone'])
-        rescue TZInfo::InvalidTimezoneIdentifier
-          zone = '+00:00'
-        end
-
-        @self['due'] = RDT.from_time(Time.at(@self['due_date'], in: zone))
+        @self['due_date'] += ITIME
+        @self['due_date'] -= obj['utc_offset'] if obj['utc_offset']
+        @self['due'] = RDT.from_time(Time.at(@self['due_date']))
       end
 
       # Notes
@@ -196,9 +189,9 @@ r1.zNotes as notes,
 r1.zPriority as priority,
 r1.zContactHandles as messaging,
 r1.zDueDateDeltaAlertsData as alert,
-r1.zTimezone as timezone,
 r1.zckIdentifier as id,
 r1.zCompleted as completed,
+r1.zDisplayDateUpdatedForSecondsFromGMT as utc_offset,
 
 bl1.zBadgeEmblem as badge,
 bl1.zColor as color,
