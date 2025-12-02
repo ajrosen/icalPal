@@ -15,12 +15,11 @@ jobs:
     environment: release
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
         with:
-          bundler-cache: true
           ruby-version: ruby
-
-      - uses: rubygems/release-gem@v1
+      - run: gem build *.gemspec
+      - run: gem push *.gem
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
