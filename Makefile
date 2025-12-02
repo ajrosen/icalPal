@@ -23,7 +23,7 @@ uninstall:
 
 reinstall: uninstall install
 
-doc: clean
+doc:
 	rm -rf .yardoc doc
 	yard doc --protected --private --embed-mixins --no-stats --no-progress
 
