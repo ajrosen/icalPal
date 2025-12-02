@@ -95,7 +95,7 @@ module ICalPal
 
         # Save as seconds, Time, RDT
         ctime = obj[k] + ITIME
-        ctime -= Time.at(ctime).utc_offset if obj["#{k.split('_')[0]}_tz"] == '_float'
+        ctime -= Time.at(ctime).utc_offset if obj["#{k.split('_')[0]}_tz"] == '_float' && !zone
         ttime = Time.at(ctime, in: zone)
 
         @self["#{k[0]}seconds"] = ctime
@@ -265,7 +265,7 @@ module ICalPal
             c['edate'] = ICalPal.nth(nth, day, nedate)
           else
             %w[ sdate edate ].each do |d|
-              diff = day - c['sdate'].wday
+              diff = day - c[d].wday
               diff += 7 if diff.negative?
 
               t1 = Time.at(c[d].to_time)
