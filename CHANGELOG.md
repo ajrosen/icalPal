@@ -1,3 +1,13 @@
+icalPal-3.10.1
+==================
+
+  * Fix rounding/off-by-one errors in RDT
+  * Regression bug fix for start_tz/end_tz
+  * Regression bug fix for end dates of events with specifiers
+  * Use utc_offset instead of timezone for reminders
+  * Remove tzinfo dependency
+  * Simplify tasks commands parsing
+
 icalPal-3.10.0
 ==================
 

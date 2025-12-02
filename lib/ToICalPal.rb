@@ -97,7 +97,7 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
 
   # Add a blank line
   #
-  # @param *_arg [Array] Ignored
+  # @param _arg [Array] Ignored
   def accept_blank_line(*_arg)
     @res << "\n"
   end
