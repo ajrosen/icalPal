@@ -109,7 +109,7 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # @option h [Integer] :level 2 for a property name
   # @option h [String] :text The header's text
   def accept_heading(h)
-    h.text = colorize(@item['symbolic_color_name'], @item['color'], h.text) if (h.level == 2) || COLOR_LABEL.any?(@prop)
+    h = RDoc::Markup::Heading.new(h.level, colorize(@item['symbolic_color_name'], @item['color'], h.text)) if (h.level == 2) || COLOR_LABEL.any?(@prop)
     @res << h.text
 
     case h.level
