@@ -304,7 +304,7 @@ module ICalPal
         $log.level = opts[:debug]
 
         # For posterity
-        opts[:ruby] = RUBY_VERSION
+        opts[:ruby] = RUBY_DESCRIPTION
         opts[:version] = @op.version
 
         # From the Department of Redundancy Department
