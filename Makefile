@@ -6,7 +6,7 @@ GEM=$(APP)-$(VERSION).gem
 export GITHUB_REPO = icalPal
 
 $(GEM): bin/* */*.rb $(APP).gemspec
-	gem build $(APP).gemspec -q -o $(GEM)
+	/usr/bin/gem build $(APP).gemspec -q -o $(GEM)
 
 clean:
 	@rm -rf .yardoc doc
