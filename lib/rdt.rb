@@ -3,16 +3,28 @@ module ICalPal
   class RDT < DateTime
 
     # Create a new RDT from a Time object
+    #
+    # @param t [Time] The Time object
+    #
+    # @return [RDT] a new RDT
     def self.from_time(t)
-      new(*t.to_a[0..5].reverse, (t.gmt_offset / 3600).to_s)
+      new(*t.to_a[0..5].reverse, Rational((t.gmt_offset / 3600), 24))
     end
 
     # Create a new RDT from seconds since epoch
+    #
+    # @param s [Integer] Seconds since the Unix epoch (Thu Jan  1 00:00:00 UTC 1970)
+    #
+    # @return [RDT] a new RDT
     def self.from_epoch(s)
       from_time(Time.at(s))
     end
 
     # Create a new RDT from seconds since iCal epoch
+    #
+    # @param s [Integer] Seconds since the iCal epoch (Jan  1 00:00:00 UTC 2001)
+    #
+    # @return [RDT] a new RDT
     def self.from_itime(s)
       from_epoch(s + ITIME)
     end
