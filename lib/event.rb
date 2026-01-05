@@ -16,8 +16,8 @@ module ICalPal
     end
 
     # Standard accessor with special handling for +age+,
-    # +availability+, +datetime+, +location+, +notes+, +sday+,
-    # +status+, +uid+, and +event+/+name+/+title+
+    # +availability+, +datetime+, +flags+, +location+, +notes+,
+    # +sday+, +status+, +uid+, and +event+/+name+/+title+
     #
     # @param k [String] Key/property name
     def [](k)
@@ -40,6 +40,9 @@ module ICalPal
           t += " - #{@self['ectime'].strftime($opts[:tf])}" unless $opts[:eed] || !@self['ectime'] || @self['duration'].zero?
         end
         t
+
+      when 'flags'              # Integer -> String
+        EventKit::EKScheduledReminderFlag[@self['flags']] if @self['calendar'] == 'Scheduled Reminders'
 
       when 'location'           # location[ address]
         (@self['location'])? [ @self['location'], @self['address'] ].join(' ').chop : nil
@@ -344,6 +347,7 @@ CalendarItem.availability,
 CalendarItem.conference_url_detected,
 CalendarItem.description AS notes,
 CalendarItem.end_tz,
+CalendarItem.flags,
 CalendarItem.has_recurrences,
 CalendarItem.invitation_status,
 CalendarItem.orig_item_id,

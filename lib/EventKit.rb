@@ -23,6 +23,11 @@ class EventKit
     canceled: 3,
   }.freeze
 
+  EKScheduledReminderFlag = %w[
+    TODO
+    Completed
+  ].freeze
+
   EKRecurrenceFrequency = %w[
     daily
     weekly

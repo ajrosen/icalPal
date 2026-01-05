@@ -1,3 +1,16 @@
+icalPal-4.1.0
+==================
+
+  * Add flags property for events in Scheduled Reminders
+	* 0 (TODO) or 1 (Completed)
+
+icalPal-4.0.0
+==================
+
+  * Support Ruby 4.0.0
+  * Fixes for #45 and #46
+  * Use RUBY_DESCRIPTION instead of RUBY_VERSION for posterity
+
 icalPal-3.10.1
 ==================
 
