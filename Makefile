@@ -1,5 +1,5 @@
-APP=$(shell ruby -e 'require "./lib/version" and puts ICalPal::NAME')
-VERSION=$(shell ruby -e 'require "./lib/version" and puts ICalPal::VERSION')
+APP=$(shell /usr/bin/ruby -e 'require "./lib/version" and puts ICalPal::NAME')
+VERSION=$(shell /usr/bin/ruby -e 'require "./lib/version" and puts ICalPal::VERSION')
 
 GEM=$(APP)-$(VERSION).gem
 
@@ -19,7 +19,7 @@ user-install: $(GEM)
 	gem install --user-install $(GEM)
 
 uninstall:
-	-gem uninstall $(APP) -ax
+	-gem uninstall $(APP) -ax plist logger csv json rdoc sqlite3 yaml
 
 reinstall: uninstall install
 
@@ -44,7 +44,7 @@ github-push:
 release:
 	github-release release -t ${APP}-${VERSION} -n "${APP} ${VERSION}"
 
-upload:
+upload: $(GEM)
 	github-release upload -t ${APP}-${VERSION} -n "${APP}-${VERSION}.gem" -R -f "${GEM}"
 
 all: doc $(GEM) release upload

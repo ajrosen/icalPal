@@ -1,3 +1,9 @@
+icalPal-4.1.1
+==================
+
+  * Fix semantic version check for dependencies (#51)
+  * Fix relative date labels when TZ offset > 0 (#49, #50)
+
 icalPal-4.1.0
 ==================
 
