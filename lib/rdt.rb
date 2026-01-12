@@ -66,7 +66,7 @@ module ICalPal
       return strftime($opts[:df]) if $opts && $opts[:df] && $opts[:nrd]
       return super unless $today && $opts
 
-      case (self - $today).round
+      case (self - $today).floor
       when -2 then 'day before yesterday'
       when -1 then 'yesterday'
       when 0 then 'today'
