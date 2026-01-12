@@ -9,10 +9,11 @@ begin
   # Dependencies common to all environments
   dependencies = %w[ plist ]
 
-  # All dependencies are included with the installation of Ruby in
-  # macOS. Adding these dependencies anyway will cause errors that
-  # prevent icalPal from being installed.
-  unless RUBY_VERSION >= '2.6'
+  # All other dependencies are included with the installation of Ruby
+  # in macOS. Adding these dependencies anyway will cause errors that
+  # prevent icalPal from being installed, so we need to be more
+  # granular.
+  if RUBY_VERSION >= '3.0'
     dependencies.push('logger')
     dependencies.push('csv')
     dependencies.push('json')
@@ -23,8 +24,9 @@ begin
 
   di = Gem::DependencyInstaller.new(install_dir: gemdir)
   dependencies.each { |d| di.install(d) }
-rescue Exception
-  exit(1)
+
+rescue Exception => e
+  abort(e)
 end
 
 File.write('Makefile', "clean:\n\ttrue\ninstall:\n\ttrue")
