@@ -30,6 +30,10 @@ EOF
 
   s.bindir = 'bin'
   s.required_ruby_version = '>= 2.6.0'
+  s.add_runtime_dependency 'logger'
+  s.add_runtime_dependency 'csv'
+  s.add_runtime_dependency 'rdoc'
+  s.add_runtime_dependency 'sqlite3'
 
   s.post_install_message = <<-EOF
 
