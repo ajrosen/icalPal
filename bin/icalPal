@@ -72,7 +72,7 @@ $log.info("Options:\n#{$opts.to_json}")
 # @param item[Object]
 
 def add(item)
-  $log.debug("Adding #{item.dump} #{item['UUID']} (#{item['title']})") if item['UUID']
+  $log.debug("Adding #{item.dump} #{item['UUID']} (#{item['title']})") if item['UUID'] if $log.level <= Logger::DEBUG
 
   $items.push(item)
 end
@@ -304,7 +304,7 @@ doc = RDoc::Markup::Document.new
 section = nil
 
 items.each_with_index do |i, j|
-  $log.debug("Print #{j}: #{i.inspect}")
+  $log.debug("Print #{j}: #{i.inspect}") if $log.level <= Logger::DEBUG
 
   # --li
   break if $opts[:li].positive? && j >= $opts[:li]
@@ -316,7 +316,7 @@ items.each_with_index do |i, j|
 
   # Sections
   if $opts[:sep] && section != i[$opts[:sep]]
-    $log.debug("New section '#{$opts[:sep]}': #{i[$opts[:sep]]}")
+    $log.debug("New section '#{$opts[:sep]}': #{i[$opts[:sep]]}") if $log.level <= Logger::DEBUG
 
     doc << RDoc::Markup::Raw.new($opts[:sep])
 
@@ -340,7 +340,7 @@ items.each_with_index do |i, j|
     next if value.is_a?(Array) && !value[0]
     next if value.is_a?(String) && value.empty?
 
-    $log.debug("#{prop}: #{value}")
+    $log.debug("#{prop}: #{value}") if $log.level <= Logger::DEBUG
 
     # Use Raw to save the property
     props << RDoc::Markup::Raw.new(prop)

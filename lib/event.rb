@@ -225,7 +225,7 @@ module ICalPal
         when 'M' then dom = j[1].split(',')
         when 'O' then moy = j[1].split(',')
         when 'S' then nth = j[1].to_i
-        else $log.warn("Unknown specifier: #{k}")
+        else $log.warn("Unknown specifier: #{k}") if $log.level <= Logger::WARN
         end
       end
 
@@ -294,7 +294,7 @@ module ICalPal
         when 'weekly'  then nd = self[d] + (self['interval'] * 7)
         when 'monthly' then nd = self[d] >> self['interval']
         when 'yearly'  then nd = self[d] >> (self['interval'] * 12)
-        else $log.error("Unknown frequency: #{self['frequency']}")
+        else $log.error("Unknown frequency: #{self['frequency']}") if $log.level <= Logger::ERROR
         end
 
         # Create a new Time object in case we crossed a daylight saving change
@@ -312,17 +312,17 @@ module ICalPal
     def in_window?(s, e)
       if $opts[:now]
         if $nowto_i.between?(s.to_i, e.to_i)
-          $log.debug("now: #{s} to #{e} vs. #{$now}")
+          $log.debug("now: #{s} to #{e} vs. #{$now}") if $log.level <= Logger::DEBUG
           true
         else
-          $log.debug("not now: #{s} to #{e} vs. #{$now}")
+          $log.debug("not now: #{s} to #{e} vs. #{$now}") if $log.level <= Logger::DEBUG
           false
         end
       elsif (s < $opts[:to] && [ s, e ].max >= $opts[:from])
-        $log.debug("#{@self['title']} in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
+        $log.debug("#{@self['title']} in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}") if $log.level <= Logger::DEBUG
         true
       else
-        $log.debug("not in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}")
+        $log.debug("not in window: #{s} to #{e} vs. #{$opts[:from]} to #{$opts[:to]}") if $log.level <= Logger::DEBUG
         false
       end
     end
