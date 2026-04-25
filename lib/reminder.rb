@@ -85,8 +85,9 @@ module ICalPal
         s = $sections.select { |i| i['id'] == j[0]['groupID'] } if j[0]
         @self['section'] = s[0]['name'] if s && s[0]
 
+        # Drop the internal membership scratch but keep `id` (zckIdentifier),
+        # which downstream consumers rely on for joins/dedup.
         @self.delete('members')
-        @self.delete('id')
       end
 
       # Priority
