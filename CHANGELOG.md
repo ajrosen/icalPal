@@ -1,24 +1,26 @@
-icalPal-4.1.1
-==================
+## icalPal-4.2.0
+
+  * Preserve id for reminders in sectioned lists (#53)
+  * Add UUID property alias for id in tasks commands
+  * Change the format of CHANGELOG.md for compatability with [bump](https://github.com/gregorym/bump)
+
+## icalPal-4.1.1
 
   * Fix semantic version check for dependencies (#51)
   * Fix relative date labels when TZ offset > 0 (#49, #50)
 
-icalPal-4.1.0
-==================
+## icalPal-4.1.0
 
   * Add flags property for events in Scheduled Reminders
 	* 0 (TODO) or 1 (Completed)
 
-icalPal-4.0.0
-==================
+## icalPal-4.0.0
 
   * Support Ruby 4.0.0
   * Fixes for #45 and #46
   * Use RUBY_DESCRIPTION instead of RUBY_VERSION for posterity
 
-icalPal-3.10.1
-==================
+## icalPal-3.10.1
 
   * Fix rounding/off-by-one errors in RDT
   * Regression bug fix for start_tz/end_tz
@@ -27,8 +29,7 @@ icalPal-3.10.1
   * Remove tzinfo dependency
   * Simplify tasks commands parsing
 
-icalPal-3.10.0
-==================
+## icalPal-3.10.0
 
   * Add sharees property to calendars command
   * Fix defaults for tasks command variants
@@ -39,8 +40,7 @@ icalPal-3.10.0
   * Fix for DateTime not handling DST when adding days/weeks/months/years
   * Compute age using start_date
 
-icalPal-3.9.3
-==================
+## icalPal-3.9.3
 
   * Fix for #35
   * Fix for #42
@@ -53,30 +53,25 @@ icalPal-3.9.3
   * Switch $now from RDT to Time
   * Add day_start and day_end methods to RDT
 
-icalPal-3.9.2
-==================
+## icalPal-3.9.2
 
   * Escape control characters in CSV and Remind output
 
-icalPal-3.9.1
-==================
+## icalPal-3.9.1
 
   * Implement tasksDueBefore command
   * Add grocery and completed properties to tasks commands
   * Add --id and --ed options for tasks commands
 
-icalPal-3.8.2
-==================
+## icalPal-3.8.2
 
   * Fix for #40
 
-icalPal-3.8.1
-==================
+## icalPal-3.8.1
 
   * Fix sorting regression bug
 
-icalPal-3.8.0
-==================
+## icalPal-3.8.0
 
   * Add properties for tasks commands
 	* id
@@ -124,29 +119,24 @@ icalPal-3.8.0
 	* Sorting tasks
 	* Handle Errno::EPERM (needs Full Disk Access) for Reminders database
 
-icalPal-3.7.2
-==================
+## icalPal-3.7.2
 
   * atp, etp, and itp options were not aliases for aep, eep, and iep per the documentation
 
-icalPal-3.7.1
-==================
+## icalPal-3.7.1
 
   * Fix stores command (#36)
 
 
-icalPal-3.7.0
-==================
+## icalPal-3.7.0
 
   * Add sseconds/eseconds fields for easier post-processing
 
-icalPal-3.6.1 / 2025-05-18
-==================
+## icalPal-3.6.1 / 2025-05-18
 
   * aep, eep, and iep options were being applied to tasks commands
 
-icalPal-3.6.0 / 2025-05-18
-==================
+## icalPal-3.6.0 / 2025-05-18
 
   * Fix release/upload asset name of gem file
   * Version 3.6.0
@@ -156,16 +146,14 @@ icalPal-3.6.0 / 2025-05-18
   * Add wrappers for require/require_relative to help debugging
   * Feature: `eventsRemaining` (#32)
 
-icalPal-3.5.0 / 2025-05-13
-==========================
+## icalPal-3.5.0 / 2025-05-13
 
   * Update version, README
   * Fix changes to recurring events when original event is in_window
   * Add --norc option (#31)
   * Norc (#30)
 
-icalPal-3.4.0 / 2025-04-08
-==========================
+## icalPal-3.4.0 / 2025-04-08
 
   * Version 3.4.0
   * Update comments
@@ -183,8 +171,7 @@ icalPal-3.4.0 / 2025-04-08
   * Fix timezone dependency version
   * Fix bugs with recurring events
 
-icalpal-3.4.0.pre / 2025-03-24
-==============================
+## icalpal-3.4.0.pre / 2025-03-24
 
   * Use MFA with rubygems.org
   * Bugfix for eventsNow and -n option
@@ -192,8 +179,7 @@ icalpal-3.4.0.pre / 2025-03-24
   * Version 3.3.0
   * Use MFA with rubygems.org
 
-icalpal-3.2.0 / 2025-02-15
-==========================
+## icalpal-3.2.0 / 2025-02-15
 
   * Clean Gemfile
   * Clean workflow
@@ -212,18 +198,15 @@ icalpal-3.2.0 / 2025-02-15
   * Merge pull request #24 from andregce/main
   * Update README.md
 
-icalPal-3.1.1 / 2024-11-07
-==========================
+## icalPal-3.1.1 / 2024-11-07
 
   * Fix for MacOS 15.1 (Sequoia). The calendar database was moved to a different folder.
 
-icalPal-3.1.0 / 2024-09-11
-==========================
+## icalPal-3.1.0 / 2024-09-11
 
   * Add GITHUB_REPO
 
-icalpal-3.0.0 / 2024-09-11
-==========================
+## icalpal-3.0.0 / 2024-09-11
 
   * Add release and upload targets
   * Check if a single event is longer than 100000 days
@@ -232,15 +215,13 @@ icalpal-3.0.0 / 2024-09-11
   * Make all references to icalpal lowercase
   * Update README.md
 
-2.2.0 / 2024-05-15
-==================
+## 2.2.0 / 2024-05-15
 
   * Bump version to 2.2.0
   * Fix recurring event specifier parsing
   * Add --match option
 
-2.1.0 / 2024-04-28
-==================
+## 2.1.0 / 2024-04-28
 
   * Bump version to 2.1.0
   * Fix XML output for Array fields (eg., xdate)
@@ -255,8 +236,7 @@ icalpal-3.0.0 / 2024-09-11
   * Update README.md
   * Fix publish target
 
-2.0.0 / 2024-04-13
-==================
+## 2.0.0 / 2024-04-13
 
   * Merge branch 'main' of https://github.com/ajrosen/icalPal
   * Fix install with remote dependencies
@@ -267,13 +247,11 @@ icalpal-3.0.0 / 2024-09-11
   * Merge branch '11-add-xml-output-option' into reminders
   * Add tasks and undatedTasks commands
 
-1.3.0-beta1 / 2024-04-09
-========================
+## 1.3.0-beta1 / 2024-04-09
 
   * Add support for XML output
 
-1.2.1 / 2024-04-06
-==================
+## 1.2.1 / 2024-04-06
 
   * Merge pull request #14 from ajrosen/9-icalpal-hangs
   * Merge branch 'main' into 9-icalpal-hangs
@@ -282,26 +260,22 @@ icalpal-3.0.0 / 2024-09-11
   * Create icalPal-1.1.17.issue9.gem
   * Add lots of debug messages
 
-1.2.0 / 2024-04-05
-==================
+## 1.2.0 / 2024-04-05
 
   * Merge pull request #12 from ajrosen/10-problem-with-csv-export-for-recurring-events
   * Fix CSV output
   * Fix output of placeholder events
 
-1.1.6 / 2024-03-28
-==================
+## 1.1.6 / 2024-03-28
 
   * Fix issue #7
   * Update README.md
 
-1.1.5 / 2024-03-16
-==================
+## 1.1.5 / 2024-03-16
 
   * Version 1.1.5
 
-1.1.4 / 2024-02-28
-=================
+## 1.1.4 / 2024-02-28
 
   * Merge branch 'main' of https://github.com/ajrosen/icalPal
   * Version 1.1.4
@@ -321,38 +295,32 @@ icalpal-3.0.0 / 2024-09-11
   * added DURATION spec
   * fixed time spec (shouldn't include seconds)
 
-1.1.3 / 2023-07-21
-==================
+## 1.1.3 / 2023-07-21
 
   * Bump version to 1.1.3
   * Merge pull request #2 from fgombault/Remind_output
   * Added basic remind output format
 
-1.1.2 / 2023-04-05
-==================
+## 1.1.2 / 2023-04-05
 
   * Fix start/end times when start_tz is _float
 
-1.1.1 / 2023-03-20
-==================
+## 1.1.1 / 2023-03-20
 
   * Fix: Recurring events shown past "count" iterations
 
-1.1.0 / 2023-03-05
-==================
+## 1.1.0 / 2023-03-05
 
   * V1.1.0: Add output fields for external processing
   * Fix: Allow --cmd option in environment variable or config file
   * Improve non-markup output formats behavior and performance
   * Add tarball and checksums
 
-1.0.3 / 2023-02-25
-==================
+## 1.0.3 / 2023-02-25
 
   * Add test data
 
-1.0.2 / 2023-02-24
-==================
+## 1.0.2 / 2023-02-24
 
   * Use File.read instead of IO.read
   * Bump to 1.0.1 for README updates
