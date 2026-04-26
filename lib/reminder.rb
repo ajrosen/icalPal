@@ -63,6 +63,9 @@ module ICalPal
       when 'name', 'reminder', 'task' # Aliases
         @self['title']
 
+      when 'UUID'               # For consistency with other commands
+        @self['id']
+
       else super
       end
     end
