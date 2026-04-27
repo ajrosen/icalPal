@@ -124,6 +124,8 @@ module ICalPal
     end
   end
 
+  # @!group Contants
+
   # Epoch + 31 years (Mon Jan  1 00:00:00 UTC 2001)
   ITIME = 978_307_200
 
@@ -131,6 +133,8 @@ module ICalPal
   #
   # <tt><i>SU, MO, TU, WE, TH, FR, SA</i></tt>
   DOW = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 }.freeze
+
+  # #!endgroup
 
   # @!group Accessors
   def [](k)
