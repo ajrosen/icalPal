@@ -135,7 +135,9 @@ unless success
 
   $opts[:db].each do |db|
     # Use a real open to get a useful error
+    # rubocop: disable Style/FileOpen
     File.open(db).close
+    # rubocop: enable Style/FileOpen
   rescue Exception => e
     $log.fatal("#{e}: #{db}")
 
@@ -266,6 +268,7 @@ mu = case $opts[:output]
 
 items = $items[0..($opts[:li] - 1)]
 
+# Machine-friendly formats
 unless mu
   $log.debug("Output in #{$opts[:output]} format")
 
@@ -298,9 +301,9 @@ unless mu
   exit
 end
 
+# Human-readable formats
 $log.debug("Formatting with #{mu.inspect}")
 
-doc = RDoc::Markup::Document.new
 section = nil
 
 items.each_with_index do |i, j|
@@ -309,28 +312,30 @@ items.each_with_index do |i, j|
   # --li
   break if $opts[:li].positive? && j >= $opts[:li]
 
-  # Use RDoc::Markup::Verbatim to save the item
-  v = RDoc::Markup::Verbatim.new
-  v.format = i
-  doc << v
+  # Each item is a document
+  doc = RDoc::Markup::Document.new
 
   # Sections
   if $opts[:sep] && section != i[$opts[:sep]]
     $log.debug("New section '#{$opts[:sep]}': #{i[$opts[:sep]]}") if $log.level <= Logger::DEBUG
 
-    doc << RDoc::Markup::Raw.new($opts[:sep])
-
     doc << RDoc::Markup::BlankLine.new if j.positive?
-    if i[$opts[:sep]]
-      doc << RDoc::Markup::Heading.new(1, i[$opts[:sep]].to_s)
-      doc << RDoc::Markup::Rule.new(0)
-    end
+    doc << RDoc::Markup::Heading.new(1, "#{i[$opts[:sep]]}:")
+    doc << RDoc::Markup::Rule.new(0)
 
     section = i[$opts[:sep]]
   end
 
+  # Placeholder
+  if i['placeholder']
+    doc << RDoc::Markup::Raw.new(i['title'])
+    doc << RDoc::Markup::BlankLine.new
+    print doc.accept(mu)
+    next
+  end
+
   # Item
-  props = RDoc::Markup::List.new(:BULLET)
+  props = RDoc::Markup::List.new(:LABEL)
 
   # Properties
   $opts[:props].each_with_index do |prop, k|
@@ -342,22 +347,41 @@ items.each_with_index do |i, j|
 
     $log.debug("#{prop}: #{value}") if $log.level <= Logger::DEBUG
 
-    # Use Raw to save the property
-    props << RDoc::Markup::Raw.new(prop)
-
     if k.positive?
-      props << RDoc::Markup::BlankLine.new unless (i['placeholder'] || $opts[:ps])
-      props << RDoc::Markup::ListItem.new(prop, RDoc::Markup::Paragraph.new(value)) unless (i['placeholder'])
+      props << RDoc::Markup::BlankLine.new unless $opts[:ps]
+
+      v = ((value.is_a?(Enumerable))? value.join('; ') : value)
+      v = mu.colorize(*mu.DATE_COLOR, v) if prop == 'datetime' && mu.respond_to?('colorize')
+
+      props << RDoc::Markup::ListItem.new(prop, RDoc::Markup::Paragraph.new(v))
     else
-      # First property, value only
+      # Choose bullet
+      if mu.is_a?(RDoc::Markup::ToICalPal) && !$opts[:nb]
+        bullet = (i['due_date'] && i['due_date'].between?(0, $nowto_i))? $opts[:ab] : $opts[:bullet]
+        props << RDoc::Markup::Raw.new("#{bullet} ")
+      end
+
+      # Maybe colorize label
+      mu.is_a?(RDoc::Markup::ToICalPal) &&
+        mu.COLOR_LABEL.any?(prop) &&
+        value = mu.colorize(i['symbolic_color_name'], i['color'], value)
+
+      # Maybe add calendar to title
+      prop == 'title' &&
+        i['calendar'] &&
+        mu.respond_to?('bold') &&
+        !$opts[:nc] &&
+        value += mu.bold(" (#{i['calendar']})")
+
       props << RDoc::Markup::Heading.new(2, value.to_s)
     end
   end
 
   # Print it
-  props << RDoc::Markup::BlankLine.new unless props.empty?
+  unless props.empty?
+    doc << props
+    doc << RDoc::Markup::BlankLine.new
+  end
 
-  doc << props
+  print doc.accept(mu)
 end
-
-print doc.accept(mu)

@@ -45,7 +45,7 @@ module ICalPal
         EventKit::EKScheduledReminderFlag[@self['flags']] if @self['calendar'] == 'Scheduled Reminders'
 
       when 'location'           # location[ address]
-        (@self['location'])? [ @self['location'], @self['address'] ].join(' ').chop : nil
+        [ @self['location'], @self['address'] ].uniq.join(' ').chop if @self['location']
 
       when 'notes'              # \n -> :nnr
         (@self['notes'])? @self['notes'].strip.gsub("\n", $opts[:nnr]) : nil
@@ -75,11 +75,11 @@ module ICalPal
     def initialize(obj)
       # Placeholder for days with no events
       return @self = {
-        $opts[:sep] => obj,
-        'sdate' => obj,
-        'placeholder' => true,
-        'title' => 'Nothing.',
-      } if $opts[:sed] && obj.is_a?(DateTime)
+               $opts[:sep] => obj,
+               'sdate' => obj,
+               'placeholder' => true,
+               'title' => 'Nothing.',
+             } if $opts[:sed] && obj.is_a?(DateTime)
 
       super
 

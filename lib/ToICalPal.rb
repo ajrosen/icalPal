@@ -1,3 +1,5 @@
+require 'rdoc'
+
 ##################################################
 # Render an RDoc::Markup::Document, closely mimicking
 # icalBuddy[https://github.com/ali-rantakari/icalBuddy]
@@ -45,19 +47,11 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # Color for datetime value
   DATE_COLOR = [ 'yellow', '#ffff00' ].freeze
 
-  # @param opts [Hash] Used for conditional formatting
-  # @option opts [String] :bullet Bullet
-  # @option opts [String] :ab Alert bullet
-  # @option opts [Boolean] :nb No bullet
-  # @option opts [Boolean] :nc No calendar names
-  # @option opts [Boolean] :npn No property names
-  # @option opts [Integer] :palette (nil) 8 for \-f, 24 for \--color
-  # @option opts [Array<String>] :ps List of property separators
-  # @option opts [String] :ss Section separator
-  def initialize(opts)
-    super
-    @opts = opts
-  end
+  # Accessors for constants
+  def NO_LABEL() NO_LABEL end
+  def COLOR_LABEL() COLOR_LABEL end
+  def LABEL_COLOR() LABEL_COLOR end
+  def DATE_COLOR() DATE_COLOR end
 
   # Start a new document
   def start_accepting
@@ -70,29 +64,20 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
     @res.join
   end
 
-  # Add a bullet for the first property of an item
+  # Add a list
   #
   # @param _arg [Array] Ignored
-  def accept_list_start(_arg)
-    return if @opts[:nb] || @item['placeholder']
-
-    if @item['due_date'] && (@item['due_date']).between?(0, $nowto_i)
-      # Use alert bullet for overdue items
-      @res << "#{@opts[:ab]} "
-    else
-      @res << "#{@opts[:bullet]} "
-    end
-  end
+  def accept_list_start(_arg) end
 
   # Add a property name
   #
   # @param arg [RDoc::Markup::ListItem]
   # @option arg [String] .label Contains the property name
   def accept_list_item_start(arg)
-    @res << (@opts[:ps][@ps] || '    ') unless @item['placeholder']
-    @res << colorize(*LABEL_COLOR, arg.label) << ': ' unless @opts[:npn] || NO_LABEL.any?(arg.label)
+    @res << (@options[:ps][@ps] || '    ')
+    @res << colorize(*LABEL_COLOR, arg.label) << ': ' unless @options[:npn] || NO_LABEL.any?(arg.label)
 
-    @ps += 1 unless @ps == @opts[:ps].count - 1
+    @ps += 1 unless @ps == @options[:ps].count - 1
   end
 
   # Add a blank line
@@ -102,65 +87,38 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
     @res << "\n"
   end
 
-  # Add either a section header or the first property of an item
-  #
-  # @param h [RDoc::Markup::Heading]
-  # @option h [Integer] :level 1 for a section header
-  # @option h [Integer] :level 2 for a property name
-  # @option h [String] :text The header's text
+  # Add a heading
   def accept_heading(h)
-    h = RDoc::Markup::Heading.new(h.level, colorize(@item['symbolic_color_name'], @item['color'], h.text)) if (h.level == 2) || COLOR_LABEL.any?(@prop)
     @res << h.text
-
-    case h.level
-    when 1
-      @res << ':'
-    when 2
-      if @prop == 'title' && @item['calendar']
-        @res << bold(" (#{@item['calendar']})") unless @opts[:nc] || @item['title'] == @item['calendar']
-      end
-    end
   end
 
-  # Add the property value
+  # Add a paragraph
   #
   # @param p [RDoc::Markup::Paragraph]
   # @option p [Array<String>] :parts The property's text
   def accept_paragraph(p)
-    t = p.parts.join('; ').gsub("\n", "\n    ")
-    t = colorize(*DATE_COLOR, t) if @prop == 'datetime'
-    @res << t
+    @res << p.parts.join('; ').gsub("\n", "\n    ")
   end
 
-  # Add a section separator
+  # Add a section separator and a blank line
   #
   # @param _weight Ignored
   def accept_rule(_weight)
-    @res << @opts[:ss]
+    @res << @options[:ss]
     accept_blank_line
   end
 
-  # Don't add anything to the document, just save the item for later
-  #
-  # @param arg [RDoc::Markup::Verbatim]
-  # @option arg [Object] :format The item
-  def accept_verbatim(arg)
-    @item = arg.format
-  end
-
-  # Don't add anything to the document, just save the property name
-  # for later
+  # Add raw text
   #
   # @param arg [RDoc::Markup::Raw]
-  # @option arg [Object] :parts The property
   def accept_raw(arg)
-    @prop = arg.parts[0]
+    @res << arg.parts
   end
 
   # @param str [String]
   # @return [String] str with increased intensity[#BOLD]
   def bold(str)
-    return str unless @opts[:palette]
+    return str unless @options[:palette]
 
     BOLD + str + NORM
   end
@@ -169,9 +127,9 @@ class RDoc::Markup::ToICalPal < RDoc::Markup::Formatter
   # @param c24 [String] Color used for \--color
   # @return [String] str in color, depending on opts[#]
   def colorize(c8, c24, str)
-    return str unless c8 && c24 && @opts[:palette]
+    return str unless c8 && c24 && @options[:palette]
 
-    case @opts[:palette]
+    case @options[:palette]
     when 8                      # Default colour table
       c = ANSI[c8.downcase.to_sym]
       c ||= ANSI[c24[0..6].downcase.to_sym]

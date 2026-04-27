@@ -6,10 +6,7 @@
 
 ## Description
 
-icalPal is a command-line tool to query macOS *Calendar* and
-*Reminders* databases for accounts, calendars, events, and tasks.  It
-can be run on any system with [Ruby](https://www.ruby-lang.org/) and
-access to a Calendar or Reminders database.
+icalPal is a command-line tool to query macOS *Calendar* and *Reminders* databases for accounts, calendars, events, and tasks.  It can be run on any system with [Ruby](https://www.ruby-lang.org/) and access to a Calendar or Reminders database.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 
@@ -52,10 +49,7 @@ brew install icalPal
 
 ### Compatability with icalBuddy
 
-icalPal tries to be compatible with
-[icalBuddy](https://github.com/ali-rantakari/icalBuddy) for
-command-line options and for output.  There are a some important
-differences to be aware of.
+icalPal tries to be compatible with [icalBuddy](https://github.com/ali-rantakari/icalBuddy) for command-line options and for output.  There are a some important differences to be aware of.
 
 * Options require two hyphens, except for single-letter options that require one hyphen
 * *eventsFrom* is not supported.  Instead there is *--from*, *--to*, and *--days*
@@ -71,8 +65,7 @@ icalPal also supports additional commands.
 
 ```icalPal accounts```
 
-Shows a list of enabled Calendar accounts.  Internally they are known
-as *Stores*; you can run ```icalPal stores``` instead.
+Shows a list of enabled Calendar accounts.  Internally they are known as *Stores*; you can run ```icalPal stores``` instead.
 
 ```icalPal datedTasks```
 
@@ -80,12 +73,9 @@ Shows only reminders that have a due date.
 
 ```icalPal reminders```
 
-*reminders*, *datedReminders*, *undatedReminders*, and
-*remindersDueBefore* can be used instead of *tasks*
+*reminders*, *datedReminders*, *undatedReminders*, and *remindersDueBefore* can be used instead of *tasks*
 
-Reminders can also be viewed in the *Scheduled Reminders* calendar,
-using the *events* commands.  Repeating reminders are treated the same
-as repeating events.
+Reminders can also be viewed in the *Scheduled Reminders* calendar, using the *events* commands.  Repeating reminders are treated the same as repeating events.
 
 ### Additional options
 
@@ -275,48 +265,22 @@ Environment variables:
 
 ## Output formats
 
-icalPal supports several output formats.  The **default** format tries
-to mimic icalBuddy as much as possible.
+icalPal supports several output formats.  The **default** format tries to mimic icalBuddy as much as possible.
 
-CSV, Hash, JSON, XML, and YAML print all fields for all items in their
-respective formats.  From that you can analyze the results any way you
-like.  [Remind](https://dianne.skoll.ca/projects/remind/) format uses a
-minimal implementation built into icalPal.
+CSV, Hash, JSON, XML, and YAML print all fields for all items in their respective formats.  From that you can analyze the results any way you like.  [Remind](https://dianne.skoll.ca/projects/remind/) format uses a minimal implementation built into icalPal.
 
-Control characters are escaped in these formats to ensure they remain
-properly formatted.
+Control characters are escaped in these formats to ensure they remain properly formatted.
 
-Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's
-[RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html)
-framework to build and render the items.  See
-[RDoc](https://github.com/ajrosen/icalPal/blob/main/RDoc.md) for a
-breakdown of how icalPal uses RDoc::Markup.
+Other formats such as ANSI, HTML, Markdown, RDoc, and TOC, use Ruby's [RDoc::Markup](https://ruby-doc.org/stdlib-2.6.10/libdoc/rdoc/rdoc/RDoc/Markup.html) framework to build and render the items.  See [RDoc](https://github.com/ajrosen/icalPal/blob/main/RDoc.md) for a breakdown of how icalPal uses RDoc::Markup.
 
 ## History
 
-I used icalBuddy for many years.  It's great for scripting,
-automation, and as a widget for apps like
-[Übersicht](https://tracesof.net/uebersicht/),
-[GeekTool](https://www.tynsoe.org/geektool/), and
-[SketchyBar](https://felixkratz.github.io/SketchyBar/).
+I used icalBuddy for many years.  It's great for scripting, automation, and as a widget for apps like [Übersicht](https://tracesof.net/uebersicht/), [GeekTool](https://www.tynsoe.org/geektool/), and [SketchyBar](https://felixkratz.github.io/SketchyBar/).
 
-As with many applications, I started to run into some limitations in
-icalBuddy.  The biggest being that active development ended in 2014.
-It's only thanks to the efforts of [Jim
-Lawton](https://github.com/jimlawton) that it even compiles anymore.
+As with many applications, I started to run into some limitations in icalBuddy.  The biggest being that active development ended in 2014. It's only thanks to the efforts of [Jim Lawton](https://github.com/jimlawton) that it even compiles anymore.
 
-Instead of trying to understand and extend the existing code, I chose
-to start anew using my language of choice:
-[Ruby](https://www.ruby-lang.org).  Using Ruby meant there is *much*
-less code; a little over 2,200 lines vs. 7,000.  It also means icalPal
-is multi-platform.
+Instead of trying to understand and extend the existing code, I chose to start anew using my language of choice: [Ruby](https://www.ruby-lang.org).  Using Ruby meant there is *much* less code; a little over 2,200 lines vs. 7,000.  It also means icalPal is multi-platform.
 
-Because icalPal is written in Ruby, and not a native Mac application,
-you can run it just about anywhere.  It's been tested with the
-versions of Ruby included with macOS Sequoia and Tahoe (2.6.10) and
-[Homebrew](https://brew.sh/) (3.4.x).
+Because icalPal is written in Ruby, and not a native Mac application, you can run it just about anywhere.  It's been tested with the versions of Ruby included with macOS Sequoia and Tahoe (2.6.10) and [Homebrew](https://brew.sh/) (3.4.x).
 
-I won't pretend to understand **why** you would want to run this on
-Linux or Windows.  But since icalPal is written in Ruby and gets its
-data directly from the Calendar and Reminders database files instead
-of an API, you *can*.
+I won't pretend to understand **why** you would want to run this on Linux or Windows.  But since icalPal is written in Ruby and gets its data directly from the Calendar and Reminders database files instead of an API, you *can*.
