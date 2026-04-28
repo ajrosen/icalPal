@@ -51,7 +51,7 @@ end
 
 # Get the application icalPal is most likely running in
 #
-# @return [Integer] The basename of the program whose parent process id is 1 (launchd)
+# @return [String] The basename of the program whose parent process id is 1 (launchd)
 def ancestor
   ppid = Process.ppid
 
