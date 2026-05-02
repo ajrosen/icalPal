@@ -28,7 +28,7 @@ doc:
 	yard doc --protected --private --embed-mixins --no-stats --no-progress
 
 version:			# make version LEVEL=[major,minor,patch]
-	bump $(LEVEL)
+	bump --no-commit $(LEVEL)
 
 rubygems: $(GEM)
 	gem push $(GEM) --otp $(CODE)
