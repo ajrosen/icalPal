@@ -1,3 +1,7 @@
+## icalPal-4.2.1
+
+  * Simplify installation of dependencies (#54)
+
 ## icalPal-4.2.0
 
   * Preserve id for reminders in sectioned lists (#53)

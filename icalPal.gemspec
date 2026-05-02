@@ -33,7 +33,7 @@ EOF
 
   s.post_install_message = <<-EOF
 
-Note: #{ICalPal::NAME} requires "Full Disk Access" in System Settings to access your calendar.
+Note: #{ICalPal::NAME} requires "Full Disk Access" in System Settings to access your calendar and reminders.
 Make sure the program that runs #{ICalPal::NAME}, not #{ICalPal::NAME} itself, has these permissions.
 
 EOF
