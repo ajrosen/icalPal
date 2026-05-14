@@ -15,7 +15,7 @@ module ICalPal
     def initialize(obj)
       super
 
-      @self['sharees'] = JSON.parse(obj['sharees'])
+      @self['sharees'] = JSON.parse(obj['sharees']) if obj['sharees']
     end
 
     QUERY = <<~SQL.freeze
