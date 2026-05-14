@@ -1,10 +1,24 @@
 PL_CONVERT = '/usr/bin/plutil -convert xml1 -o - -'.freeze
 
+# Memoize plist conversions so duplicate inputs don't fork plutil
+# repeatedly. ICalPal::Reminder#initialize calls `plconvert` per row
+# for `color` (one of ~12 unique blobs across the user's lists,
+# duplicated across thousands of reminders by the SQL JOIN) and
+# `messaging` (almost always nil for typical data). Sharing results
+# across calls turns N plutil forks into one per unique input.
+PLCONVERT_CACHE = {}
+
 # Load a plist
 #
 # @param obj [String] Data that can be converted by +/usr/bin/plutil+
-# @return [Array] Objects representing nodes in the plist
+# @return [Array] Objects representing nodes in the plist; +nil+ for
+#   nil/empty input.
 def plconvert(obj)
+  return nil if obj.nil? || (obj.respond_to?(:empty?) && obj.empty?)
+
+  cached = PLCONVERT_CACHE[obj]
+  return cached if cached || PLCONVERT_CACHE.key?(obj)
+
   r 'open3'
   r 'plist'
 
@@ -16,12 +30,14 @@ def plconvert(obj)
   sin.close
 
   # Read output
-  begin
-    plist = Plist.parse_xml(sout.read)
-    plist['$objects'] if plist
-  rescue Plist::UnimplementedElementError
-    nil
-  end
+  result = begin
+             plist = Plist.parse_xml(sout.read)
+             plist['$objects'] if plist
+           rescue Plist::UnimplementedElementError
+             nil
+           end
+
+  PLCONVERT_CACHE[obj] = result
 end
 
 # Convert a key/value pair to XML.  The value should be +nil+, +String+,
