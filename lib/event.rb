@@ -117,6 +117,16 @@ module ICalPal
     def non_recurring
       events = []
 
+      # Real Calendar.app data sometimes has events whose sdate / edate /
+      # duration is nil (malformed subscribed calendars, partial syncs,
+      # post-migration rows). Skip the row entirely if there's no anchor
+      # date; otherwise coerce the missing optional fields so the math
+      # below doesn't blow up.
+      return events if self['sdate'].nil?
+
+      self['duration'] ||= 0
+      self['edate']    ||= self['sdate']
+
       nDays = (self['duration'] / 86_400).to_i
 
       # Sanity checks
