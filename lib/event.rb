@@ -83,6 +83,16 @@ module ICalPal
 
       super
 
+      # Check for fields that must exist
+      %w[ start_date title ].each do |s|
+        raise(TypeError, "event has no #{s}") unless @self[s]
+      end
+
+      # Make sure numbers are numbers
+      %w[ start_date end_date orig_date ].each do |s|
+        raise(TypeError, "#{s} \"#{@self[s]}\" is not a number") if @self[s] && (!@self[s].is_a? Numeric)
+      end
+
       # Convert JSON arrays to Arrays
       @self['attendees'] = JSON.parse(obj['attendees'])
       @self['xdate'] = JSON.parse(obj['xdate']).map do |k|
@@ -91,6 +101,7 @@ module ICalPal
 
       # Convert iCal dates to normal dates
       obj.keys.select { |i| i.end_with? '_date' }.each do |k|
+        # Non-recurring events won't have orig_date or rend_date
         next unless obj[k]
 
         zone = nil
