@@ -173,8 +173,14 @@ $rows.each do |row|
     next unless $opts[:ic].empty? || ($opts[:ic].any? row['calendar'])
   end
 
-  # Instantiate an item
-  item = klass.new(row)
+  begin
+    # Instantiate an item
+    item = klass.new(row)
+  rescue StandardError => e
+    $log.error("#{e.class}: #{e}")
+    $log.error(row)
+    next
+  end
 
   # --et/--it
   next if $opts[:et].any? item['type']
