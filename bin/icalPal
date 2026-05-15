@@ -57,6 +57,7 @@ $opts = ICalPal::Options.new.parse_options
 
 $rows = []                      # Rows from the database
 $sections = []                  # Calendar list sections
+$memberships = []               # Calendar list memberships
 $items = []                     # Items to be printed
 
 
@@ -101,7 +102,10 @@ $opts[:db].each do |db|
       sections = klass.load_data(d, klass::SECTIONS_QUERY)
       $sections += sections
 
-      $log.info("Loaded #{rows.length} rows and #{sections.length} sections from #{d}")
+      memberships = klass.load_data(d, klass::MEMBERSHIPS_QUERY)
+      $memberships += memberships
+
+      $log.info("Loaded #{rows.length} rows, #{sections.length} sections, and #{memberships.length} memberships from #{d}")
     end
   else
     # Load database

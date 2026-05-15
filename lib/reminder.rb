@@ -83,14 +83,13 @@ module ICalPal
       end
 
       # Section
-      if @self['members']
-        j = JSON.parse(@self['members']).select { |i| i['memberID'] == @self['id'] }
-        s = $sections.select { |i| i['id'] == j[0]['groupID'] } if j[0]
-        @self['section'] = s[0]['name'] if s && s[0]
-
-        # Drop the internal membership scratch but keep `id` (zckIdentifier),
-        # which downstream consumers rely on for joins/dedup.
-        @self.delete('members')
+      members = $memberships.select { |i| i['Z_PK'] == @self['ZLIST'] }[0]
+      if members
+        j = JSON.parse(members['members'])['memberships'].select { |i| i['memberID'] == @self['id'] }[0]
+        if j
+          s = $sections.select { |i| i['id'] == j['groupID'] }[0]
+          @self['section'] = s['name'] if s
+        end
       end
 
       # Priority
@@ -196,6 +195,7 @@ r1.zDueDateDeltaAlertsData as alert,
 r1.zckIdentifier as id,
 r1.zCompleted as completed,
 r1.zDisplayDateUpdatedForSecondsFromGMT as utc_offset,
+r1.zList,
 
 bl1.zBadgeEmblem as badge,
 bl1.zColor as color,
@@ -204,19 +204,17 @@ bl1.zParentList as parent,
 bl1.zSharingStatus as shared,
 bl1.zShouldCategorizeGroceryItems as grocery,
 
-json(bl1.ZMembershipsOfRemindersInSectionsAsData) -> '$.memberships' AS members,
-
 (SELECT zName
- FROM zremcdBaseList bl2
- WHERE bl2.z_pk = bl1.zParentList) AS 'group',
+ FROM zremcdBaseList
+ WHERE z_pk = bl1.zParentList) AS 'group',
 
 (SELECT json_group_array(zremcdObject.zTitle)
-FROM zremcdObject
-WHERE zremcdObject.z_pk IN (
- SELECT zTrigger
  FROM zremcdObject
- WHERE zremcdObject.zReminder = r1.z_pk
-)) AS location,
+ WHERE zremcdObject.z_pk IN (
+  SELECT zTrigger
+  FROM zremcdObject
+  WHERE zremcdObject.zReminder = r1.z_pk
+ )) AS location,
 
 (SELECT json_group_array(zremcdObject.zProximity)
  FROM zremcdObject
@@ -237,14 +235,13 @@ WHERE zremcdObject.z_pk IN (
 (SELECT json_group_array(zName)
  FROM zremcdHashtagLabel
  WHERE zremcdHashtagLabel.z_pk IN (
-	SELECT zremcdObject.zHashtagLabel
-	FROM zremcdObject
-	JOIN zremcdReminder ON zremcdObject.zReminder3 = r1.z_pk
-	WHERE zremcdObject.zReminder3 = r1.z_pk
+  SELECT zremcdObject.zHashtagLabel
+  FROM zremcdObject
+  JOIN zremcdReminder ON zremcdObject.zReminder3 = r1.z_pk
+  WHERE zremcdObject.zReminder3 = r1.z_pk
  )) AS tags,
 
-(SELECT
- json_array(zNickname, zFirstName, zLastName, zAddress1)
+(SELECT json_array(zNickname, zFirstName, zLastName, zAddress1)
  FROM zremcdObject
  WHERE z_pk = (
   SELECT zAssignee
@@ -273,6 +270,18 @@ zDisplayName AS name
 
 FROM zremcdBaseSection
 
+SQL
+
+    # Load memberships
+    MEMBERSHIPS_QUERY = <<~SQL.freeze
+SELECT
+
+Z_PK,
+zMembershipsOfRemindersInSectionsAsData AS members
+
+FROM zremcdBaseList
+
+WHERE zMembershipsOfRemindersInSectionsAsData IS NOT NULL
 SQL
 
   end
